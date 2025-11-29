@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - TechHub Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style> body { font-family: 'Inter', sans-serif; } </style>
+</head>
+<body> <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Doanh thu</p>
+                    <h3 class="text-2xl font-bold text-slate-800 mt-1" id="stat-revenue">...</h3>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-dollar-sign"></i>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Đơn hàng</p>
+                    <h3 class="text-2xl font-bold text-slate-800 mt-1" id="stat-orders">...</h3>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Sản phẩm</p>
+                    <h3 class="text-2xl font-bold text-slate-800 mt-1" id="stat-products">...</h3>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="px-6 py-5 border-b border-slate-200 flex justify-between items-center">
+            <h3 class="font-bold text-slate-800 text-lg">Đơn hàng mới nhất</h3>
+            <a href="orders.html" class="text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">
+                Xem tất cả <i class="fa-solid fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+                <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-xs tracking-wider">
+                    <tr>
+                        <th class="px-6 py-4">Mã đơn</th>
+                        <th class="px-6 py-4">Khách hàng</th>
+                        <th class="px-6 py-4">Tổng tiền</th>
+                        <th class="px-6 py-4">Trạng thái</th>
+                        <th class="px-6 py-4">Ngày đặt</th>
+                    </tr>
+                </thead>
+                <tbody id="recent-orders-body" class="divide-y divide-slate-100 text-slate-600">
+                    <tr><td colspan="5" class="px-6 py-8 text-center">Đang tải dữ liệu...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { renderAdminLayout, formatPrice } from '../assets/js/admin.js';
+        import { api } from '../assets/js/api.js';
+        
+        // 👇 GỌI HÀM NÀY ĐỂ RENDER LAYOUT VÀ ACTIVE MENU 'dashboard'
+        renderAdminLayout('dashboard');
+
+        async function loadDashboard() {
+            try {
+                const res = await fetch('http://localhost/Web%20ban%20thiet%20bi%20dien%20tu/backend/public/admin/stats', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('ts_token')}` }
+                });
+                const data = await res.json();
+
+                document.getElementById('stat-revenue').textContent = formatPrice(data.revenue);
+                document.getElementById('stat-orders').textContent = data.total_orders;
+                document.getElementById('stat-products').textContent = data.total_products;
+
+                const orders = data.recent_orders || [];
+                if (orders.length === 0) {
+                    document.getElementById('recent-orders-body').innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center italic">Chưa có đơn hàng nào</td></tr>`;
+                } else {
+                    const html = orders.map(o => `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-6 py-4 font-medium text-blue-600">#${o.id}</td>
+                            <td class="px-6 py-4"><span class="font-medium text-slate-700">${o.name}</span></td>
+                            <td class="px-6 py-4 font-semibold text-slate-900">${formatPrice(o.total_amount)}</td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border bg-slate-100 text-slate-700 border-slate-200">
+                                    ${o.status}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-slate-500 text-xs">${new Date(o.created_at).toLocaleDateString('vi-VN')}</td>
+                        </tr>
+                    `).join('');
+                    document.getElementById('recent-orders-body').innerHTML = html;
+                }
+            } catch (err) { console.error(err); }
+        }
+        loadDashboard();
+    </script>
+</body>
+</html>

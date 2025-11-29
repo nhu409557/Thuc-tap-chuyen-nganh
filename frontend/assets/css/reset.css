@@ -1,0 +1,125 @@
+/* =========================================================
+   RESET.CSS — Tailwind-friendly minimal reset
+   Dành riêng cho dự án của bạn
+   ========================================================= */
+
+/* Box sizing */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Remove default margin */
+body,
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+blockquote,
+dl,
+dd {
+  margin: 0;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Set default body styles */
+body {
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Images / video / canvas */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* Remove list bullets */
+ul,
+ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Remove default form styles */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  margin: 0;
+}
+
+/* Reset button */
+button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* Links */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Table */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* Focus improved (không phá Tailwind outline) */
+:focus {
+  outline: none;
+}
+
+/* No default quotes */
+blockquote::before,
+blockquote::after {
+  content: "";
+}
+
+/* HR reset */
+hr {
+  border: none;
+  border-top: 1px solid #e5e7eb; /* gray-300 */
+  margin: 1rem 0;
+}
+
+/* Address inherit font-style */
+address {
+  font-style: inherit;
+}
+
+/* Misc */
+abbr[title] {
+  text-decoration: underline dotted;
+}
+
+/* Code elements */
+code,
+kbd,
+samp,
+pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}
+
+/* [hidden] attribute */
+[hidden] {
+  display: none !important;
+}

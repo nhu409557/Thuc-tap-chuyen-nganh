@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sản phẩm - TechHub Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .modal-scroll::-webkit-scrollbar { width: 6px; }
+        .modal-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .modal-scroll::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+        
+        .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 600; }
+        .tab-inactive { color: #6b7280; border-bottom: 2px solid transparent; }
+        
+        input:read-only, textarea:read-only, select:disabled {
+            background-color: #f9fafb;
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Quản lý Sản phẩm</h1>
+            <p class="text-sm text-gray-500">Kho hàng và cấu hình chi tiết</p>
+        </div>
+        <button id="btn-add" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 flex items-center gap-2 shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5">
+            <i class="fa-solid fa-plus"></i> Thêm mới
+        </button>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="p-4 border-b border-gray-200 bg-gray-50/50 flex gap-4">
+            <div class="relative flex-1 max-w-md">
+                <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input type="text" placeholder="Tìm tên sản phẩm..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+                <thead class="bg-gray-50 border-b border-gray-200 text-gray-500 font-semibold uppercase text-xs tracking-wider">
+                    <tr>
+                        <th class="px-6 py-4 w-24">Ảnh</th>
+                        <th class="px-6 py-4">Tên sản phẩm</th>
+                        <th class="px-6 py-4">Danh mục / Hãng</th>
+                        <th class="px-6 py-4 text-center">Tồn kho</th>
+                        <th class="px-6 py-4">Giá bán</th>
+                        <th class="px-6 py-4 text-right">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="product-list" class="divide-y divide-gray-100 bg-white">
+                    <tr><td colspan="6" class="py-8 text-center text-gray-500">Đang tải dữ liệu...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center bg-gray-50">
+            <button id="btn-prev" class="px-3 py-1.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition" disabled>
+                <i class="fa-solid fa-chevron-left mr-1"></i> Trước
+            </button>
+            <span class="text-xs text-gray-500 font-medium bg-white px-3 py-1.5 rounded-lg border" id="page-info">Trang 1</span>
+            <button id="btn-next" class="px-3 py-1.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition" disabled>
+                Sau <i class="fa-solid fa-chevron-right ml-1"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="product-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+        
+        <div class="absolute right-0 top-0 h-full w-full md:w-[800px] bg-white shadow-2xl transform transition-transform duration-300 translate-x-full flex flex-col" id="modal-panel">
+            
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                <h3 class="text-lg font-bold text-gray-800" id="modal-title">Thông tin sản phẩm</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="flex border-b border-gray-200 px-6 bg-white sticky top-0 z-10">
+                <button onclick="switchTab('general')" id="tab-btn-general" class="tab-active py-3 px-4 text-sm transition-all hover:bg-gray-50">Thông tin chung</button>
+                <button onclick="switchTab('specs')" id="tab-btn-specs" class="tab-inactive py-3 px-4 text-sm transition-all hover:bg-gray-50">Cấu hình chi tiết</button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-6 modal-scroll bg-white relative">
+                <form id="product-form" class="space-y-6">
+                    <input type="hidden" id="p-id">
+
+                    <div id="tab-content-general" class="space-y-5 animate-fade-in">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tên sản phẩm <span class="text-red-500">*</span></label>
+                                <input type="text" id="p-title" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-medium" required>
+                            </div>
+
+                            <div class="md:col-span-2 grid grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Giá bán (VNĐ) <span class="text-red-500">*</span></label>
+                                    <input type="number" id="p-price" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-blue-600 font-bold" required>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Giá gốc (VNĐ)</label>
+                                    <input type="number" id="p-compare" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tồn kho <span class="text-red-500">*</span></label>
+                                    <input type="number" id="p-stock" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-bold" placeholder="0">
+                                </div>
+                            </div>
+
+                            <div class="p-4 bg-slate-50 rounded-lg border border-slate-200 md:col-span-2 grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Loại sản phẩm</label>
+                                    <select id="p-category" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white cursor-pointer hover:bg-gray-50 transition">
+                                        <option value="">-- Đang tải --</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Hãng sản xuất</label>
+                                    <select id="p-brand" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white cursor-pointer" disabled>
+                                        <option value="">-- Chọn hãng --</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Link Hình ảnh</label>
+                                <div class="flex gap-3 items-start">
+                                    <div class="flex-1">
+                                        <input type="text" id="p-image" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="https://..." oninput="document.getElementById('preview-img').src = this.value">
+                                        <p class="text-xs text-gray-400 mt-1">Nhập đường dẫn ảnh sản phẩm (URL)</p>
+                                    </div>
+                                    <div class="w-20 h-20 rounded-lg border border-gray-200 bg-gray-50 flex-shrink-0 overflow-hidden flex items-center justify-center">
+                                        <img id="preview-img" src="https://placehold.co/80?text=Preview" class="w-full h-full object-contain">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Mô tả / Đặc điểm nổi bật</label>
+                                <textarea id="p-desc" rows="5" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm leading-relaxed"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-content-specs" class="hidden space-y-4 animate-fade-in">
+                        <div id="specs-warning" class="p-4 bg-blue-50 text-blue-800 text-sm rounded-lg border border-blue-200 flex items-center gap-3">
+                            <i class="fa-solid fa-circle-info text-lg"></i>
+                            <span id="specs-status-text">Vui lòng chọn <b>"Loại sản phẩm"</b> để hiển thị bảng thông số.</span>
+                        </div>
+                        <div id="specs-form-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 hidden"></div>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-between items-center" id="modal-footer">
+                <p class="text-xs text-gray-500 italic" id="footer-hint">* Các trường có dấu sao là bắt buộc.</p>
+                <div class="flex gap-3">
+                    <button onclick="closeModal()" class="px-5 py-2 text-sm font-medium text-gray-700 hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-300 rounded-lg transition">Đóng</button>
+                    <button id="btn-save" onclick="saveProduct()" class="px-6 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md transition flex items-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> Lưu dữ liệu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-root"></div>
+
+    <script type="module">
+        import { renderAdminLayout, formatPrice } from '../assets/js/admin.js';
+        import { api } from '../assets/js/api.js';
+        import { getToken } from '../assets/js/utils/storage.js';
+        import { showToast } from '../assets/js/ui/toast.js';
+
+        renderAdminLayout('products');
+
+        // Biến lưu trữ specs tạm thời khi nhập liệu
+        let currentSpecsData = {}; 
+
+        // ================= LOGIC GIAO DIỆN =================
+
+        window.switchTab = (tabName) => {
+            document.getElementById('tab-content-general').classList.add('hidden');
+            document.getElementById('tab-content-specs').classList.add('hidden');
+            
+            document.getElementById('tab-btn-general').className = 'tab-inactive py-3 px-4 text-sm transition-all hover:bg-gray-50';
+            document.getElementById('tab-btn-specs').className = 'tab-inactive py-3 px-4 text-sm transition-all hover:bg-gray-50';
+
+            document.getElementById(`tab-content-${tabName}`).classList.remove('hidden');
+            document.getElementById(`tab-btn-${tabName}`).className = 'tab-active py-3 px-4 text-sm transition-all hover:bg-gray-50';
+        };
+
+        // Sự kiện thay đổi danh mục -> Load lại hãng & Form thông số
+        document.getElementById('p-category').addEventListener('change', function() {
+            handleCategoryChange(this.value);
+        });
+
+        // HÀM LOAD DANH MỤC VÀO SELECT (GỌI 1 LẦN KHI LOAD TRANG)
+        async function loadCategoriesForSelect() {
+            const catSelect = document.getElementById('p-category');
+            try {
+                const res = await api.getCategories();
+                const cats = res.data || [];
+                window.allCategories = cats; // Lưu lại để dùng template
+                
+                catSelect.innerHTML = '<option value="">-- Chọn loại --</option>';
+                cats.forEach(c => {
+                    catSelect.innerHTML += `<option value="${c.slug}">${c.name}</option>`;
+                });
+            } catch(e) {
+                console.error(e);
+                catSelect.innerHTML = '<option value="">Lỗi tải danh mục</option>';
+            }
+        }
+
+        // HÀM XỬ LÝ KHI CHỌN DANH MỤC
+        async function handleCategoryChange(categorySlug, selectedBrand = '', existingSpecs = null) {
+            await updateBrandSelect(categorySlug, selectedBrand);
+
+            // Render Specs Form từ Template trong window.allCategories
+            const categoryData = window.allCategories?.find(c => c.slug === categorySlug);
+            
+            let template = [];
+            if (categoryData && categoryData.specs_template) {
+                try { 
+                    template = typeof categoryData.specs_template === 'string' 
+                        ? JSON.parse(categoryData.specs_template) 
+                        : categoryData.specs_template; 
+                } catch(e){}
+            }
+
+            // Nếu có existingSpecs (khi View/Edit), dùng nó. Nếu không (Add), dùng currentSpecsData hoặc rỗng
+            const dataToFill = existingSpecs || currentSpecsData;
+            renderSpecsFormFromTemplate(template, dataToFill);
+        }
+
+        // HÀM RENDER FORM SPECS
+        function renderSpecsFormFromTemplate(template, data) {
+            const container = document.getElementById('specs-form-container');
+            const warning = document.getElementById('specs-warning');
+            const warningText = document.getElementById('specs-status-text');
+
+            container.innerHTML = '';
+
+            if (!template || template.length === 0) {
+                container.classList.add('hidden');
+                warning.classList.remove('hidden');
+                warningText.textContent = "Danh mục này chưa được cấu hình thông số kỹ thuật.";
+                return;
+            }
+
+            container.classList.remove('hidden');
+            warning.classList.add('hidden');
+
+            template.forEach(group => {
+                let fieldsHtml = '';
+                group.fields.forEach(f => {
+                    const val = data[f.k] || ''; 
+                    fieldsHtml += `
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-500 mb-1 uppercase tracking-wide">${f.l}</label>
+                            <input type="text" name="spec_${f.k}" value="${val}" 
+                                class="w-full px-3 py-2 border border-gray-200 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-gray-50 focus:bg-white transition-colors placeholder-gray-300 shadow-sm"
+                                oninput="currentSpecsData['${f.k}'] = this.value"> 
+                        </div>`;
+                });
+
+                container.innerHTML += `
+                    <div class="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
+                        <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
+                            <span class="w-1.5 h-4 bg-blue-600 rounded-full"></span>
+                            ${group.group}
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                            ${fieldsHtml}
+                        </div>
+                    </div>`;
+            });
+        }
+
+        async function updateBrandSelect(category, selectedBrand = '') {
+            const brandSelect = document.getElementById('p-brand');
+            brandSelect.innerHTML = '<option value="">Đang tải...</option>';
+            brandSelect.disabled = true;
+
+            try {
+                const res = await api.getBrands(category);
+                const brands = res.data || [];
+                brandSelect.innerHTML = '<option value="">-- Chọn hãng --</option>';
+                
+                if (brands.length > 0) {
+                    brandSelect.disabled = false;
+                    brands.forEach(b => {
+                        const bName = typeof b === 'object' ? b.name : b;
+                        const selected = bName === selectedBrand ? 'selected' : '';
+                        brandSelect.innerHTML += `<option value="${bName}" ${selected}>${bName}</option>`;
+                    });
+                } else {
+                    brandSelect.innerHTML = '<option value="">Không có hãng nào</option>';
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function setFormState(isReadOnly) {
+            const form = document.getElementById('product-form');
+            const inputs = form.querySelectorAll('input, textarea, select');
+            const btnSave = document.getElementById('btn-save');
+            const footerHint = document.getElementById('footer-hint');
+
+            inputs.forEach(input => {
+                if (isReadOnly) {
+                    input.setAttribute('readonly', true);
+                    if(input.tagName === 'SELECT') input.setAttribute('disabled', true);
+                } else {
+                    input.removeAttribute('readonly');
+                    if(input.tagName === 'SELECT') input.removeAttribute('disabled');
+                }
+            });
+
+            // Logic riêng cho category/brand khi không readonly
+            if (!isReadOnly) {
+                const cat = document.getElementById('p-category').value;
+                if (!cat) document.getElementById('p-brand').setAttribute('disabled', true);
+            }
+
+            if (isReadOnly) {
+                btnSave.classList.add('hidden');
+                footerHint.classList.add('hidden');
+            } else {
+                btnSave.classList.remove('hidden');
+                footerHint.classList.remove('hidden');
+            }
+        }
+
+        // ================= MODAL ACTIONS =================
+
+        window.openModal = async (mode, data = null) => {
+            const modal = document.getElementById('product-modal');
+            const panel = document.getElementById('modal-panel');
+            const title = document.getElementById('modal-title');
+
+            modal.classList.remove('hidden');
+            setTimeout(() => panel.classList.remove('translate-x-full'), 10);
+            
+            document.getElementById('product-form').reset();
+            document.getElementById('preview-img').src = 'https://placehold.co/80?text=Preview';
+            switchTab('general');
+            currentSpecsData = {}; // Reset dữ liệu specs tạm
+
+            if (mode === 'add') {
+                title.innerText = 'Thêm sản phẩm mới';
+                setFormState(false);
+                document.getElementById('p-id').value = '';
+                document.getElementById('p-stock').value = '0';
+                
+                // Reset Specs Panel
+                document.getElementById('specs-form-container').classList.add('hidden');
+                document.getElementById('specs-warning').classList.remove('hidden');
+            } 
+            else {
+                title.innerText = mode === 'view' ? 'Chi tiết sản phẩm' : 'Cập nhật sản phẩm';
+                setFormState(mode === 'view');
+
+                // Fill Basic Data
+                document.getElementById('p-id').value = data.id;
+                document.getElementById('p-title').value = data.title;
+                document.getElementById('p-price').value = data.price;
+                document.getElementById('p-stock').value = data.stock_quantity || 0;
+                document.getElementById('p-compare').value = data.compare_at || '';
+                document.getElementById('p-image').value = data.image || '';
+                document.getElementById('preview-img').src = data.image || 'https://placehold.co/80?text=Preview';
+                document.getElementById('p-desc').value = data.description || '';
+                
+                // Set Category
+                document.getElementById('p-category').value = data.category || '';
+
+                // Parse Specs Data từ sản phẩm
+                let specsData = {};
+                try { specsData = typeof data.specs === 'string' ? JSON.parse(data.specs) : (data.specs || {}); } catch(e){}
+                currentSpecsData = specsData; // Lưu vào biến tạm
+
+                // Trigger logic load Brands & Render Specs
+                await handleCategoryChange(data.category, data.brand, specsData);
+            }
+        };
+
+        window.closeModal = () => {
+            document.getElementById('modal-panel').classList.add('translate-x-full');
+            setTimeout(() => document.getElementById('product-modal').classList.add('hidden'), 300);
+        };
+
+        // ================= API CALLS =================
+
+        window.viewProduct = async (id) => {
+            try {
+                const p = await api.getProduct(id);
+                window.openModal('view', p);
+            } catch(e) { console.error(e); }
+        };
+
+        // Redirect sang trang sửa chi tiết (như cũ) hoặc mở modal Edit (nếu muốn)
+        // Ở đây mình sửa để mở Modal Edit luôn cho đồng bộ, đỡ phải chuyển trang
+        // Tuy nhiên theo code cũ bạn dùng redirect, mình sẽ giữ redirect nếu bạn muốn, 
+        // nhưng tốt nhất là dùng Modal Edit luôn ở đây.
+        // -> Mình sẽ dùng Modal Edit ở đây luôn cho tiện.
+        /* window.editProduct = async (id) => {
+             // Nếu muốn dùng trang riêng: window.location.href='product-detail.html?id=' + id;
+             try {
+                const p = await api.getProduct(id);
+                window.openModal('edit', p);
+            } catch(e) { console.error(e); }
+        };
+        */
+       // Giữ nguyên redirect như bạn yêu cầu trước đó
+       // window.location.href='product-detail.html?id=${p.id}' đã có trong HTML
+
+        window.deleteProduct = async (id) => {
+            if(!confirm('Xóa sản phẩm này?')) return;
+            try {
+                await api.deleteProduct(id);
+                showToast('Đã xóa thành công', 'success');
+                loadProducts(currentPage);
+            } catch(e) { showToast(e.message || 'Lỗi xóa', 'error'); }
+        };
+
+        window.saveProduct = async () => {
+            const id = document.getElementById('p-id').value;
+            
+            // Gom dữ liệu specs từ input (để chắc chắn lấy giá trị mới nhất)
+            const specInputs = document.querySelectorAll('input[name^="spec_"]');
+            specInputs.forEach(input => {
+                const key = input.name.replace('spec_', '');
+                currentSpecsData[key] = input.value.trim();
+            });
+
+            const data = {
+                title: document.getElementById('p-title').value,
+                price: document.getElementById('p-price').value,
+                stock_quantity: document.getElementById('p-stock').value,
+                compare_at: document.getElementById('p-compare').value,
+                category: document.getElementById('p-category').value,
+                brand: document.getElementById('p-brand').value,
+                image: document.getElementById('p-image').value,
+                description: document.getElementById('p-desc').value,
+                specs: currentSpecsData // Gửi object (như đã fix lỗi JSON)
+            };
+
+            if (!data.title || !data.price) {
+                alert('Vui lòng nhập Tên và Giá sản phẩm');
+                return;
+            }
+
+            try {
+                if (id) await api.updateProduct(id, data);
+                else await api.createProduct(data);
+                
+                showToast(id ? 'Đã cập nhật' : 'Đã thêm mới', 'success');
+                window.closeModal();
+                loadProducts(currentPage);
+            } catch(e) {
+                showToast(e.message || 'Có lỗi xảy ra', 'error');
+            }
+        };
+
+        let currentPage = 1;
+
+        async function loadProducts(page = 1) {
+            currentPage = page;
+            try {
+                const res = await api.getProducts({ page: 1 });
+                // API getProducts trả về danh sách có cả thông tin stock (đã cập nhật Model Product search)
+                
+                const html = (res.data || []).map(p => {
+                    // Logic hiển thị tồn kho
+                    let stockHtml = '';
+                    const stock = parseInt(p.stock_quantity || 0);
+                    if (stock > 0) {
+                        stockHtml = `<span class="text-gray-700 font-bold">${stock}</span>`;
+                    } else {
+                        stockHtml = `<span class="text-red-500 font-bold text-xs bg-red-50 px-2 py-1 rounded border border-red-100">Hết hàng</span>`;
+                    }
+
+                    return `
+                    <tr class="hover:bg-blue-50/50 transition-colors border-b border-gray-100 last:border-0 group">
+                        <td class="px-6 py-4 w-24">
+                            <div class="relative w-16 h-16 rounded-lg border border-gray-200 bg-white p-1 overflow-hidden shadow-sm group-hover:shadow-md transition-all">
+                                <img src="../${p.image}" class="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-300" onerror="this.src='https://placehold.co/64?text=No+Img'">
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="font-semibold text-gray-800 line-clamp-2 mb-1">${p.title}</p>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">ID: #${p.id}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col gap-1">
+                                <span class="text-xs font-bold uppercase tracking-wide text-blue-600 bg-blue-50 px-2 py-1 rounded w-fit">${p.category || '---'}</span>
+                                <span class="text-xs text-gray-500 flex items-center gap-1"><i class="fa-solid fa-tag text-[10px]"></i> ${p.brand || '---'}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-center">${stockHtml}</td>
+                        <td class="px-6 py-4">
+                            <span class="font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-100">${formatPrice(p.price)}</span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex justify-end gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
+                                <button onclick="window.viewProduct(${p.id})" class="w-9 h-9 rounded-lg bg-white border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:shadow-sm transition flex items-center justify-center" title="Xem chi tiết"><i class="fa-solid fa-eye"></i></button>
+                                <button onclick="window.location.href='product-detail.html?id=${p.id}'" class="w-9 h-9 rounded-lg bg-white border border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 hover:shadow-sm transition flex items-center justify-center" title="Chỉnh sửa"><i class="fa-solid fa-pen-to-square"></i></button>
+                                <button onclick="window.deleteProduct(${p.id})" class="w-9 h-9 rounded-lg bg-white border border-gray-200 text-red-500 hover:bg-red-50 hover:border-red-300 hover:shadow-sm transition flex items-center justify-center" title="Xóa"><i class="fa-solid fa-trash-can"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `}).join('');
+                
+                document.getElementById('product-list').innerHTML = html;
+            } catch (e) { 
+                console.error(e);
+                document.getElementById('product-list').innerHTML = `<tr><td colspan="6" class="text-center py-8 text-red-500">Lỗi tải dữ liệu!</td></tr>`;
+            }
+        }
+
+        // Init
+        loadCategoriesForSelect(); // Load danh mục vào select trước
+        document.getElementById('btn-add').addEventListener('click', () => window.openModal('add'));
+        loadProducts();
+    </script>
+</body>
+</html>

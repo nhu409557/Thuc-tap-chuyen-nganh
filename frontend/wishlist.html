@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Yêu thích</title>
+  <link rel="stylesheet" href="assets/css/reset.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/app.css" />
+</head>
+<body class="bg-gray-50">
+
+  <div id="site-header"></div>
+
+  <div class="bg-white border-b border-gray-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      <div class="flex items-center gap-2 text-sm">
+        <a class="text-blue-600 hover:underline" href="/">Trang chủ</a>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-gray-500"><path d="m9 18 6-6-6-6"></path></svg>
+        <span class="text-gray-700 font-medium">Danh sách yêu thích</span>
+      </div>
+    </div>
+  </div>
+
+  <section class="bg-gradient-to-r from-blue-50 to-indigo-100 border-b border-gray-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+      <div class="flex items-center justify-center gap-3 mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-8 w-8 text-red-500 fill-red-500"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+        <h1 class="text-4xl md:text-5xl font-bold">Danh sách yêu thích</h1>
+      </div>
+      <p class="text-lg text-gray-600 max-w-2xl mx-auto">Lưu lại những sản phẩm bạn yêu thích để mua sau.</p>
+    </div>
+  </section>
+
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="flex items-center justify-between mb-8">
+      <p class="text-sm text-gray-500">Hiển thị <span id="wishlist-count">0</span> sản phẩm</p>
+      <div class="relative">
+        <select class="appearance-none px-4 py-2 pr-10 rounded-lg border border-gray-300 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+          <option value="newest" selected>Mới nhất</option>
+          <option value="price-asc">Giá: Thấp đến Cao</option>
+          <option value="price-desc">Giá: Cao đến Thấp</option>
+        </select>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none"><path d="m6 9 6 6 6-6"></path></svg>
+      </div>
+    </div>
+    
+    <div id="wishlist-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <p class="col-span-full text-gray-500">Đang tải danh sách yêu thích...</p>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script type="module" src="assets/js/main.js"></script>
+  <script type="module" src="assets/js/wishlist.js"></script>
+</body>
+</html>

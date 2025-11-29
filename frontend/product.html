@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chi tiết sản phẩm</title>
+  <link rel="stylesheet" href="assets/css/reset.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/app.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+
+  <div id="site-header"></div>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+    
+    <div class="bg-white rounded-lg border border-gray-200 p-3 mb-6 shadow-sm">
+      <div id="breadcrumb-container" class="flex items-center gap-2 text-sm text-gray-500 flex-wrap">
+        <a class="text-blue-600 hover:underline" href="index.html">Trang chủ</a>
+        <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
+        <span class="text-gray-400">Đang tải...</span>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+
+      <div class="md:col-span-2 space-y-6">
+
+        <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+          <h1 id="product-title" class="text-3xl font-bold mb-4 text-gray-800 leading-tight">Đang tải...</h1>
+          
+          <div class="mb-6 relative h-96 w-full flex items-center justify-center bg-gray-50 rounded-lg border border-gray-100">
+            <img id="main-image" src="https://via.placeholder.com/600x600?text=Loading" alt="Ảnh sản phẩm" class="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-105 cursor-zoom-in mix-blend-multiply" />
+          </div>
+          
+          <div id="gallery-container" class="flex gap-3 overflow-x-auto pb-2 justify-center custom-scrollbar px-4">
+             </div>
+        </div>
+        
+        <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+          <div class="border-b border-gray-200 bg-gray-50">
+            <nav class="flex -mb-px px-6" aria-label="Tabs">
+              <button id="tab-desc" data-tab="description" class="tab-btn text-blue-600 border-blue-600 whitespace-nowrap py-4 px-4 border-b-2 font-bold text-sm transition-colors">
+                Mô tả sản phẩm
+              </button>
+              <button id="tab-spec" data-tab="specs" class="tab-btn text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm transition-colors">
+                Thông số kỹ thuật
+              </button>
+            </nav>
+          </div>
+          
+          <div class="p-6">
+            <div id="description-content" class="tab-content space-y-4 text-gray-700 leading-relaxed text-sm md:text-base">
+              <p id="product-description">Đang tải mô tả...</p>
+            </div>
+            
+            <div id="specs-content" class="tab-content hidden">
+               <div id="specs-container" class="border border-gray-200 rounded-lg overflow-hidden">
+                  <p class="p-4 text-center text-gray-500">Đang cập nhật thông số...</p>
+               </div>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+
+      <aside class="md:col-span-1">
+        <div class="sticky top-24 space-y-6">
+          
+          <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+            <div class="flex flex-col mb-2">
+              <span id="product-price" class="text-3xl font-bold text-red-600">...</span>
+              <span id="product-compare-price" class="text-sm text-gray-400 line-through mt-1">...</span>
+            </div>
+
+            <div id="product-stock-status" class="mb-4 text-sm font-medium min-h-[20px]"></div>
+
+            <div class="p-3 bg-green-50 rounded-lg border border-green-100">
+                <p class="text-sm text-green-700 flex items-center gap-2 font-medium">
+                <i class="fa-solid fa-check-circle"></i> Giá đã bao gồm VAT
+                </p>
+            </div>
+          </div>
+          
+          <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+            <h3 class="font-bold mb-4 flex items-center gap-2 text-orange-600">
+              <i class="fa-solid fa-gift"></i> Khuyến mãi
+            </h3>
+            <div class="space-y-3">
+              <div class="flex gap-3">
+                <span class="flex-shrink-0 w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                <p class="text-sm text-gray-700">Phiếu mua hàng trị giá 300.000đ</p>
+              </div>
+              <div class="flex gap-3">
+                <span class="flex-shrink-0 w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                <p class="text-sm text-gray-700">Trả góp 0% lãi suất.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg border border-gray-200 p-6 space-y-3 shadow-sm">
+            <button id="btn-buy-now" class="w-full bg-red-600 text-white p-3 rounded-lg font-bold text-lg hover:bg-red-700 transition shadow-md active:scale-95 transform">
+              Mua ngay
+            </button>
+            
+            <button id="btn-add-cart" class="w-full bg-white text-blue-600 border-2 border-blue-600 p-3 rounded-lg font-bold hover:bg-blue-50 transition active:scale-95 transform flex items-center justify-center gap-2">
+              <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
+            </button>
+          </div>
+
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script type="module" src="assets/js/main.js"></script>
+  <script type="module" src="assets/js/products.js"></script>
+</body>
+</html>
