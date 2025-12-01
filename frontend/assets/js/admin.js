@@ -1,10 +1,10 @@
 // assets/js/admin.js
 
-import { getToken, removeToken } from './utils/storage.js';
-import { api } from './api.js';
+import { getToken, removeToken } from "./utils/storage.js";
+import { api } from "./api.js";
 // Import formatPrice từ common để tái sử dụng, showToast để hiển thị thông báo
-import { formatPrice } from './utils/common.js';
-import { showToast } from './ui/toast.js';
+import { formatPrice } from "./utils/common.js";
+import { showToast } from "./ui/toast.js";
 
 // Export lại để các file HTML admin (như products.html) có thể import và sử dụng
 export { formatPrice };
@@ -13,37 +13,86 @@ export { formatPrice };
 function checkAuth() {
     const token = getToken();
     if (!token) {
-        window.location.href = 'login.html';
+        window.location.href = "login.html";
         return false;
     }
     return true;
 }
 
 // === 2. HÀM RENDER LAYOUT CHÍNH (SIDEBAR + HEADER) ===
-export function renderAdminLayout(activePage) {
-    // Nếu chưa đăng nhập, đá về login ngay
-    if (!checkAuth()) return;
+export async function renderAdminLayout(activePage) {
+    const token = getToken();
+    if (!token) {
+        window.location.href = "login.html";
+        return;
+    }
+    try {
+        const user = await api.me();
+
+        // Nếu không phải admin -> Đá về trang chủ
+        if (user.role !== "admin") {
+            alert("CẢNH BÁO: Bạn không có quyền truy cập trang quản trị!");
+            window.location.href = "../index.html";
+            return;
+        }
+    } catch (err) {
+        // Lỗi token hoặc lỗi mạng -> Đá về login
+        console.error(err);
+        removeToken();
+        window.location.href = "login.html";
+        return;
+    }
 
     const body = document.body;
     // Lấy nội dung riêng của từng trang (đang nằm trong body) để chèn vào khung layout
-    const pageSpecificContent = body.innerHTML; 
+    const pageSpecificContent = body.innerHTML;
 
     // Định nghĩa Menu Sidebar
     const menuItems = [
-        { id: 'dashboard', label: 'Dashboard', icon: 'fa-chart-pie', link: 'index.html', group: 'Chung' },
-        
-        { id: 'products', label: 'Sản phẩm', icon: 'fa-box-open', link: 'products.html', group: 'Quản lý' },
-        { id: 'categories', label: 'Danh mục', icon: 'fa-list', link: 'categories.html', group: 'Quản lý' }, // Mục mới
-        { id: 'brands', label: 'Hãng sản xuất', icon: 'fa-copyright', link: 'brands.html', group: 'Quản lý' },
-        { id: 'orders', label: 'Đơn hàng', icon: 'fa-cart-shopping', link: 'orders.html', group: 'Quản lý' },
+        {
+            id: "dashboard",
+            label: "Dashboard",
+            icon: "fa-chart-pie",
+            link: "index.html",
+            group: "Chung",
+        },
+
+        {
+            id: "products",
+            label: "Sản phẩm",
+            icon: "fa-box-open",
+            link: "products.html",
+            group: "Quản lý",
+        },
+        {
+            id: "categories",
+            label: "Danh mục",
+            icon: "fa-list",
+            link: "categories.html",
+            group: "Quản lý",
+        }, // Mục mới
+        {
+            id: "brands",
+            label: "Hãng sản xuất",
+            icon: "fa-copyright",
+            link: "brands.html",
+            group: "Quản lý",
+        },
+        {
+            id: "orders",
+            label: "Đơn hàng",
+            icon: "fa-cart-shopping",
+            link: "orders.html",
+            group: "Quản lý",
+        },
     ];
 
     // Hàm tạo HTML cho Sidebar
     const renderMenu = () => {
-        let html = '';
-        let currentGroup = '';
+        let html = "";
+        let currentGroup = "";
 
-        menuItems.forEach(item => {
+        menuItems.forEach((item) => {
             // Render tiêu đề nhóm (VD: Chung, Quản lý)
             if (item.group !== currentGroup) {
                 html += `<p class="px-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 mt-4">${item.group}</p>`;
@@ -52,11 +101,13 @@ export function renderAdminLayout(activePage) {
 
             // Kiểm tra active state
             const isActive = item.id === activePage;
-            const activeClass = isActive 
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' 
-                : 'text-slate-400 hover:text-white hover:bg-slate-800';
-            
-            const iconColor = isActive ? 'text-white' : 'text-slate-500 group-hover:text-blue-400';
+            const activeClass = isActive
+                ? "bg-blue-600 text-white shadow-lg shadow-blue-900/50"
+                : "text-slate-400 hover:text-white hover:bg-slate-800";
+
+            const iconColor = isActive
+                ? "text-white"
+                : "text-slate-500 group-hover:text-blue-400";
 
             html += `
             <a href="${item.link}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all group ${activeClass}">
@@ -125,7 +176,10 @@ export function renderAdminLayout(activePage) {
                     <div class="hidden sm:flex items-center gap-2 text-sm text-slate-500">
                         <span>Admin</span>
                         <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                        <span class="font-semibold text-blue-600 capitalize">${menuItems.find(i => i.id === activePage)?.label || 'Page'}</span>
+                        <span class="font-semibold text-blue-600 capitalize">${
+                            menuItems.find((i) => i.id === activePage)?.label ||
+                            "Page"
+                        }</span>
                     </div>
                 </div>
 
@@ -178,50 +232,58 @@ export function renderAdminLayout(activePage) {
     // === 3. XỬ LÝ SỰ KIỆN ===
 
     // Logout
-    document.getElementById('btn-logout')?.addEventListener('click', () => {
-        if(confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+    document.getElementById("btn-logout")?.addEventListener("click", () => {
+        if (confirm("Bạn có chắc chắn muốn đăng xuất?")) {
             removeToken();
-            window.location.href = 'login.html';
+            window.location.href = "login.html";
         }
     });
 
     // Đổi mật khẩu
-    const pwModal = document.getElementById('admin-pw-modal');
-    const pwForm = document.getElementById('admin-pw-form');
-    
-    document.getElementById('btn-open-change-pw')?.addEventListener('click', () => {
-        pwForm.reset();
-        pwModal.classList.remove('hidden');
-    });
+    const pwModal = document.getElementById("admin-pw-modal");
+    const pwForm = document.getElementById("admin-pw-form");
 
-    pwForm.addEventListener('submit', async (e) => {
+    document
+        .getElementById("btn-open-change-pw")
+        ?.addEventListener("click", () => {
+            pwForm.reset();
+            pwModal.classList.remove("hidden");
+        });
+
+    pwForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const oldPass = pwForm.querySelector('input[name="old_password"]').value;
-        const newPass = pwForm.querySelector('input[name="new_password"]').value;
-        const confirmPass = pwForm.querySelector('input[name="confirm_password"]').value;
+        const oldPass = pwForm.querySelector(
+            'input[name="old_password"]'
+        ).value;
+        const newPass = pwForm.querySelector(
+            'input[name="new_password"]'
+        ).value;
+        const confirmPass = pwForm.querySelector(
+            'input[name="confirm_password"]'
+        ).value;
 
         if (newPass !== confirmPass) {
-            showToast('Mật khẩu xác nhận không khớp', 'error');
+            showToast("Mật khẩu xác nhận không khớp", "error");
             return;
         }
 
         const btn = pwForm.querySelector('button[type="submit"]');
         const originalText = btn.textContent;
         btn.disabled = true;
-        btn.textContent = 'Đang xử lý...';
+        btn.textContent = "Đang xử lý...";
 
         try {
-            await api.changePassword({ 
+            await api.changePassword({
                 old_password: oldPass,
                 new_password: newPass,
-                confirm_password: confirmPass
+                confirm_password: confirmPass,
             });
-            
-            alert('Đổi mật khẩu thành công! Vui lòng đăng nhập lại.');
+
+            alert("Đổi mật khẩu thành công! Vui lòng đăng nhập lại.");
             removeToken();
-            window.location.href = 'login.html';
+            window.location.href = "login.html";
         } catch (err) {
-            showToast(err.message || 'Lỗi đổi mật khẩu', 'error');
+            showToast(err.message || "Lỗi đổi mật khẩu", "error");
             btn.disabled = false;
             btn.textContent = originalText;
         }
