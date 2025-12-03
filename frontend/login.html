@@ -31,18 +31,29 @@
           
           <div>
             <label class="block text-sm font-medium mb-2">Mật khẩu</label>
-            <input 
-              type="password" 
-              name="password"
-              placeholder="••••••••" 
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-              required
-            />
+            <div class="relative">
+              <input 
+                id="password-input"
+                type="password" 
+                name="password"
+                placeholder="••••••••" 
+                class="w-full px-4 py-2 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                required
+              />
+              <button
+                type="button"
+                id="toggle-password"
+                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-700 text-sm select-none"
+                aria-label="Hiện/ẩn mật khẩu"
+              >
+                <span id="toggle-password-text" class="text-xs font-medium">Hiện</span>
+              </button>
+            </div>
           </div>
           
           <div class="flex items-center justify-between text-sm">
             <label class="flex items-center gap-2">
-              <input type="checkbox" class="w-4 h-4"/>
+              <input id="remember-me" type="checkbox" class="w-4 h-4"/>
               <span>Nhớ tôi</span>
             </label>
             <a class="text-blue-600 hover:underline" href="forgot-password.html">Quên mật khẩu?</a>
@@ -66,7 +77,54 @@
   <div id="site-footer"></div>
 
   <script type="module" src="assets/js/main.js"></script>
-  
   <script type="module" src="assets/js/auth.js"></script>
+
+  <!-- Script toggle mật khẩu -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Toggle mật khẩu
+      const passwordInput = document.getElementById('password-input');
+      const toggleBtn = document.getElementById('toggle-password');
+      const toggleText = document.getElementById('toggle-password-text');
+
+      if (passwordInput && toggleBtn && toggleText) {
+        toggleBtn.addEventListener('click', function () {
+          const isHidden = passwordInput.type === 'password';
+          passwordInput.type = isHidden ? 'text' : 'password';
+          toggleText.textContent = isHidden ? 'Ẩn' : 'Hiện';
+        });
+      }
+
+      // Nhớ email
+      const loginForm = document.getElementById('login-form');
+      const emailInput = loginForm ? loginForm.querySelector('input[name="email"]') : null;
+      const rememberCheckbox = document.getElementById('remember-me');
+
+      // Key riêng cho project TechHub
+      const STORAGE_KEY = 'techhub_login_email';
+
+      // 1. Khi load trang, nếu localStorage có email thì fill vào
+      if (emailInput) {
+        const savedEmail = localStorage.getItem(STORAGE_KEY);
+        if (savedEmail) {
+          emailInput.value = savedEmail;
+          if (rememberCheckbox) rememberCheckbox.checked = true;
+        }
+      }
+
+      // 2. Khi submit form, lưu / xóa email tùy theo checkbox
+      if (loginForm && emailInput && rememberCheckbox) {
+        loginForm.addEventListener('submit', function () {
+          const email = emailInput.value.trim();
+          if (rememberCheckbox.checked && email) {
+            localStorage.setItem(STORAGE_KEY, email);
+          } else {
+            localStorage.removeItem(STORAGE_KEY);
+          }
+          // Không preventDefault ở đây để auth.js vẫn xử lý login bình thường
+        });
+      }
+    });
+  </script>
 </body>
 </html>

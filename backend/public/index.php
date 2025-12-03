@@ -6,7 +6,7 @@
 
 // Cho phép Frontend (localhost:3400) gọi API
 // Nếu bạn muốn cho phép tất cả, hãy đổi thành "*"
-header("Access-Control-Allow-Origin: http://localhost:3400");
+header("Access-Control-Allow-Origin: *");
 // header("Access-Control-Allow-Origin: *"); // Dùng dòng này nếu muốn mở public hoàn toàn
 
 // Cho phép các method HTTP

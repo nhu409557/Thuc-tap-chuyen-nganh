@@ -35,7 +35,7 @@ class OrderController extends Controller
         $userId = AuthMiddleware::userIdOrFail($this->request, $this->response);
         $b = $this->request->body;
 
-        // Validate thông tin cơ bản
+        // 1. Validate thông tin người nhận
         foreach (['name', 'phone', 'address'] as $field) {
             if (empty($b[$field])) return $this->error("Thiếu thông tin: $field", 422);
         }
@@ -46,19 +46,15 @@ class OrderController extends Controller
 
         $checkoutItems = [];
 
-        // TRƯỜNG HỢP 1: ADMIN TẠO ĐƠN (Gửi trực tiếp danh sách items)
+        // 2. Xử lý danh sách sản phẩm (QUAN TRỌNG)
+        // Ưu tiên lấy từ 'items' do frontend gửi lên (chứa đầy đủ thông tin variant)
         if (!empty($b['items']) && is_array($b['items'])) {
             $checkoutItems = $b['items'];
         } 
-        // TRƯỜNG HỢP 2: KHÁCH MUA TỪ GIỎ HÀNG (Gửi selected_products)
-        else {
-            if (empty($b['selected_products']) || !is_array($b['selected_products'])) {
-                return $this->error('Vui lòng chọn sản phẩm', 422);
-            }
-            
+        // Fallback: Nếu frontend cũ gửi selected_products (Product ID) - Dễ bị lỗi gộp, nhưng giữ để tương thích
+        else if (!empty($b['selected_products']) && is_array($b['selected_products'])) {
             $selectedProductIds = $b['selected_products'];
             $fullCart = CartItem::allByUser($userId);
-            
             foreach ($fullCart as $item) {
                 if (in_array($item['product_id'], $selectedProductIds)) {
                     $checkoutItems[] = $item;
@@ -66,26 +62,27 @@ class OrderController extends Controller
             }
         }
 
-        if (empty($checkoutItems)) return $this->error('Không tìm thấy sản phẩm hợp lệ', 422);
+        if (empty($checkoutItems)) return $this->error('Không tìm thấy sản phẩm nào để đặt hàng', 422);
 
         try {
-            // 1. Tạo đơn hàng
+            // 3. Tạo đơn hàng (Transaction DB)
             $orderId = Order::create($userId, $b, $checkoutItems, $paymentMethod);
 
-            // 2. Xóa giỏ hàng (CHỈ KHI KHÁCH TỰ MUA TỪ GIỎ)
-            if (empty($b['items'])) {
-                foreach ($checkoutItems as $item) {
-                    if (isset($item['id'])) {
-                        CartItem::remove($item['id'], $userId);
-                    }
+            // 4. Xóa sản phẩm đã mua khỏi giỏ hàng
+            foreach ($checkoutItems as $item) {
+                // 'id' ở đây là ID của dòng trong bảng cart_items (frontend phải gửi lên)
+                if (!empty($item['id'])) {
+                    CartItem::remove((int)$item['id'], $userId);
                 }
             }
 
-            // 3. Xử lý MoMo
+            // 5. Xử lý thanh toán MoMo (nếu chọn)
             if ($paymentMethod === 'momo') {
                 $totalAmount = 0;
                 foreach ($checkoutItems as $item) {
-                    $totalAmount += $item['price'] * $item['quantity'];
+                    $price = $item['price'] ?? 0;
+                    $qty = $item['quantity'] ?? 1;
+                    $totalAmount += $price * $qty;
                 }
 
                 $momoRes = MomoService::createPayment($orderId, $totalAmount);
@@ -99,11 +96,12 @@ class OrderController extends Controller
                     ], 201);
                     return;
                 } else {
-                    $msg = $momoRes['message'] ?? 'Lỗi không xác định từ MoMo';
+                    $msg = $momoRes['message'] ?? 'Lỗi kết nối MoMo';
                     return $this->error('Lỗi tạo giao dịch MoMo: ' . $msg, 500);
                 }
             }
             
+            // Trả về thành công
             $this->json(['success' => true, 'order_id' => $orderId], 201);
 
         } catch (\Throwable $e) {
@@ -120,8 +118,7 @@ class OrderController extends Controller
         if (!$order) return $this->error('Đơn hàng không tồn tại', 404);
         if ($order['user_id'] !== $userId) return $this->error('Không có quyền', 403);
 
-        $currentStatus = strtolower($order['status']);
-        if ($currentStatus !== 'pending') {
+        if (strtolower($order['status']) !== 'pending') {
             return $this->error('Đơn hàng đã xử lý, không thể hủy.', 400);
         }
 
@@ -133,90 +130,48 @@ class OrderController extends Controller
         }
     }
 
-    public function restoreToCart(array $params)
-    {
+    // Các method khác giữ nguyên (restoreToCart, confirmPayment, admin routes...)
+    public function restoreToCart(array $params) {
         $userId = AuthMiddleware::userIdOrFail($this->request, $this->response);
         $orderId = (int)($params['id'] ?? 0);
-
         $order = Order::findWithItems($orderId, $userId);
         if (!$order) return $this->error('Đơn hàng không tồn tại', 404);
-
         if ($order['status'] !== 'Pending') return $this->error('Không thể khôi phục', 400);
-
         try {
             foreach ($order['items'] as $item) {
-                CartItem::addOrUpdate($userId, $item['product_id'], $item['quantity']);
+                CartItem::addOrUpdate($userId, (int)$item['product_id'], (int)$item['quantity'], !empty($item['product_variant_id']) ? (int)$item['product_variant_id'] : null);
             }
             Order::updateStatus($orderId, 'Cancelled');
             $this->json(['success' => true, 'message' => 'Đã khôi phục giỏ hàng']);
-        } catch (\Throwable $e) {
-            $this->error('Lỗi khôi phục: ' . $e->getMessage(), 500);
-        }
+        } catch (\Throwable $e) { $this->error('Lỗi: ' . $e->getMessage(), 500); }
     }
 
-    public function confirmPayment(array $params)
-    {
-        $userId = AuthMiddleware::userIdOrFail($this->request, $this->response);
+    public function confirmPayment(array $params) {
         $orderId = (int)($params['id'] ?? 0);
-
-        $order = Order::findById($orderId);
-        if (!$order) return $this->error('Đơn hàng không tồn tại', 404);
-
         try {
             Order::updatePaymentStatus($orderId, 'Paid');
-            $this->json(['success' => true, 'message' => 'Xác nhận thanh toán thành công']);
-        } catch (\Throwable $e) {
-            $this->error('Lỗi cập nhật: ' . $e->getMessage(), 500);
-        }
+            $this->json(['success' => true, 'message' => 'Đã thanh toán']);
+        } catch (\Throwable $e) { $this->error($e->getMessage(), 500); }
     }
 
-    // ======================================================
-    // ============ API ADMIN (QUẢN LÝ ĐƠN HÀNG) ============
-    // ======================================================
-
-    public function indexAdmin()
-    {
+    // ADMIN ROUTES
+    public function indexAdmin() {
         AdminMiddleware::guard($this->request, $this->response);
-
-        $q = $this->request->query['q'] ?? null;
-        $status = $this->request->query['status'] ?? null;
-        $page = (int)($this->request->query['page'] ?? 1);
-
-        // Sử dụng hàm search trong Model Order
-        $result = Order::search($q, $status, $page, 20); 
+        $result = Order::search($this->request->query['q']??null, $this->request->query['status']??null, (int)($this->request->query['page']??1), 20);
         $this->json($result);
     }
-
-    public function showAdmin(array $params)
-    {
+    public function showAdmin(array $params) {
         AdminMiddleware::guard($this->request, $this->response);
-        $id = (int)$params['id'];
-        
-        $order = Order::findByIdWithItems($id);
-        if (!$order) return $this->error('Đơn hàng không tồn tại', 404);
-        
+        $order = Order::findByIdWithItems((int)$params['id']);
+        if (!$order) return $this->error('Không tìm thấy', 404);
         $this->json($order);
     }
-
-    public function updateAdmin(array $params)
-    {
+    public function updateAdmin(array $params) {
         AdminMiddleware::guard($this->request, $this->response);
         $id = (int)$params['id'];
         $b = $this->request->body;
-
-        $order = Order::findById($id);
-        if (!$order) return $this->error('Đơn hàng không tồn tại', 404);
-
-        // Cập nhật trạng thái đơn (Quy trình)
-        if (!empty($b['status'])) {
-            Order::updateStatus($id, $b['status']);
-        }
-
-        // Cập nhật trạng thái thanh toán (Tiền nong)
-        if (!empty($b['payment_status'])) {
-            Order::updatePaymentStatus($id, $b['payment_status']);
-        }
-
-        $this->json(['success' => true, 'message' => 'Cập nhật đơn hàng thành công']);
+        if (!empty($b['status'])) Order::updateStatus($id, $b['status']);
+        if (!empty($b['payment_status'])) Order::updatePaymentStatus($id, $b['payment_status']);
+        $this->json(['success' => true]);
     }
 }

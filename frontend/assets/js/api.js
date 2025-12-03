@@ -4,6 +4,7 @@ import { getToken } from './utils/storage.js';
 // 👇 Import cấu hình chung
 import { API_BASE } from './utils/common.js';
 
+// Hàm request nội bộ (giữ nguyên logic)
 async function request(path, { method = 'GET', body, auth = false } = {}) {
   const headers = {};
 
@@ -63,6 +64,9 @@ async function request(path, { method = 'GET', body, auth = false } = {}) {
 }
 
 export const api = {
+  // 👇 QUAN TRỌNG: Export hàm request ra để bên ngoài dùng được
+  request, 
+
   // ============= PRODUCTS (PUBLIC) =============
   getProducts(params = {}) {
     const search = new URLSearchParams(params).toString();
@@ -138,9 +142,20 @@ export const api = {
   getCart() {
     return request('/cart', { auth: true });
   },
-  addToCart(productId, quantity) {
-    return request('/cart', { method: 'POST', auth: true, body: { product_id: productId, quantity } });
+
+  // 👇 ĐÃ CẬP NHẬT
+  addToCart(productId, quantity, color = null) {
+    return request('/cart', {
+      method: 'POST',
+      auth: true,
+      body: {
+        product_id: productId,
+        quantity,
+        selected_color: color
+      }
+    });
   },
+
   updateCartItem(itemId, quantity) {
     return request(`/cart/${itemId}`, { method: 'PUT', auth: true, body: { quantity } });
   },
@@ -212,25 +227,39 @@ export const api = {
   updateOrderAdmin(id, data) {
     return request(`/admin/orders/${id}`, { method: 'PUT', auth: true, body: data });
   },
+
   // ============= CATEGORIES =============
   getCategories() {
     return request('/categories');
   },
-  // 👇 MỚI: Lấy chi tiết 1 danh mục
   getCategory(id) {
     return request(`/categories/${id}`); 
   },
   createCategory(data) {
     return request('/categories', { method: 'POST', auth: true, body: data });
   },
-  // 👇 QUAN TRỌNG: Hàm update phải có
   updateCategory(id, data) {
     return request(`/categories/${id}`, { method: 'PUT', auth: true, body: data });
   },
   deleteCategory(id) {
     return request(`/categories/${id}`, { method: 'DELETE', auth: true });
   },
+
   changePassword(data) {
     return request('/auth/change-password', { method: 'POST', auth: true, body: data });
+  },
+
+  // ============= PRODUCT GROUPS (QUẢN LÝ NHÓM) =============
+  getProductGroups() {
+    return request('/product-groups', { auth: true });
+  },
+  createProductGroup(data) {
+    return request('/product-groups', { method: 'POST', auth: true, body: data });
+  },
+  updateProductGroup(id, data) {
+    return request(`/product-groups/${id}`, { method: 'PUT', auth: true, body: data });
+  },
+  deleteProductGroup(id) {
+    return request(`/product-groups/${id}`, { method: 'DELETE', auth: true });
   },
 };

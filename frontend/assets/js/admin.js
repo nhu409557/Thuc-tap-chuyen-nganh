@@ -2,27 +2,47 @@
 
 import { getToken, removeToken } from './utils/storage.js';
 import { api } from './api.js';
-// Import formatPrice từ common để tái sử dụng, showToast để hiển thị thông báo
 import { formatPrice } from './utils/common.js';
 import { showToast } from './ui/toast.js';
 
 // Export lại để các file HTML admin (như products.html) có thể import và sử dụng
 export { formatPrice };
 
-// === 1. KIỂM TRA ĐĂNG NHẬP ===
-function checkAuth() {
+// === 1. KIỂM TRA ĐĂNG NHẬP + QUYỀN ADMIN ===
+async function checkAuth() {
     const token = getToken();
     if (!token) {
+        // Chưa đăng nhập
         window.location.href = 'login.html';
-        return false;
+        return null;
     }
-    return true;
+
+    try {
+        const user = await api.me();
+
+        // Nếu không phải admin -> Đá về trang chủ
+        if (!user || user.role !== 'admin') {
+            alert('CẢNH BÁO: Bạn không có quyền truy cập trang quản trị!');
+            window.location.href = '../index.html';
+            return null;
+        }
+
+        // Có thể dùng user để hiển thị tên admin sau này nếu muốn
+        return user;
+    } catch (err) {
+        // Lỗi token / lỗi mạng / token hết hạn
+        console.error('Lỗi xác thực admin:', err);
+        removeToken();
+        window.location.href = 'login.html';
+        return null;
+    }
 }
 
 // === 2. HÀM RENDER LAYOUT CHÍNH (SIDEBAR + HEADER) ===
-export function renderAdminLayout(activePage) {
-    // Nếu chưa đăng nhập, đá về login ngay
-    if (!checkAuth()) return;
+export async function renderAdminLayout(activePage) {
+    // Check đăng nhập + quyền admin
+    const user = await checkAuth();
+    if (!user) return; // đã redirect trong checkAuth rồi
 
     const body = document.body;
     // Lấy nội dung riêng của từng trang (đang nằm trong body) để chèn vào khung layout
@@ -33,7 +53,7 @@ export function renderAdminLayout(activePage) {
         { id: 'dashboard', label: 'Dashboard', icon: 'fa-chart-pie', link: 'index.html', group: 'Chung' },
         
         { id: 'products', label: 'Sản phẩm', icon: 'fa-box-open', link: 'products.html', group: 'Quản lý' },
-        { id: 'categories', label: 'Danh mục', icon: 'fa-list', link: 'categories.html', group: 'Quản lý' }, // Mục mới
+        { id: 'categories', label: 'Danh mục', icon: 'fa-list', link: 'categories.html', group: 'Quản lý' },
         { id: 'brands', label: 'Hãng sản xuất', icon: 'fa-copyright', link: 'brands.html', group: 'Quản lý' },
         { id: 'orders', label: 'Đơn hàng', icon: 'fa-cart-shopping', link: 'orders.html', group: 'Quản lý' },
     ];
@@ -179,7 +199,7 @@ export function renderAdminLayout(activePage) {
 
     // Logout
     document.getElementById('btn-logout')?.addEventListener('click', () => {
-        if(confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+        if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
             removeToken();
             window.location.href = 'login.html';
         }

@@ -2,16 +2,19 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chi tiết Sản phẩm - Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        #toast-root { z-index: 9999 !important; position: fixed; top: 20px; right: 20px; }
+        .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 600; }
+        .tab-inactive { color: #6b7280; border-bottom: 2px solid transparent; }
+        .animate-fade-in {
+            animation: fade-in 0.2s ease-out;
+        }
+        @keyframes fade-in {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
     </style>
 </head>
 <body class="bg-gray-100 font-sans antialiased">
@@ -26,469 +29,622 @@
                 <p class="text-xs text-gray-500" id="page-id">ID: ...</p>
             </div>
         </div>
-        <div class="flex gap-3">
-            <button onclick="saveAllChanges()" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/30 transition flex items-center gap-2">
-                <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
+        <div class="flex gap-2">
+            <button onclick="saveAllChanges()" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-bold hover:bg-blue-700 shadow flex items-center gap-2">
+                <i class="fa-solid fa-floppy-disk"></i> Lưu Chung
             </button>
         </div>
     </div>
 
-    <main class="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        <div class="space-y-8">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">Thông tin chung</h3>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tên sản phẩm <span class="text-red-500">*</span></label>
-                        <input type="text" id="p-title" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-medium">
-                    </div>
-                    
-                    <div class="grid grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Giá bán (VNĐ)</label>
-                            <input type="number" id="p-price" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-bold text-blue-600">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Giá gốc</label>
-                            <input type="number" id="p-compare" class="w-full px-3 py-2 border rounded-lg outline-none text-gray-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tồn kho</label>
-                            <input type="number" id="p-stock" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-800" placeholder="0">
-                        </div>
-                    </div>
+    <div class="max-w-7xl mx-auto px-6 mt-6">
+        <div class="flex border-b border-gray-300">
+            <button onclick="switchTab('general')" id="tab-btn-general" class="tab-active px-6 py-3 text-sm font-medium transition-colors">
+                Thông tin chung
+            </button>
+            <button onclick="switchTab('specs')" id="tab-btn-specs" class="tab-inactive px-6 py-3 text-sm font-medium transition-colors">
+                Thông số kỹ thuật
+            </button>
+            <button onclick="switchTab('variants')" id="tab-btn-variants" class="tab-inactive px-6 py-3 text-sm font-medium transition-colors">
+                <i class="fa-solid fa-layer-group mr-2"></i>Biến thể (Nâng cao)
+            </button>
+        </div>
+    </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+    <main class="max-w-7xl mx-auto p-6">
+        <div id="content-general" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">Thông tin sản phẩm</h3>
+                    <div class="grid gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Danh mục</label>
-                            <select id="p-category" class="w-full px-3 py-2 border rounded-lg outline-none bg-white cursor-pointer hover:bg-gray-50 transition">
-                                <option value="">-- Đang tải... --</option>
-                            </select>
+                            <label class="text-xs font-bold text-gray-500 uppercase">Tên sản phẩm</label>
+                            <input type="text" id="p-title" class="w-full px-3 py-2 border rounded font-medium">
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Hãng</label>
-                            <select id="p-brand" class="w-full px-3 py-2 border rounded-lg outline-none bg-white cursor-pointer">
-                                <option value="">-- Chọn hãng --</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Ảnh đại diện</label>
-                        <div class="flex gap-4 items-center">
-                            <label class="relative group w-24 h-24 flex-shrink-0 cursor-pointer border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition flex items-center justify-center overflow-hidden bg-white">
-                                <img id="preview-main-img" src="https://placehold.co/150?text=Upload" class="w-full h-full object-contain p-1">
-                                <div class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                                    <i class="fa-solid fa-camera text-white text-xl"></i>
-                                </div>
-                                <input type="file" id="main-image-upload" class="hidden" accept="image/*">
-                            </label>
-                            <div class="flex-1 space-y-2">
-                                <p class="text-xs text-gray-500">Click ảnh để tải lên.<br>JPG, PNG. Max 2MB.</p>
-                                <div class="relative">
-                                    <input type="text" id="p-image" class="w-full pl-7 pr-3 py-1.5 text-xs border border-gray-200 rounded bg-gray-50 text-gray-500 outline-none" readonly placeholder="Link ảnh...">
-                                    <i class="fa-solid fa-link absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                                </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 uppercase">Giá niêm yết (Gốc)</label>
+                                <input type="number" id="p-price" class="w-full px-3 py-2 border rounded">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 uppercase">Danh mục</label>
+                                <select id="p-category" class="w-full px-3 py-2 border rounded bg-white">
+                                    <option value="">-- Chọn --</option>
+                                </select>
                             </div>
                         </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Mô tả ngắn</label>
-                        <textarea id="p-desc" rows="4" class="w-full px-3 py-2 border rounded-lg outline-none text-sm"></textarea>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 uppercase">Mô tả</label>
+                            <textarea id="p-desc" rows="4" class="w-full px-3 py-2 border rounded text-sm"></textarea>
+                        </div>
                     </div>
                 </div>
             </div>
+            <div class="space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <label class="text-xs font-bold text-gray-500 uppercase mb-2 block">Ảnh đại diện chung</label>
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50 relative">
+                        <img id="preview-main-img" src="https://placehold.co/150" class="h-32 mx-auto object-contain">
+                        <input type="file" id="main-image-upload" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*">
+                    </div>
+                    <input type="hidden" id="p-image">
+                </div>
+            </div>
+        </div>
 
+        <div id="content-specs" class="hidden">
             <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                <div class="flex justify-between items-center mb-4 border-b pb-2">
-                    <h3 class="font-bold text-gray-800">Thư viện ảnh phụ</h3>
-                    <label class="cursor-pointer bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-2">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> Thêm ảnh
-                        <input type="file" id="gallery-upload-input" class="hidden" accept="image/*">
-                    </label>
-                </div>
-                <div id="gallery-grid" class="grid grid-cols-3 gap-3"></div>
-                <p class="text-xs text-gray-400 mt-3 italic text-center">Ảnh được lưu tại server.</p>
+                <div id="specs-container"></div>
             </div>
         </div>
 
-        <div class="lg:col-span-2">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 min-h-screen">
-                <div class="flex justify-between items-center mb-6 border-b pb-4">
-                    <h3 class="font-bold text-gray-800 text-lg">Thông số kỹ thuật</h3>
-                    <span class="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-bold uppercase tracking-wide" id="specs-type-badge">...</span>
-                </div>
+        <div id="content-variants" class="hidden">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
                 
-                <div id="specs-container" class="space-y-6 animate-fade-in">
-                    <p class="text-center text-gray-400 py-10">Đang tải biểu mẫu cấu hình...</p>
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                    <h4 class="text-sm font-bold text-blue-800 mb-2 uppercase">1. Cấu hình thuộc tính</h4>
+                    <p class="text-xs text-gray-600 mb-3">
+                        Chọn thuộc tính phân loại. Hệ thống sẽ tự động nhóm các biến thể theo <strong>Màu sắc</strong> để quản lý ảnh.
+                    </p>
+                    <div id="variant-config-checkboxes" class="flex flex-wrap gap-4"></div>
                 </div>
+
+                <div class="flex justify-between items-center">
+                    <h4 class="text-sm font-bold text-gray-800 uppercase">2. Chi tiết biến thể & Hình ảnh</h4>
+                    <div class="flex gap-2">
+                        <button onclick="addVariantGroup()" class="bg-white text-blue-600 border border-blue-200 px-3 py-1.5 rounded text-sm font-bold hover:bg-blue-50">
+                            <i class="fa-solid fa-plus-circle"></i> Thêm Nhóm Màu
+                        </button>
+                        <button onclick="saveVariants()" class="bg-blue-600 text-white px-4 py-1.5 rounded text-sm font-bold shadow hover:bg-blue-700">
+                            <i class="fa-solid fa-save"></i> Lưu Thay Đổi
+                        </button>
+                    </div>
+                </div>
+
+                <div id="variant-groups-container" class="space-y-6"></div>
             </div>
         </div>
-
     </main>
 
-    <div id="toast-root" class="fixed top-5 right-5 z-[9999] flex flex-col gap-3"></div>
+    <div id="toast-root"></div>
 
     <script type="module">
-        const BASE_PATH = '../'; 
-
-        import { renderAdminLayout, formatPrice } from '../assets/js/admin.js'; 
+        import { renderAdminLayout } from '../assets/js/admin.js';
         import { api } from '../assets/js/api.js';
         import { getQueryParam } from '../assets/js/utils/url.js';
         import { showToast } from '../assets/js/ui/toast.js';
 
-        // Render Sidebar
         renderAdminLayout('products');
 
         const productId = getQueryParam('id');
-        
-        // Biến toàn cục lưu thông tin
-        let currentSpecsData = {}; 
-        let allCategories = []; // Lưu danh sách danh mục để tra cứu template
+        let currentSpecsData = {};
+        let allCategories = [];
+        let activeVariantKeys = [];   // [{ key, label }]
+        let allVariantsData = [];     // toàn bộ variants từ API
 
-        // ============================================================
-        // 1. KHỞI TẠO TRANG
-        // ============================================================
+        // ----------------------------------------------------
+        // TAB SWITCH
+        // ----------------------------------------------------
+        window.switchTab = (tab) => {
+            ['general', 'specs', 'variants'].forEach(t => {
+                document.getElementById(`content-${t}`).classList.toggle('hidden', t !== tab);
+                document.getElementById(`tab-btn-${t}`).className =
+                    t === tab
+                        ? 'tab-active px-6 py-3 text-sm font-medium transition-colors'
+                        : 'tab-inactive px-6 py-3 text-sm font-medium transition-colors hover:bg-gray-50';
+            });
+        };
+
+        // ----------------------------------------------------
+        // INIT PAGE
+        // ----------------------------------------------------
         async function initPage() {
-            if(!productId) { 
-                alert('Thiếu ID sản phẩm'); window.location.href = 'products.html'; return; 
-            }
-
+            if (!productId) return;
             try {
-                // A. Load dữ liệu sản phẩm
                 const p = await api.getProduct(productId);
-                
-                // B. Fill thông tin cơ bản
+
+                // Fill basic info
                 document.getElementById('page-title').textContent = p.title;
                 document.getElementById('page-id').textContent = 'ID: ' + p.id;
                 document.getElementById('p-title').value = p.title || '';
                 document.getElementById('p-price').value = p.price || 0;
-                document.getElementById('p-compare').value = p.compare_at || '';
                 document.getElementById('p-desc').value = p.description || '';
-                document.getElementById('p-stock').value = p.stock_quantity || 0;
-
-                // C. Fill ảnh chính
                 document.getElementById('p-image').value = p.image || '';
-                let displayImg = p.image;
-                if (displayImg && !displayImg.startsWith('http') && !displayImg.startsWith('/')) {
-                    displayImg = BASE_PATH + '/' + displayImg;
-                }
-                document.getElementById('preview-main-img').src = displayImg || 'https://placehold.co/150?text=Upload';
+                document.getElementById('preview-main-img').src = p.image ? ('../' + p.image) : 'https://placehold.co/150';
 
-                // D. Parse Specs Data hiện có của sản phẩm
-                try { currentSpecsData = typeof p.specs === 'string' ? JSON.parse(p.specs) : (p.specs || {}); } catch(e) { currentSpecsData = {}; }
-
-                // E. Load Danh mục & Hãng & Vẽ Form Specs
-                // Bước 1: Tải danh sách Categories (để lấy Template)
                 await loadCategoriesAndInit(p.category, p.brand);
 
-                // F. Render Gallery
-                const gallery = (p.gallery && p.gallery.length > 0) ? p.gallery : (p.image ? [p.image] : []);
-                renderGallery(gallery);
+                // Specs
+                try { currentSpecsData = JSON.parse(p.specs || '{}'); } catch (e) {}
+                const catObj = allCategories.find(c => c.slug === p.category);
+                let tmpl = [];
+                try { tmpl = JSON.parse(catObj?.specs_template || '[]'); } catch (e) {}
+                renderSpecsForm(tmpl, currentSpecsData);
 
-            } catch (e) { 
-                console.error(e); 
-                showToast('Lỗi tải dữ liệu: ' + e.message, 'error'); 
-            }
-        }
-
-        // ============================================================
-        // 2. LOGIC LOAD DANH MỤC & XỬ LÝ LOGIC ĐỘNG
-        // ============================================================
-        async function loadCategoriesAndInit(selectedCategorySlug, selectedBrandName) {
-            const catSelect = document.getElementById('p-category');
-            catSelect.innerHTML = '<option value="">Đang tải...</option>';
-            
-            try {
-                const res = await api.getCategories();
-                allCategories = res.data || []; // Lưu vào biến toàn cục
-                
-                // Render dropdown
-                catSelect.innerHTML = '<option value="">-- Chọn loại --</option>';
-                allCategories.forEach(c => {
-                    const isSelected = c.slug === selectedCategorySlug ? 'selected' : '';
-                    catSelect.innerHTML += `<option value="${c.slug}" ${isSelected}>${c.name}</option>`;
-                });
-
-                // Sau khi có categories, gọi hàm vẽ form specs và load hãng
-                await handleCategoryChange(selectedCategorySlug, selectedBrandName);
+                // Variant config + variants (nhóm theo màu)
+                initVariantConfig(tmpl);
+                await loadVariants();
 
             } catch (e) {
-                console.error("Lỗi tải danh mục", e);
-                catSelect.innerHTML = '<option value="">Lỗi tải danh mục</option>';
+                console.error(e);
+                showToast('Lỗi tải sản phẩm', 'error');
             }
         }
 
-        // ============================================================
-        // 3. HÀM XỬ LÝ KHI ĐỔI DANH MỤC (LẤY TEMPLATE TỪ DB)
-        // ============================================================
-        async function handleCategoryChange(categorySlug, selectedBrand = '') {
-            // 1. Cập nhật Badge tên danh mục
-            const categoryObj = allCategories.find(c => c.slug === categorySlug);
-            const badge = document.getElementById('specs-type-badge');
-            if(categoryObj) {
-                badge.textContent = categoryObj.name;
-            } else {
-                badge.textContent = 'Chưa chọn';
+        // ----------------------------------------------------
+        // 1. CẤU HÌNH THUỘC TÍNH BIẾN THỂ
+        // ----------------------------------------------------
+        window.initVariantConfig = (template) => {
+            const container = document.getElementById('variant-config-checkboxes');
+            container.innerHTML = '';
+
+            // Luôn có Màu sắc
+            let html = `
+                <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 rounded border border-gray-200">
+                    <input type="checkbox" value="color" data-label="Màu sắc" class="variant-key-cb text-blue-600 rounded" checked disabled>
+                    <span class="text-sm font-medium">Màu sắc (Bắt buộc)</span>
+                </label>
+            `;
+
+            if (template) {
+                template.forEach(g => {
+                    if (g.fields) g.fields.forEach(f => {
+                        if (f.k === 'color') return;
+                        html += `
+                            <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 rounded border border-gray-200 hover:border-blue-300">
+                                <input type="checkbox" value="${f.k}" data-label="${f.l}" class="variant-key-cb text-blue-600 rounded">
+                                <span class="text-sm font-medium">${f.l}</span>
+                            </label>`;
+                    });
+                });
             }
 
-            // 2. Load Hãng tương ứng
-            await loadBrandsForDetail(categorySlug, selectedBrand);
+            container.innerHTML = html;
 
-            // 3. Render Form Specs từ Template
-            let template = [];
-            if (categoryObj && categoryObj.specs_template) {
-                try { 
-                    // Xử lý trường hợp JSON string hoặc Object
-                    template = typeof categoryObj.specs_template === 'string' 
-                        ? JSON.parse(categoryObj.specs_template) 
-                        : categoryObj.specs_template; 
-                } catch(e){
-                    console.error("Lỗi parse template", e);
+            document.querySelectorAll('.variant-key-cb').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    updateActiveKeys();
+                    renderVariantsByGroup();
+                });
+            });
+
+            updateActiveKeys();
+        };
+
+        function updateActiveKeys() {
+            activeVariantKeys = [];
+            document.querySelectorAll('.variant-key-cb:checked').forEach(cb => {
+                if (cb.value !== 'color') { // color xử lý riêng
+                    activeVariantKeys.push({ key: cb.value, label: cb.dataset.label });
+                }
+            });
+        }
+
+        // ----------------------------------------------------
+        // 2. LOAD VARIANTS TỪ API + NHÓM THEO MÀU
+        // ----------------------------------------------------
+        async function loadVariants() {
+            try {
+                const res = await api.request(`/products/${productId}/variants`);
+                allVariantsData = res.data || [];
+
+                // LOGIC MỚI: Reset checkbox chính xác theo dữ liệu
+                if (allVariantsData.length > 0) {
+                    const sample = allVariantsData[0]; // Lấy mẫu từ biến thể đầu tiên
+                    const attrs = sample.attributes || {};
+                    
+                    document.querySelectorAll('.variant-key-cb').forEach(cb => {
+                        // Bỏ qua nút màu sắc
+                        if (cb.value !== 'color') {
+                            const hasData = attrs.hasOwnProperty(cb.value) && attrs[cb.value] !== null && attrs[cb.value] !== "";
+                            cb.checked = hasData;
+                        }
+                    });
+                    updateActiveKeys();
+                }
+
+                renderVariantsByGroup();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        // ----------------------------------------------------
+        // HÀM MỚI: TẠO HTML CHO 1 NHÓM MÀU (Tách ra để tái sử dụng)
+        // ----------------------------------------------------
+        function buildGroupHTML(colorName, variants) {
+            const groupId = 'group-' + Math.random().toString(36).substr(2, 9);
+
+            // Tìm gallery ảnh của nhóm (gộp từ các variant cùng màu)
+            let groupImages = [];
+            variants.forEach(v => {
+                if (v.gallery && v.gallery.length) {
+                    v.gallery.forEach(img => {
+                        if (!groupImages.includes(img)) groupImages.push(img);
+                    });
+                } else if (v.image && !groupImages.includes(v.image)) {
+                    groupImages.push(v.image);
+                }
+            });
+
+            // Lấy ID đại diện để upload ảnh (dùng ID của variant đầu tiên nếu có)
+            const representativeId = (variants.length > 0 && variants[0].id) ? variants[0].id : '';
+
+            // Render các dòng (rows) bên trong bảng
+            const rowsHtml = variants.length > 0
+                ? variants.map(v => renderRowHtml(v)).join('')
+                : renderRowHtml({ attributes: {}, price: 0, stock_quantity: 0 });
+
+            return `
+            <div class="border border-gray-300 rounded-lg overflow-hidden bg-white group-block mb-6" data-color="${colorName}">
+                <div class="bg-gray-100 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <span class="font-bold text-gray-700">MÀU SẮC:</span>
+                        <input type="text" 
+                               class="color-input font-bold text-blue-700 bg-transparent border-b border-gray-400 focus:border-blue-600 outline-none w-40 px-1" 
+                               value="${colorName}" 
+                               placeholder="Nhập tên màu (VD: Đen)" 
+                               onchange="updateGroupColor(this)">
+                    </div>
+                    <button onclick="this.closest('.group-block').remove()" class="text-red-500 hover:text-red-700 text-sm font-medium">
+                        <i class="fa-solid fa-trash"></i> Xóa nhóm này
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
+                    <div class="p-4 lg:col-span-1 bg-gray-50/50">
+                        <h5 class="text-xs font-bold text-gray-500 uppercase mb-3">Bộ sưu tập ảnh</h5>
+                        
+                        <div class="grid grid-cols-4 gap-2 mb-3 group-gallery">
+                            ${groupImages.map(url => `
+                                <div class="relative aspect-square border rounded overflow-hidden group/img bg-white">
+                                    <img src="../${url}" class="w-full h-full object-cover">
+                                    <button onclick="removeVariantImage(this, '${url}')" 
+                                            class="absolute inset-0 bg-black/50 hidden group-hover/img:flex items-center justify-center text-white">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        ${representativeId 
+                            ? `<label class="cursor-pointer flex items-center justify-center gap-2 w-full py-2 border border-dashed border-blue-300 rounded-lg text-blue-600 hover:bg-blue-50 text-xs font-bold transition">
+                                    <i class="fa-solid fa-upload"></i> Tải ảnh lên
+                                    <input type="file" class="hidden" accept="image/*" multiple onchange="uploadGroupImages(this, ${representativeId})">
+                               </label>
+                               <p class="text-[10px] text-gray-400 mt-2 text-center">Ảnh áp dụng cho cả nhóm màu.</p>`
+                            : `<div class="text-[10px] text-orange-600 text-center bg-orange-50 p-2 rounded border border-orange-200">
+                                    <i class="fa-solid fa-info-circle"></i> Lưu biến thể trước để tải ảnh.
+                               </div>`
+                        }
+                    </div>
+
+                    <div class="p-4 lg:col-span-3">
+                        <div class="flex justify-between items-center mb-2">
+                            <h5 class="text-xs font-bold text-gray-500 uppercase">Danh sách phân loại</h5>
+                            <button onclick="addVariantRowToGroup(this)" class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200 font-bold transition">
+                                <i class="fa-solid fa-plus"></i> Thêm dòng
+                            </button>
+                        </div>
+                        
+                        <table class="w-full text-sm text-left border-collapse border border-gray-200">
+                            <thead class="bg-gray-100 text-gray-600 text-xs uppercase">
+                                <tr>
+                                    ${activeVariantKeys.map(k => `<th class="p-2 border">${k.label}</th>`).join('')}
+                                    <th class="p-2 border w-32 text-right">Giá <span class="text-red-500">*</span></th>
+                                    <th class="p-2 border w-24 text-center">Kho</th>
+                                    <th class="p-2 border w-24">SKU</th>
+                                    <th class="p-2 border w-10"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="group-tbody">
+                                ${rowsHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        // ----------------------------------------------------
+        // 3. RENDER UI NHÓM THEO MÀU (DÙNG HÀM BUILD)
+        // ----------------------------------------------------
+        window.renderVariantsByGroup = () => {
+            const container = document.getElementById('variant-groups-container');
+            container.innerHTML = '';
+
+            // Group variants theo Color
+            const groups = {};
+            allVariantsData.forEach(v => {
+                const color = (v.attributes?.color || v.color || 'Mặc định').trim();
+                if (!groups[color]) groups[color] = [];
+                groups[color].push(v);
+            });
+
+            // Không tạo nhóm rỗng; để user tự bấm "Thêm Nhóm Màu"
+            Object.entries(groups).forEach(([colorName, variants]) => {
+                const html = buildGroupHTML(colorName, variants);
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        };
+
+        function renderRowHtml(v) {
+            const attrs = v.attributes || {};
+            let cols = '';
+            activeVariantKeys.forEach(k => {
+                const val = attrs?.[k.key] || '';
+                cols += `
+                    <td class="p-2 border">
+                        <input type="text"
+                               class="w-full px-2 py-1 border rounded text-sm attr-input"
+                               data-key="${k.key}"
+                               value="${val}">
+                    </td>`;
+            });
+
+            return `
+                <tr data-id="${v.id || ''}" data-image="${v.image || ''}">
+                    ${cols}
+                    <td class="p-2 border">
+                        <input type="number" class="w-full px-2 py-1 border rounded text-right price-input" value="${v.price || 0}">
+                    </td>
+                    <td class="p-2 border">
+                        <input type="number" class="w-full px-2 py-1 border rounded text-center stock-input" value="${v.stock_quantity || 0}">
+                    </td>
+                    <td class="p-2 border">
+                        <input type="text" class="w-full px-2 py-1 border rounded text-xs sku-input" value="${v.sku || ''}">
+                    </td>
+                    <td class="p-2 border text-center">
+                        <button onclick="this.closest('tr').remove()" class="text-red-400 hover:text-red-600">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // ----------------------------------------------------
+        // 4. CÁC HÀM GLOBAL PHỤ TRỢ
+        // ----------------------------------------------------
+        // SỬA HÀM ADD VARIANT GROUP (CHỈ APPEND, KHÔNG RENDER LẠI TOÀN BỘ)
+        window.addVariantGroup = () => {
+            const container = document.getElementById('variant-groups-container');
+            
+            // Tạo tên màu tạm thời unique
+            const currentGroups = document.querySelectorAll('.group-block').length;
+            const newColorName = 'Màu mới ' + (currentGroups + 1);
+
+            // Tạo dữ liệu giả cho 1 dòng
+            const dummyVariants = [{
+                id: null,
+                attributes: {},
+                price: 0,
+                stock_quantity: 0,
+                image: '',
+                gallery: []
+            }];
+
+            const html = buildGroupHTML(newColorName, dummyVariants);
+            container.insertAdjacentHTML('beforeend', html);
+            container.lastElementChild.scrollIntoView({ behavior: 'smooth' });
+        };
+
+        window.addVariantRowToGroup = (btn) => {
+            const tbody = btn.closest('.p-4').querySelector('.group-tbody');
+            tbody.insertAdjacentHTML('beforeend', renderRowHtml({ attributes: {}, price: 0, stock_quantity: 0 }));
+        };
+
+        window.updateGroupColor = (input) => {
+            const newColor = input.value;
+            input.closest('.group-block').dataset.color = newColor;
+        };
+
+        window.uploadGroupImages = async (input, variantId) => {
+            if (!variantId) return showToast('Vui lòng lưu biến thể trước khi up ảnh!', 'warning');
+            const files = input.files;
+            const galleryDiv = input.parentElement.previousElementSibling;
+
+            for (let i = 0; i < files.length; i++) {
+                const formData = new FormData();
+                formData.append('image', files[i]);
+                formData.append('variant_id', variantId);
+
+                try {
+                    const res = await api.uploadProductImage(productId, formData);
+                    const html = `
+                        <div class="relative aspect-square border rounded overflow-hidden group/img bg-white animate-fade-in">
+                            <img src="../${res.url}" class="w-full h-full object-cover">
+                            <button onclick="removeVariantImage(this, '${res.url}')"
+                                    class="absolute inset-0 bg-black/50 hidden group-hover/img:flex items-center justify-center text-white">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>`;
+                    galleryDiv.insertAdjacentHTML('beforeend', html);
+                } catch (e) {
+                    console.error(e);
                 }
             }
+            showToast('Đã tải ảnh lên', 'success');
+            input.value = '';
+        };
 
-            renderSpecsForm(template, currentSpecsData);
+        // =========================================================
+        // ĐÃ SỬA: HÀM XÓA ẢNH GỌI API BACKEND
+        // =========================================================
+        window.removeVariantImage = async (btn, url) => {
+            if (!confirm('Bạn chắc chắn muốn xóa ảnh này?')) return;
+
+            try {
+                // Gọi API backend để xóa file và record trong DB
+                await api.request('/products/delete-image', {
+                    method: 'POST',
+                    auth: true,
+                    body: { image_url: url }
+                });
+
+                // Nếu thành công, mới xóa trên giao diện
+                btn.closest('div').remove();
+                showToast('Đã xóa ảnh thành công', 'success');
+            } catch (e) {
+                console.error(e);
+                showToast(e.message || 'Lỗi khi xóa ảnh', 'error');
+            }
+        };
+
+        // ----------------------------------------------------
+        // 5. LƯU BIẾN THỂ
+        // ----------------------------------------------------
+        window.saveVariants = async () => {
+            const payload = [];
+            const groups = document.querySelectorAll('.group-block');
+
+            groups.forEach(group => {
+                const color = group.querySelector('.color-input').value.trim();
+                const rows = group.querySelectorAll('tbody tr');
+
+                const firstImg = group.querySelector('.group-gallery img')
+                    ?.getAttribute('src')
+                    ?.replace('../', '') || '';
+
+                rows.forEach(tr => {
+                    const price = tr.querySelector('.price-input').value;
+                    if (!price) return;
+
+                    const attributes = { color: color };
+                    tr.querySelectorAll('.attr-input').forEach(i => {
+                        attributes[i.dataset.key] = i.value.trim();
+                    });
+
+                    payload.push({
+                        id: tr.dataset.id || null,
+                        attributes: attributes,
+                        price: price,
+                        stock_quantity: tr.querySelector('.stock-input').value,
+                        sku: tr.querySelector('.sku-input').value,
+                        image: firstImg
+                    });
+                });
+            });
+
+            if (payload.length === 0) return showToast('Không có dữ liệu', 'warning');
+
+            try {
+                await api.request(`/products/${productId}/variants/save`, {
+                    method: 'POST',
+                    auth: true,
+                    body: payload
+                });
+                showToast('Lưu thành công!', 'success');
+                await loadVariants();
+            } catch (e) {
+                console.error(e);
+                showToast(e.message || 'Lỗi lưu biến thể', 'error');
+            }
+        };
+
+        // ----------------------------------------------------
+        // 6. DANH MỤC, SPECS, LƯU THÔNG TIN CHUNG
+        // ----------------------------------------------------
+        async function loadCategoriesAndInit(slug, brand) {
+            const catSelect = document.getElementById('p-category');
+            const res = await api.getCategories();
+            allCategories = res.data || [];
+            catSelect.innerHTML = allCategories
+                .map(c => `<option value="${c.slug}" ${c.slug === slug ? 'selected' : ''}>${c.name}</option>`)
+                .join('');
         }
 
-        // Sự kiện onChange của dropdown
-        document.getElementById('p-category').addEventListener('change', function() {
-            // Khi user tự đổi danh mục, ta giữ lại data đã nhập (currentSpecsData) 
-            // nhưng form sẽ vẽ lại theo template mới.
-            handleCategoryChange(this.value);
-        });
-
-        // ============================================================
-        // 4. HÀM VẼ FORM SPECS (BUILDER RENDERER)
-        // ============================================================
         function renderSpecsForm(template, data) {
             const container = document.getElementById('specs-container');
             container.innerHTML = '';
+            if (!template) return;
 
-            if (!template || !Array.isArray(template) || template.length === 0) {
-                container.innerHTML = `
-                    <div class="p-8 text-center border border-dashed border-gray-300 rounded-lg bg-gray-50">
-                        <p class="text-gray-500 italic">Danh mục này chưa được cấu hình thông số kỹ thuật.</p>
-                        <a href="categories.html" class="text-blue-600 text-sm underline hover:text-blue-800 block mt-2" target="_blank">
-                            Đi tới trang cấu hình danh mục
-                        </a>
-                    </div>`;
-                return;
-            }
-
-            template.forEach(group => {
-                let fieldsHtml = '';
-                
-                if (group.fields && Array.isArray(group.fields)) {
-                    group.fields.forEach(f => {
-                        // Lấy giá trị hiện tại (nếu có)
-                        const val = data[f.k] || ''; 
-                        
-                        fieldsHtml += `
-                            <div>
-                                <label class="block text-[11px] font-bold text-gray-500 mb-1 uppercase tracking-wide">${f.l}</label>
-                                <input type="text" name="spec_${f.k}" value="${val}" 
-                                    class="w-full px-3 py-2 border border-gray-200 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-gray-50 focus:bg-white transition-colors placeholder-gray-300 shadow-sm"
-                                    oninput="updateSpecData('${f.k}', this.value)"> 
-                            </div>`;
-                    });
-                }
+            template.forEach(g => {
+                const fields = (g.fields || []).map(f => `
+                    <div>
+                        <label class="text-xs uppercase text-gray-500 font-bold">${f.l}</label>
+                        <input type="text"
+                               class="w-full border rounded px-2 py-1 spec-input"
+                               data-key="${f.k}"
+                               value="${data[f.k] || ''}">
+                    </div>
+                `).join('');
 
                 container.innerHTML += `
-                    <div class="border border-gray-200 rounded-lg p-5 bg-white shadow-sm">
-                        <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
-                            <span class="w-1.5 h-4 bg-blue-600 rounded-full"></span>
-                            ${group.group}
-                        </h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                            ${fieldsHtml}
-                        </div>
-                    </div>`;
-            });
-        }
-
-        // Helper cập nhật data khi gõ
-        window.updateSpecData = (key, value) => {
-            currentSpecsData[key] = value;
-        };
-
-        // ============================================================
-        // 5. LOAD HÃNG
-        // ============================================================
-        async function loadBrandsForDetail(category, selectedBrand) {
-            const brandSelect = document.getElementById('p-brand');
-            brandSelect.disabled = true;
-            brandSelect.innerHTML = '<option value="">Đang tải...</option>';
-
-            try {
-                const res = await api.getAllBrandsAdmin();
-                let brands = res.data || [];
-                
-                brandSelect.innerHTML = '<option value="">-- Chọn hãng --</option>';
-                
-                if (brands.length > 0) {
-                    // Lọc hãng theo danh mục (Dựa vào chuỗi categories lưu trong bảng brands)
-                    if (category && category !== 'all') {
-                        brands = brands.filter(b => b.categories && b.categories.includes(category));
-                    }
-
-                    if (brands.length > 0) {
-                        brandSelect.disabled = false;
-                        brands.forEach(b => {
-                            const bName = (typeof b === 'object' && b.name) ? b.name : b;
-                            const selected = (bName == selectedBrand) ? 'selected' : '';
-                            brandSelect.innerHTML += `<option value="${bName}" ${selected}>${bName}</option>`;
-                        });
-                    } else {
-                        brandSelect.innerHTML = '<option value="">Không có hãng phù hợp</option>';
-                    }
-                } else {
-                    brandSelect.innerHTML = '<option value="">Chưa có dữ liệu hãng</option>';
-                }
-            } catch(e) {
-                brandSelect.innerHTML = '<option value="">Lỗi tải hãng</option>';
-            }
-        }
-
-        // ============================================================
-        // 6. XỬ LÝ UPLOAD ẢNH
-        // ============================================================
-        
-        // Upload Ảnh Chính
-        const mainImageInput = document.getElementById('main-image-upload');
-        if (mainImageInput) {
-            mainImageInput.addEventListener('change', async function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-
-                // Preview
-                const reader = new FileReader();
-                reader.onload = (e) => { document.getElementById('preview-main-img').src = e.target.result; };
-                reader.readAsDataURL(file);
-
-                // Upload
-                const formData = new FormData();
-                formData.append('image', file);
-                
-                showToast('Đang tải ảnh lên...', 'info');
-                mainImageInput.disabled = true;
-
-                try {
-                    // Upload tạm vào sản phẩm (nếu đã có ID) hoặc dùng API upload chung
-                    const targetId = productId || 0;
-                    const data = await api.uploadProductImage(targetId, formData);
-                    
-                    if(data.success) {
-                        document.getElementById('p-image').value = data.url; // Update link vào ô input
-                        showToast('Đã tải ảnh lên!', 'success');
-                    } else {
-                        showToast(data.error || 'Lỗi upload', 'error');
-                    }
-                } catch(e) {
-                    showToast('Lỗi kết nối server', 'error');
-                } finally {
-                    mainImageInput.disabled = false;
-                }
-            });
-        }
-
-        // Upload Ảnh Gallery (Phụ)
-        const galleryUploadInput = document.getElementById('gallery-upload-input');
-        if(galleryUploadInput) {
-            galleryUploadInput.addEventListener('change', async function(e) {
-                const file = e.target.files[0];
-                if(!file) return;
-                
-                const formData = new FormData();
-                formData.append('image', file);
-                
-                showToast('Đang tải ảnh gallery...', 'info');
-                try {
-                    const data = await api.uploadProductImage(productId, formData);
-                    if(data.success) {
-                        showToast('Upload thành công!', 'success');
-                        setTimeout(() => location.reload(), 1000); // Reload để thấy ảnh mới
-                    } else { 
-                        showToast(data.error || 'Lỗi upload', 'error'); 
-                    }
-                } catch(e) { showToast('Lỗi kết nối server', 'error'); }
-            });
-        }
-
-        // Render Gallery
-        function renderGallery(images) {
-            const container = document.getElementById('gallery-grid');
-            if(!container) return;
-
-            const validImages = images.filter(img => img && img !== 'https://via.placeholder.com/300');
-            
-            if (validImages.length === 0) {
-                container.innerHTML = '<p class="text-xs text-gray-400 col-span-3 text-center">Chưa có ảnh nào.</p>';
-                return;
-            }
-
-            container.innerHTML = validImages.map(img => {
-                let displayUrl = img;
-                if (!img.startsWith('http') && !img.startsWith('/')) {
-                    displayUrl = BASE_PATH + '/' + img;
-                }
-                return `
-                <div class="relative group h-24 border rounded-lg overflow-hidden bg-gray-50 shadow-sm">
-                    <img src="${displayUrl}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/150?text=Err'">
-                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2 backdrop-blur-sm">
-                        <a href="${displayUrl}" target="_blank" class="text-white hover:text-blue-300 p-1"><i class="fa-solid fa-eye"></i></a>
-                        <button onclick="window.deleteImage('${img}')" class="text-white hover:text-red-400 p-1"><i class="fa-solid fa-trash"></i></button>
+                    <div class="border p-4 rounded mb-4">
+                        <h4 class="font-bold mb-2">${g.group}</h4>
+                        <div class="grid grid-cols-2 gap-4">${fields}</div>
                     </div>
-                </div>`;
-            }).join('');
+                `;
+            });
         }
 
-        window.deleteImage = async (imageUrl) => {
-            if (!confirm('Bạn có chắc chắn muốn xóa ảnh này?')) return;
-            try {
-                await api.deleteProductImage(imageUrl);
-                showToast('Đã xóa ảnh thành công', 'success');
-                setTimeout(() => location.reload(), 800);
-            } catch (e) { showToast('Lỗi xóa ảnh: ' + e.message, 'error'); }
-        };
-
-        // ============================================================
-        // 7. LƯU DỮ LIỆU
-        // ============================================================
         window.saveAllChanges = async () => {
-            const btn = document.querySelector('button[onclick="saveAllChanges()"]');
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Đang lưu...';
+            document.querySelectorAll('.spec-input').forEach(i => {
+                currentSpecsData[i.dataset.key] = i.value;
+            });
 
-            // Data Object
             const data = {
                 title: document.getElementById('p-title').value,
                 price: document.getElementById('p-price').value,
-                stock_quantity: document.getElementById('p-stock').value,
-                compare_at: document.getElementById('p-compare').value,
                 category: document.getElementById('p-category').value,
-                brand: document.getElementById('p-brand').value,
-                image: document.getElementById('p-image').value,
                 description: document.getElementById('p-desc').value,
-                // Gửi object specs (Backend sẽ tự encode JSON)
-                specs: currentSpecsData 
+                image: document.getElementById('p-image').value,
+                specs: currentSpecsData
             };
 
             try {
                 await api.updateProduct(productId, data);
-                showToast('Cập nhật sản phẩm thành công! 🎉', 'success');
-            } catch(e) {
-                showToast('Lỗi lưu dữ liệu: ' + e.message, 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalText;
+                showToast('Đã lưu thông tin chung', 'success');
+            } catch (e) {
+                console.error(e);
+                showToast('Lỗi: ' + (e.message || 'Không thể lưu thông tin chung'), 'error');
             }
         };
 
-        // Chạy
+        // Upload ảnh đại diện chung
+        const imgInput = document.getElementById('main-image-upload');
+        if (imgInput) {
+            imgInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const fd = new FormData();
+                fd.append('image', file);
+
+                try {
+                    const res = await api.uploadProductImage(productId, fd);
+                    document.getElementById('p-image').value = res.url;
+                    document.getElementById('preview-main-img').src = '../' + res.url;
+                    showToast('Đã cập nhật ảnh đại diện', 'success');
+                } catch (err) {
+                    console.error(err);
+                    showToast('Lỗi upload ảnh đại diện', 'error');
+                }
+            });
+        }
+
+        // ----------------------------------------------------
+        // 7. BOOTSTRAP
+        // ----------------------------------------------------
         initPage();
     </script>
 </body>
