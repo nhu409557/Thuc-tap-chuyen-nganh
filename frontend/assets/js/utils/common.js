@@ -2,7 +2,7 @@
 
 // 1. CẤU HÌNH HỆ THỐNG
 // Dễ dàng thay đổi URL khi deploy lên server thật
-export const API_BASE = 'http://localhost/Web%20ban%20thiet%20bi%20dien%20tu/backend/public/index.php';
+export const API_BASE = 'http://localhost:8000';
 
 // 2. FORMAT TIỀN TỆ (VND)
 export function formatPrice(vnd) {
