@@ -21,8 +21,11 @@ class Product extends BaseModel
             $params[] = $categorySlug;
         }
         if ($q) {
-            $where[] = 'p.title LIKE ?';
-            $params[] = '%' . $q . '%';
+            $where[] = '(p.title LIKE ? OR c.name LIKE ? OR b.name LIKE ?)';
+            $term = '%' . $q . '%';
+            $params[] = $term;
+            $params[] = $term;
+            $params[] = $term;
         }
         if ($minPrice !== null && $minPrice !== '') {
             $where[] = 'p.price >= ?';
