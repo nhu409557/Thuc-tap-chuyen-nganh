@@ -2,16 +2,16 @@
 
 // 1. CẤU HÌNH HỆ THỐNG
 // Dễ dàng thay đổi URL khi deploy lên server thật
-export const API_BASE = "http://localhost:8000";
+export const API_BASE = '/backend/public/index.php';
 
 // 2. FORMAT TIỀN TỆ (VND)
 export function formatPrice(vnd) {
-    if (vnd === null || vnd === undefined) return "0 ₫";
-    if (typeof vnd !== "number") {
-        vnd = parseInt(vnd);
-        if (isNaN(vnd)) return "0 ₫";
-    }
-    return vnd.toLocaleString("vi-VN") + " ₫";
+  if (vnd === null || vnd === undefined) return '0 ₫';
+  if (typeof vnd !== 'number') {
+      vnd = parseInt(vnd);
+      if (isNaN(vnd)) return '0 ₫';
+  }
+  return vnd.toLocaleString('vi-VN') + ' ₫';
 }
 
 // 3. SHOW TOAST (Thông báo)
@@ -20,21 +20,19 @@ export function formatPrice(vnd) {
 // Tuy nhiên, theo yêu cầu của bạn là "Gom vào", tôi sẽ đề xuất cách import từ ui/toast.js vào đây rồi export ra
 // để các file khác chỉ cần import từ common.js là có đủ "đồ chơi".
 
-import { showToast as showToastOriginal } from "../ui/toast.js";
+import { showToast as showToastOriginal } from '../ui/toast.js';
 
 export const showToast = showToastOriginal;
 
 // 4. CÁC TIỆN ÍCH KHÁC (Debounce, Sleep...)
 export function debounce(func, delay = 300) {
-    let timer;
-    return (...args) => {
-        clearTimeout(timer);
-        timer = setTimeout(() => {
-            func.apply(this, args);
-        }, delay);
-    };
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { func.apply(this, args); }, delay);
+  };
 }
 
 export function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
 }

@@ -6,33 +6,31 @@
   <link rel="stylesheet" href="assets/css/reset.css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/app.css" />
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gray-50">
 
+  <!-- Header sẽ được load bằng JS -->
   <div id="site-header"></div>
 
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <h1 class="text-3xl font-bold mb-8">Giỏ hàng</h1>
-    
-    <div class="grid lg:grid-cols-3 gap-8">
 
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Cột trái: danh sách sản phẩm -->
       <div class="lg:col-span-2 space-y-6">
-        
-        <div id="cart-items-list" class="bg-white rounded-lg border border-gray-300 divide-y divide-gray-200">
+        <div id="cart-items-list"
+             class="bg-white rounded-lg border border-gray-300 divide-y divide-gray-200">
           <p class="p-6 text-gray-500">Đang tải giỏ hàng...</p>
-        </div>
-
-        <div id="coupon-box" class="bg-white rounded-lg border border-gray-300 p-6">
-          <h3 class="font-semibold mb-4">Mã giảm giá</h3>
-          <div class="flex gap-2">
-            <input type="text" placeholder="Nhập mã giảm giá" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100" />
-            <button class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 transition">Áp dụng</button>
-          </div>
         </div>
       </div>
 
+      <!-- Cột phải: tóm tắt đơn hàng -->
       <div class="lg:col-span-1">
-        <div id="cart-summary" class="bg-white rounded-lg border border-gray-300 p-6 sticky top-24 space-y-4">
+        <div id="cart-summary"
+             class="bg-white rounded-lg border border-gray-300 p-6 sticky top-24 space-y-4">
           <h3 class="font-bold text-lg">Tóm tắt đơn hàng</h3>
           <p class="text-sm text-gray-500">Vui lòng đăng nhập để xem giỏ hàng.</p>
         </div>
@@ -41,6 +39,7 @@
     </div>
   </main>
 
+  <!-- Footer sẽ được load bằng JS -->
   <div id="site-footer"></div>
 
   <script type="module" src="assets/js/main.js"></script>

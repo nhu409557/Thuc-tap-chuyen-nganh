@@ -1,109 +1,166 @@
-import { api } from "./api.js";
-import { showToast } from "./ui/toast.js";
+import { api } from './api.js';
 
 let debounceTimer = null;
 
-// Gợi ý tìm kiếm
-export function initLiveSearch() {
-    const desktopInput = document.getElementById("header-search-input");
-    const desktopBox = document.getElementById("search-suggestions");
+// Helper định dạng giá
+function formatPrice(amount) {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+}
 
-    if (desktopInput && desktopBox) {
-        attachSearch(desktopInput, desktopBox);
-    }
+// Helper xử lý ảnh cho Search (Fix lỗi ảnh không hiện)
+function resolveSearchImage(img) {
+    if (!img || img === 'null' || img === '') return 'https://via.placeholder.com/50';
+    if (img.startsWith('http')) return img;
+    // Đảm bảo không bị lỗi đường dẫn (loại bỏ dấu / ở đầu nếu có)
+    return img.replace(/^\//, ''); 
+}
 
-    const mobileInput = document.getElementById("mobile-search-input");
+// --- LOGIC DÀN PHẲNG BIẾN THỂ ---
+function flattenProductVariants(products) {
+    let flattened = [];
+    if (!products) return [];
+    
+    const arr = Array.isArray(products) ? products : Object.values(products);
 
-    if (mobileInput) {
-        let mobileBox = document.getElementById("search-suggestions-mobile");
-
-        if (!mobileBox) {
-            mobileBox = document.createElement("div");
-            mobileBox.id = "search-suggestions-mobile";
-            mobileBox.className =
-                "absolute left-0 right-0 bg-white shadow-xl rounded-b-lg hidden z-50 mt-1 max-h-60 overflow-y-auto border-t border-gray-100";
-            if (mobileInput.parentNode) {
-                mobileInput.parentNode.style.position = "relative";
-                mobileInput.parentNode.appendChild(mobileBox);
-            }
+    arr.forEach(p => {
+        let vars = [];
+        if (p.variants) {
+            vars = Array.isArray(p.variants) ? p.variants : Object.values(p.variants);
         }
 
-        attachSearch(mobileInput, mobileBox);
-    }
+        if (vars.length > 0) {
+            // CÓ BIẾN THỂ
+            vars.forEach(v => {
+                let attrs = {};
+                if (v.attributes) {
+                    if (typeof v.attributes === 'object') attrs = v.attributes;
+                    else if (typeof v.attributes === 'string') {
+                        try { attrs = JSON.parse(v.attributes); } catch(e){}
+                    }
+                }
+
+                let labelParts = [];
+                let c = v.color || attrs.color;
+                let s = v.capacity || attrs.capacity;
+
+                if (c) labelParts.push(`Màu: ${c}`);
+                if (s) labelParts.push(`Size: ${s}`);
+                
+                for (const [k, val] of Object.entries(attrs)) {
+                    if (k !== 'color' && k !== 'capacity' && val) labelParts.push(`${k}: ${val}`);
+                }
+
+                flattened.push({
+                    id: p.id,
+                    variant_id: v.id, // ID để chọn sẵn biến thể
+                    title: p.title,
+                    variant_label: labelParts.join(' - '),
+                    price: Number(v.price) || Number(p.price) || 0,
+                    // Ưu tiên ảnh biến thể, fallback về ảnh cha
+                    image: v.image || p.image, 
+                    is_variant: true
+                });
+            });
+        } else {
+            // KHÔNG BIẾN THỂ
+            flattened.push({
+                id: p.id,
+                variant_id: null,
+                title: p.title,
+                variant_label: '', 
+                price: Number(p.price) || 0,
+                image: p.image,
+                is_variant: false
+            });
+        }
+    });
+    return flattened;
 }
 
 function attachSearch(input, suggestionBox) {
-    if (!input) return;
+  if (!input || !suggestionBox) return;
 
-    // Xử lý sự kiện nhập liệu (Input)
-    input.addEventListener("input", () => {
-        const q = input.value.trim();
-        clearTimeout(debounceTimer);
+  // Ẩn khi click ra ngoài
+  document.addEventListener('click', (e) => {
+      if (!input.contains(e.target) && !suggestionBox.contains(e.target)) {
+          suggestionBox.classList.add('hidden');
+      }
+  });
 
-        if (!q) {
-            suggestionBox.classList.add("hidden");
-            suggestionBox.innerHTML = "";
-            return;
-        }
+  input.addEventListener('input', () => {
+    const q = input.value.trim();
+    clearTimeout(debounceTimer);
 
-        // Debounce: Chờ 300ms sau khi ngừng gõ mới gọi API
-        debounceTimer = setTimeout(() => {
-            fetchSuggestions(q, suggestionBox);
-        }, 300);
-    });
+    if (!q) {
+      suggestionBox.classList.add('hidden');
+      suggestionBox.innerHTML = '';
+      return;
+    }
 
-    // Xử lý sự kiện Focus: Hiện lại gợi ý cũ nếu ô input vẫn có chữ
-    input.addEventListener("focus", () => {
-        if (input.value.trim() && suggestionBox.innerHTML.trim() !== "") {
-            suggestionBox.classList.remove("hidden");
-        }
-    });
-
-    // Xử lý sự kiện Click ra ngoài: Ẩn gợi ý
-    document.addEventListener("click", (e) => {
-        // Nếu click không trúng input và không trúng box gợi ý -> Ẩn
-        if (!input.contains(e.target) && !suggestionBox.contains(e.target)) {
-            suggestionBox.classList.add("hidden");
-        }
-    });
+    debounceTimer = setTimeout(() => {
+      fetchSuggestions(q, suggestionBox);
+    }, 300);
+  });
+  
+  input.addEventListener('focus', () => {
+      if(input.value.trim() && suggestionBox.innerHTML !== '') {
+          suggestionBox.classList.remove('hidden');
+      }
+  });
 }
 
 async function fetchSuggestions(query, box) {
-    try {
-        const res = await api.getProducts({ q: query });
-        const products = res.data || res.items || res;
+  try {
+    const res = await api.getProducts({ q: query });
+    const rawProducts = res.data || res.items || res;
 
-        if (!products || !products.length) {
-            box.innerHTML = `<p class="p-3 text-sm text-gray-500 text-center">Không tìm thấy sản phẩm</p>`;
-            box.classList.remove("hidden");
-            return;
-        }
+    const flattenedProducts = flattenProductVariants(rawProducts);
 
-        // Render tối đa 5 sản phẩm
-        box.innerHTML = products
-            .slice(0, 5)
-            .map(
-                (p) => `
-        <a href="product.html?id=${
-            p.id
-        }" class="flex items-center gap-3 p-2 hover:bg-gray-50 text-sm border-b last:border-0 transition-colors">
-          <img src="${
-              p.image
-          }" class="w-10 h-10 rounded object-cover border border-gray-100 shrink-0" alt="${
-                    p.title
-                }" />
-          <div class="flex-1 min-w-0">
-             <p class="font-medium text-gray-800 truncate">${p.title}</p>
-             <p class="text-xs text-blue-600 font-bold mt-0.5">
-                ${parseInt(p.price).toLocaleString("vi-VN")}đ
-             </p>
-          </div>
-        </a>`
-            )
-            .join("");
-
-        box.classList.remove("hidden");
-    } catch (err) {
-        console.error("Lỗi live search:", err);
+    if (!flattenedProducts.length) {
+      box.innerHTML = `<p class="p-3 text-sm text-gray-500 text-center">Không tìm thấy sản phẩm</p>`;
+      box.classList.remove('hidden');
+      return;
     }
+
+    // Render HTML
+    box.innerHTML = flattenedProducts
+      .slice(0, 8)
+      .map(p => {
+        const variantHtml = p.variant_label 
+            ? `<span class="text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200 mt-1 inline-block">${p.variant_label}</span>` 
+            : '';
+
+        // TẠO URL: Thêm tham số &v=... nếu là biến thể
+        const linkUrl = p.variant_id 
+            ? `product.html?id=${p.id}&v=${p.variant_id}` 
+            : `product.html?id=${p.id}`;
+
+        return `
+        <a href="${linkUrl}" class="flex items-start gap-3 p-2 hover:bg-blue-50 border-b border-gray-50 last:border-0 transition-colors group">
+          <div class="flex-shrink-0 border border-gray-200 rounded bg-white w-10 h-10 flex items-center justify-center overflow-hidden">
+             <img src="${resolveSearchImage(p.image)}" class="w-full h-full object-contain p-0.5" onerror="this.src='https://via.placeholder.com/50'"/>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-bold text-gray-800 line-clamp-1 group-hover:text-blue-600 transition-colors">${p.title}</p>
+            ${variantHtml}
+            <p class="text-xs font-bold text-red-600 mt-0.5">${formatPrice(p.price)}</p>
+          </div>
+        </a>`;
+      })
+      .join('');
+
+    box.classList.remove('hidden');
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+export function initSearchSuggestions() {
+    const desktopInput = document.getElementById('header-search-input');
+    const desktopBox = document.getElementById('search-suggestions');
+    if (desktopInput && desktopBox) attachSearch(desktopInput, desktopBox);
+
+    const mobileInput = document.getElementById('mobile-search-input');
+    const mobileBox = document.getElementById('mobile-search-suggestions');
+    if (mobileInput && mobileBox) attachSearch(mobileInput, mobileBox);
 }

@@ -6,13 +6,26 @@
     <title>Quản lý Danh mục - TechHub Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Style cho trạng thái chỉ đọc */
+        input[readonly],
+        textarea[readonly] {
+            background-color: #f9fafb;
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+    </style>
 </head>
 <body class="bg-gray-50 font-sans antialiased">
 
     <div class="p-6">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold text-gray-800">Quản lý Danh mục</h1>
-            <button onclick="openModal('add')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5">
+            <button onclick="window.openModal('add')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5">
                 <i class="fa-solid fa-plus"></i> Thêm Danh mục
             </button>
         </div>
@@ -33,29 +46,44 @@
         </div>
     </div>
 
+    <!-- MODAL -->
     <div id="cat-modal" class="fixed inset-0 z-50 hidden bg-black/50 flex items-center justify-center backdrop-blur-sm">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl p-6 flex flex-col max-h-[90vh]">
             <div class="flex justify-between items-center mb-4 border-b pb-2">
                 <h3 class="text-lg font-bold text-gray-800" id="modal-title">Cấu hình Danh mục</h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <button onclick="window.closeModal()" class="text-gray-400 hover:text-red-500">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
             </div>
             
             <div class="overflow-y-auto flex-1 pr-2 custom-scrollbar">
-                <form id="cat-form" class="space-y-4">
+                <form id="cat-form" class="space-y-4" data-mode="add">
                     <input type="hidden" id="c-id">
                     
                     <div class="grid grid-cols-2 gap-4">
                         <div class="col-span-2">
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tên hiển thị <span class="text-red-500">*</span></label>
-                            <input type="text" id="c-name" class="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ví dụ: Chuột Gaming" required oninput="generateSlug()">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">
+                                Tên hiển thị <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="c-name"
+                                   class="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Ví dụ: Chuột Gaming"
+                                   required
+                                   oninput="window.generateSlug()">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Slug (URL) <span class="text-red-500">*</span></label>
-                            <input type="text" id="c-slug" class="w-full px-3 py-2 border rounded-lg outline-none bg-gray-50 text-gray-600 font-mono" required>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">
+                                Slug (URL) <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="c-slug"
+                                   class="w-full px-3 py-2 border rounded-lg outline-none bg-gray-50 text-gray-600 font-mono"
+                                   required>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Icon / Emoji</label>
-                            <input type="text" id="c-icon" class="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="VD: 🖱️ hoặc fa-solid fa-mouse">
+                            <input type="text" id="c-icon"
+                                   class="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="VD: 🖱️ hoặc fa-solid fa-mouse">
                         </div>
                     </div>
 
@@ -66,7 +94,10 @@
                             <label class="block text-sm font-bold text-blue-800 uppercase flex items-center gap-2">
                                 <i class="fa-solid fa-sliders"></i> Thiết kế thông số kỹ thuật
                             </label>
-                            <button type="button" onclick="addGroup()" class="text-xs bg-green-50 text-green-700 px-3 py-1.5 rounded border border-green-200 hover:bg-green-100 font-medium transition">
+                            <button type="button"
+                                    id="btn-add-group"
+                                    onclick="window.addGroup()"
+                                    class="text-xs bg-green-50 text-green-700 px-3 py-1.5 rounded border border-green-200 hover:bg-green-100 font-medium transition">
                                 <i class="fa-solid fa-plus"></i> Thêm Nhóm
                             </button>
                         </div>
@@ -77,8 +108,14 @@
             </div>
 
             <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100">
-                <button onclick="closeModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Hủy</button>
-                <button onclick="submitCategory()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-md transition flex items-center gap-2">
+                <button id="cat-cancel-btn"
+                        onclick="window.closeModal()"
+                        class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">
+                    Hủy
+                </button>
+                <button id="cat-submit-btn"
+                        onclick="window.submitCategory()"
+                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-md transition flex items-center gap-2">
                     <i class="fa-solid fa-save"></i> Lưu Cấu Hình
                 </button>
             </div>
@@ -97,9 +134,15 @@
         // 1. Tự động tạo Slug
         window.generateSlug = () => {
             const name = document.getElementById('c-name').value;
-            const slug = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-");
+            const slug = name
+                .toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .replace(/đ/g, "d")
+                .replace(/[^a-z0-9\s-]/g, "")
+                .trim()
+                .replace(/\s+/g, "-");
             document.getElementById('c-slug').value = slug;
-        }
+        };
 
         // 2. Logic Builder Specs (Thêm Nhóm)
         window.addGroup = (groupData = null) => {
@@ -107,18 +150,29 @@
             const groupId = 'group-' + Date.now() + Math.random().toString(36).substr(2, 9);
             
             const groupHtml = document.createElement('div');
-            groupHtml.className = "border border-gray-300 rounded-lg bg-white shadow-sm group-item overflow-hidden animate-fade-in";
+            groupHtml.className = "border border-gray-300 rounded-lg bg-white shadow-sm group-item overflow-hidden";
             groupHtml.id = groupId;
             
             groupHtml.innerHTML = `
                 <div class="flex justify-between items-center px-3 py-2 bg-gray-50 border-b border-gray-200">
                     <div class="flex items-center gap-2 w-2/3">
                         <i class="fa-solid fa-layer-group text-gray-400 text-xs"></i>
-                        <input type="text" class="group-name bg-transparent font-bold text-gray-800 outline-none w-full placeholder-gray-400 text-sm" placeholder="Tên nhóm (VD: Thông số chung)" value="${groupData?.group || ''}">
+                        <input type="text"
+                               class="group-name bg-transparent font-bold text-gray-800 outline-none w-full placeholder-gray-400 text-sm"
+                               placeholder="Tên nhóm (VD: Thông số chung)"
+                               value="${groupData?.group || ''}">
                     </div>
                     <div class="flex gap-2">
-                        <button type="button" onclick="addField('${groupId}')" class="text-xs text-blue-600 hover:bg-blue-50 px-2 py-1 rounded transition">+ Trường</button>
-                        <button type="button" onclick="this.closest('.group-item').remove()" class="text-xs text-red-500 hover:bg-red-50 px-2 py-1 rounded transition"><i class="fa-solid fa-trash"></i></button>
+                        <button type="button"
+                                class="btn-add-field text-xs text-blue-600 hover:bg-blue-50 px-2 py-1 rounded transition"
+                                onclick="window.addField('${groupId}')">
+                            + Trường
+                        </button>
+                        <button type="button"
+                                class="btn-remove-group text-xs text-red-500 hover:bg-red-50 px-2 py-1 rounded transition"
+                                onclick="this.closest('.group-item').remove()">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
                     </div>
                 </div>
                 <div class="p-3 space-y-2 field-container"></div>
@@ -126,9 +180,9 @@
             container.appendChild(groupHtml);
 
             if (groupData && groupData.fields) {
-                groupData.fields.forEach(f => addField(groupId, f));
+                groupData.fields.forEach(f => window.addField(groupId, f));
             } else if (!groupData) {
-                addField(groupId); 
+                window.addField(groupId);
             }
         };
 
@@ -139,10 +193,20 @@
             div.className = "flex gap-2 items-center field-item";
             div.innerHTML = `
                 <div class="flex-1 grid grid-cols-2 gap-2">
-                    <input type="text" class="field-label w-full px-2 py-1.5 text-sm border border-gray-200 rounded outline-none focus:border-blue-500" placeholder="Nhãn (VD: Độ phân giải)" value="${fieldData?.l || ''}">
-                    <input type="text" class="field-key w-full px-2 py-1.5 text-sm border border-gray-200 rounded outline-none font-mono text-gray-500 bg-gray-50 focus:bg-white focus:border-blue-500" placeholder="Key (VD: screen_res)" value="${fieldData?.k || ''}">
+                    <input type="text"
+                           class="field-label w-full px-2 py-1.5 text-sm border border-gray-200 rounded outline-none focus:border-blue-500"
+                           placeholder="Nhãn (VD: Độ phân giải)"
+                           value="${fieldData?.l || ''}">
+                    <input type="text"
+                           class="field-key w-full px-2 py-1.5 text-sm border border-gray-200 rounded outline-none font-mono text-gray-500 bg-gray-50 focus:bg-white focus:border-blue-500"
+                           placeholder="Key (VD: screen_res)"
+                           value="${fieldData?.k || ''}">
                 </div>
-                <button type="button" onclick="this.closest('.field-item').remove()" class="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-gray-100"><i class="fa-solid fa-times"></i></button>
+                <button type="button"
+                        class="btn-remove-field text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-gray-100"
+                        onclick="this.closest('.field-item').remove()">
+                    <i class="fa-solid fa-times"></i>
+                </button>
             `;
             group.appendChild(div);
         };
@@ -171,12 +235,72 @@
             return result;
         }
 
-        // 5. CRUD Logic
+        // 5. SET TRẠNG THÁI FORM (VIEW / EDIT)
+        function setCatFormState(isReadOnly) {
+            const nameInput = document.getElementById('c-name');
+            const slugInput = document.getElementById('c-slug');
+            const iconInput = document.getElementById('c-icon');
+            const addGroupBtn = document.getElementById('btn-add-group');
+            const submitBtn = document.getElementById('cat-submit-btn');
+            const cancelBtn = document.getElementById('cat-cancel-btn');
+
+            // Inputs chính
+            if (isReadOnly) {
+                nameInput.setAttribute('readonly', true);
+                slugInput.setAttribute('readonly', true);
+                iconInput.setAttribute('readonly', true);
+            } else {
+                nameInput.removeAttribute('readonly');
+                slugInput.removeAttribute('readonly');
+                iconInput.removeAttribute('readonly');
+            }
+
+            // Builder inputs & buttons
+            const builderInputs = document.querySelectorAll('#specs-builder input');
+            const builderButtons = document.querySelectorAll('#specs-builder button');
+
+            builderInputs.forEach(inp => {
+                if (isReadOnly) inp.setAttribute('readonly', true);
+                else inp.removeAttribute('readonly');
+            });
+
+            builderButtons.forEach(btn => {
+                if (isReadOnly) {
+                    btn.setAttribute('disabled', true);
+                } else {
+                    btn.removeAttribute('disabled');
+                }
+            });
+
+            // Nút thêm nhóm
+            if (isReadOnly) {
+                addGroupBtn.classList.add('hidden');
+            } else {
+                addGroupBtn.classList.remove('hidden');
+            }
+
+            // Nút lưu / hủy
+            if (isReadOnly) {
+                submitBtn.classList.add('hidden');
+                cancelBtn.textContent = 'Đóng';
+            } else {
+                submitBtn.classList.remove('hidden');
+                cancelBtn.textContent = 'Hủy';
+            }
+        }
+
+        // 6. LOAD DANH MỤC
         window.loadCategories = async () => {
             try {
                 const res = await api.getCategories();
                 const list = res.data || [];
                 
+                if (list.length === 0) {
+                    document.getElementById('category-list').innerHTML =
+                        `<tr><td colspan="5" class="text-center py-8 text-gray-500 italic">Chưa có danh mục</td></tr>`;
+                    return;
+                }
+
                 document.getElementById('category-list').innerHTML = list.map(c => {
                     // Render Icon
                     let iconHtml = '<span class="text-gray-300">-</span>';
@@ -190,7 +314,9 @@
                     let specsCount = 0;
                     if (c.specs_template) {
                         let template = c.specs_template;
-                        if (typeof template === 'string') { try { template = JSON.parse(template); } catch(e){} }
+                        if (typeof template === 'string') {
+                            try { template = JSON.parse(template); } catch(e) {}
+                        }
                         if (Array.isArray(template)) specsCount = template.length;
                     }
 
@@ -198,72 +324,132 @@
                     <tr class="hover:bg-blue-50/30 border-b last:border-0 transition-colors">
                         <td class="px-6 py-4 text-center">${iconHtml}</td>
                         <td class="px-6 py-4 font-bold text-gray-800">${c.name}</td>
-                        <td class="px-6 py-4"><span class="font-mono text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">${c.slug}</span></td>
+                        <td class="px-6 py-4">
+                            <span class="font-mono text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                                ${c.slug}
+                            </span>
+                        </td>
                         <td class="px-6 py-4 text-center">
-                             ${specsCount > 0
+                             ${
+                                specsCount > 0
                                 ? `<span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded border border-green-200 font-medium">${specsCount} nhóm thông số</span>` 
-                                : `<span class="text-xs text-gray-400 italic">Chưa cấu hình</span>`}
+                                : `<span class="text-xs text-gray-400 italic">Chưa cấu hình</span>`
+                             }
                         </td>
                         <td class="px-6 py-4 text-right">
                             <div class="flex justify-end gap-2">
-                                <button onclick="openEditModal(${c.id})" class="text-blue-600 hover:bg-blue-50 p-2 rounded transition"><i class="fa-solid fa-pen"></i></button>
-                                <button onclick="deleteCat(${c.id})" class="text-red-500 hover:bg-red-50 p-2 rounded transition"><i class="fa-solid fa-trash"></i></button>
+                                <!-- Xem chi tiết -->
+                                <button onclick="window.viewCategory(${c.id})"
+                                        class="text-gray-600 hover:text-blue-600 hover:bg-blue-50 p-2 rounded transition"
+                                        title="Xem chi tiết">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                                <!-- Sửa -->
+                                <button onclick="window.openEditModal(${c.id})"
+                                        class="text-blue-600 hover:bg-blue-50 p-2 rounded transition"
+                                        title="Chỉnh sửa">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <!-- Xóa -->
+                                <button onclick="window.deleteCat(${c.id})"
+                                        class="text-red-500 hover:bg-red-50 p-2 rounded transition"
+                                        title="Xóa">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
-                `}).join('');
-            } catch(e) { console.error(e); }
-        };
-
-        window.openEditModal = async (id) => {
-            try {
-                const data = await api.getCategory(id);
-                
-                document.getElementById('cat-modal').classList.remove('hidden');
-                document.getElementById('specs-builder').innerHTML = ''; 
-                
-                document.getElementById('modal-title').textContent = "Sửa Danh mục: " + data.name;
-                document.getElementById('c-id').value = data.id;
-                document.getElementById('c-name').value = data.name;
-                document.getElementById('c-slug').value = data.slug;
-                document.getElementById('c-icon').value = data.icon || '';
-                
-                let specs = data.specs_template; 
-                if (typeof specs === 'string') { try { specs = JSON.parse(specs); } catch(e){ specs = []; } }
-
-                if (specs && Array.isArray(specs) && specs.length > 0) {
-                    specs.forEach(g => addGroup(g));
-                } else {
-                    addGroup(); 
-                }
-
+                `;
+                }).join('');
             } catch(e) {
-                showToast('Lỗi tải dữ liệu: ' + e.message, 'error');
+                console.error(e);
+                document.getElementById('category-list').innerHTML =
+                    `<tr><td colspan="5" class="text-center py-8 text-red-500">Lỗi tải dữ liệu</td></tr>`;
             }
         };
 
-        window.openModal = (mode) => {
+        // 7. MỞ MODAL THEO MODE (add / edit / view)
+        async function openCategoryModal(mode, id = null) {
+            const modal = document.getElementById('cat-modal');
+            const form = document.getElementById('cat-form');
+            const builder = document.getElementById('specs-builder');
+            const title = document.getElementById('modal-title');
+
+            form.dataset.mode = mode;
+            form.reset();
+            builder.innerHTML = '';
+            document.getElementById('c-id').value = '';
+            document.getElementById('c-icon').value = '';
+
             if (mode === 'add') {
-                document.getElementById('cat-modal').classList.remove('hidden');
-                document.getElementById('specs-builder').innerHTML = '';
-                document.getElementById('modal-title').textContent = "Thêm Danh mục Mới";
-                document.getElementById('cat-form').reset();
-                document.getElementById('c-id').value = '';
+                title.textContent = 'Thêm Danh mục Mới';
                 document.getElementById('c-icon').value = '📦';
-                addGroup();
+                window.addGroup();
+                setCatFormState(false);
+            } else {
+                // edit / view → lấy data từ API
+                try {
+                    const data = await api.getCategory(id);
+                    document.getElementById('c-id').value = data.id;
+                    document.getElementById('c-name').value = data.name;
+                    document.getElementById('c-slug').value = data.slug;
+                    document.getElementById('c-icon').value = data.icon || '';
+
+                    let specs = data.specs_template;
+                    if (typeof specs === 'string') {
+                        try { specs = JSON.parse(specs); } catch(e) { specs = []; }
+                    }
+                    if (specs && Array.isArray(specs) && specs.length > 0) {
+                        specs.forEach(g => window.addGroup(g));
+                    } else {
+                        window.addGroup();
+                    }
+
+                    if (mode === 'edit') {
+                        title.textContent = 'Sửa Danh mục: ' + data.name;
+                        setCatFormState(false);
+                    } else {
+                        title.textContent = 'Chi tiết Danh mục: ' + data.name;
+                        setCatFormState(true);
+                    }
+                } catch(e) {
+                    console.error(e);
+                    showToast('Lỗi tải dữ liệu: ' + (e.message || ''), 'error');
+                    return;
+                }
             }
+
+            modal.classList.remove('hidden');
+        }
+
+        // Wrapper cho các nút
+        window.openModal = (mode) => openCategoryModal(mode);
+        window.openEditModal = (id) => openCategoryModal('edit', id);
+        window.viewCategory = (id) => openCategoryModal('view', id);
+
+        window.closeModal = () => {
+            document.getElementById('cat-modal').classList.add('hidden');
         };
 
-        window.closeModal = () => document.getElementById('cat-modal').classList.add('hidden');
-
+        // 8. SUBMIT CATEGORY (chỉ hoạt động khi không ở chế độ view)
         window.submitCategory = async () => {
-            const id = document.getElementById('c-id').value;
-            const name = document.getElementById('c-name').value;
-            const slug = document.getElementById('c-slug').value;
-            const icon = document.getElementById('c-icon').value;
-            const specsTemplate = getSpecsFromBuilder(); 
+            const form = document.getElementById('cat-form');
+            const mode = form.dataset.mode || 'add';
 
-            if (!name || !slug) return showToast('Vui lòng nhập tên và slug', 'error');
+            if (mode === 'view') {
+                // Chế độ xem chi tiết: không cho lưu
+                return;
+            }
+
+            const id = document.getElementById('c-id').value;
+            const name = document.getElementById('c-name').value.trim();
+            const slug = document.getElementById('c-slug').value.trim();
+            const icon = document.getElementById('c-icon').value.trim();
+            const specsTemplate = getSpecsFromBuilder();
+
+            if (!name || !slug) {
+                return showToast('Vui lòng nhập tên và slug', 'error');
+            }
 
             const payload = { name, slug, icon, specs_template: specsTemplate };
 
@@ -272,17 +458,29 @@
                 else await api.createCategory(payload);
                 
                 showToast('Lưu thành công!', 'success');
-                closeModal();
-                loadCategories();
-            } catch (e) { showToast(e.message, 'error'); }
+                window.closeModal();
+                window.loadCategories();
+            } catch (e) {
+                console.error(e);
+                showToast(e.message || 'Lỗi lưu danh mục', 'error');
+            }
         };
 
+        // 9. XOÁ CATEGORY
         window.deleteCat = async (id) => {
             if(!confirm('Xóa danh mục? Sản phẩm thuộc danh mục này sẽ mất liên kết.')) return;
-            try { await api.deleteCategory(id); loadCategories(); showToast('Đã xóa', 'success'); } catch(e) {}
+            try {
+                await api.deleteCategory(id);
+                showToast('Đã xóa', 'success');
+                window.loadCategories();
+            } catch(e) {
+                console.error(e);
+                showToast('Lỗi xóa danh mục', 'error');
+            }
         };
 
-        loadCategories();
+        // 10. INIT
+        window.loadCategories();
     </script>
 </body>
 </html>

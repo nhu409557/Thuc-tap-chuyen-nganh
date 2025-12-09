@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -14,11 +14,27 @@
         .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 600; }
         .tab-inactive { color: #6b7280; border-bottom: 2px solid transparent; }
         
+        .read-only-input {
+            background-color: #f9fafb;
+            border-color: #e5e7eb;
+            color: #4b5563;
+            pointer-events: none;
+        }
+        
         input:read-only, textarea:read-only, select:disabled {
             background-color: #f9fafb;
             color: #6b7280;
             cursor: not-allowed;
         }
+
+        /* Toggle Switch CSS */
+        .toggle-checkbox:checked { right: 0; border-color: #2563eb; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #2563eb; }
+        .toggle-checkbox { right: 0; z-index: 1; border-color: #e5e7eb; transition: all 0.3s; }
+        .toggle-label { width: 3rem; height: 1.5rem; background-color: #d1d5db; transition: background-color 0.3s; }
+        
+        .animate-fade-in { animation: fade-in 0.2s ease-out; }
+        @keyframes fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body class="bg-gray-50 font-sans antialiased">
@@ -49,31 +65,27 @@
                         <th class="px-6 py-4">Tên sản phẩm</th>
                         <th class="px-6 py-4">Danh mục / Hãng</th>
                         <th class="px-6 py-4 text-center">Tồn kho</th>
-                        <th class="px-6 py-4">Giá bán</th>
+                        <th class="px-6 py-4 text-center">Trạng thái</th> <th class="px-6 py-4">Giá bán</th>
                         <th class="px-6 py-4 text-right">Hành động</th>
                     </tr>
                 </thead>
                 <tbody id="product-list" class="divide-y divide-gray-100 bg-white">
-                    <tr><td colspan="6" class="py-8 text-center text-gray-500">Đang tải dữ liệu...</td></tr>
+                    <tr><td colspan="7" class="py-8 text-center text-gray-500">Đang tải dữ liệu...</td></tr>
                 </tbody>
             </table>
         </div>
 
         <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center bg-gray-50">
-            <button id="btn-prev" class="px-3 py-1.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition" disabled>
-                <i class="fa-solid fa-chevron-left mr-1"></i> Trước
-            </button>
+            <button id="btn-prev" class="px-3 py-1.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition" disabled>Trước</button>
             <span class="text-xs text-gray-500 font-medium bg-white px-3 py-1.5 rounded-lg border" id="page-info">Trang 1</span>
-            <button id="btn-next" class="px-3 py-1.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition" disabled>
-                Sau <i class="fa-solid fa-chevron-right ml-1"></i>
-            </button>
+            <button id="btn-next" class="px-3 py-1.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition" disabled>Sau</button>
         </div>
     </div>
 
     <div id="product-modal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
         
-        <div class="absolute right-0 top-0 h-full w-full md:w-[800px] bg-white shadow-2xl transform transition-transform duration-300 translate-x-full flex flex-col" id="modal-panel">
+        <div class="absolute right-0 top-0 h-full w-full md:w-[900px] bg-white shadow-2xl transform transition-transform duration-300 translate-x-full flex flex-col" id="modal-panel">
             
             <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
                 <h3 class="text-lg font-bold text-gray-800" id="modal-title">Thông tin sản phẩm</h3>
@@ -85,14 +97,36 @@
             <div class="flex border-b border-gray-200 px-6 bg-white sticky top-0 z-10">
                 <button onclick="switchTab('general')" id="tab-btn-general" class="tab-active py-3 px-4 text-sm transition-all hover:bg-gray-50">Thông tin chung</button>
                 <button onclick="switchTab('specs')" id="tab-btn-specs" class="tab-inactive py-3 px-4 text-sm transition-all hover:bg-gray-50">Cấu hình chi tiết</button>
+                <button onclick="switchTab('variants')" id="tab-btn-variants" class="tab-inactive py-3 px-4 text-sm transition-all hover:bg-gray-50">Biến thể</button>
             </div>
 
             <div class="flex-1 overflow-y-auto p-6 modal-scroll bg-white relative">
                 <form id="product-form" class="space-y-6">
                     <input type="hidden" id="p-id">
+                    <input type="hidden" id="p-image-url-old">
 
                     <div id="tab-content-general" class="space-y-5 animate-fade-in">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Ảnh đại diện <span class="text-red-500">*</span></label>
+                                <div class="flex gap-4 items-start">
+                                    <div class="flex-1">
+                                        <label id="upload-label" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-blue-50 hover:border-blue-400 transition group">
+                                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                                <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2 group-hover:text-blue-500 transition"></i>
+                                                <p class="text-sm text-gray-500 group-hover:text-blue-600 font-medium">Click để tải ảnh lên</p>
+                                                <p class="text-xs text-gray-400 mt-1">PNG, JPG, WEBP</p>
+                                            </div>
+                                            <input id="p-image-file" type="file" class="hidden" accept="image/*" />
+                                        </label>
+                                    </div>
+                                    <div class="w-32 h-32 rounded-xl border border-gray-200 bg-white p-1 flex-shrink-0 flex items-center justify-center relative shadow-sm">
+                                        <img id="preview-img" src="https://placehold.co/150?text=No+Img" class="w-full h-full object-contain rounded-lg">
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tên sản phẩm <span class="text-red-500">*</span></label>
                                 <input type="text" id="p-title" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-medium" required>
@@ -107,9 +141,23 @@
                                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Giá gốc (VNĐ)</label>
                                     <input type="number" id="p-compare" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-500">
                                 </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tồn kho <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 flex justify-between">
+                                        Tồn kho <span class="text-red-500">*</span>
+                                        <span id="stock-badge" class="hidden text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200">Auto</span>
+                                    </label>
                                     <input type="number" id="p-stock" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-bold" placeholder="0">
+                                </div>
+                            </div>
+
+                            <div class="md:col-span-2 bg-gray-50 p-4 rounded-lg border border-gray-200 flex items-center justify-between">
+                                <div>
+                                    <h4 class="text-sm font-bold text-gray-800">Trạng thái kinh doanh</h4>
+                                    <p class="text-xs text-gray-500 mt-1">Gạt tắt để ẩn sản phẩm khỏi trang khách hàng.</p>
+                                </div>
+                                <div class="relative inline-block w-12 h-6 align-middle select-none transition duration-200 ease-in">
+                                    <input type="checkbox" name="is_active" id="p-is-active" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                                    <label for="p-is-active" class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer"></label>
                                 </div>
                             </div>
 
@@ -129,21 +177,31 @@
                             </div>
 
                             <div class="md:col-span-2">
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Link Hình ảnh</label>
-                                <div class="flex gap-3 items-start">
-                                    <div class="flex-1">
-                                        <input type="text" id="p-image" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="https://..." oninput="document.getElementById('preview-img').src = this.value">
-                                        <p class="text-xs text-gray-400 mt-1">Nhập đường dẫn ảnh sản phẩm (URL)</p>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Mô tả / Đặc điểm nổi bật</label>
+                                <textarea id="p-desc" rows="5" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm leading-relaxed"></textarea>
+                            </div>
+
+                            <div id="gallery-upload-container" class="md:col-span-2 hidden">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">
+                                    Bộ sưu tập ảnh (Chọn nhiều)
+                                </label>
+                                <div class="border border-gray-300 border-dashed rounded-xl p-4 bg-gray-50">
+                                    <div class="grid grid-cols-4 sm:grid-cols-6 gap-3" id="gallery-upload-preview">
+                                        <label class="cursor-pointer flex flex-col items-center justify-center aspect-square border-2 border-blue-300 border-dashed rounded-lg bg-white hover:bg-blue-50 transition">
+                                            <i class="fa-solid fa-images text-2xl text-blue-400 mb-1"></i>
+                                            <span class="text-[10px] font-bold text-blue-500">Thêm ảnh</span>
+                                            <input type="file" id="p-gallery-files" multiple class="hidden" accept="image/*">
+                                        </label>
                                     </div>
-                                    <div class="w-20 h-20 rounded-lg border border-gray-200 bg-gray-50 flex-shrink-0 overflow-hidden flex items-center justify-center">
-                                        <img id="preview-img" src="https://placehold.co/80?text=Preview" class="w-full h-full object-contain">
-                                    </div>
+                                    <p class="text-[10px] text-gray-400 mt-2 italic">
+                                        * Chọn nhiều ảnh cùng lúc. Ảnh sẽ được upload sau khi bấm "Lưu dữ liệu".
+                                    </p>
                                 </div>
                             </div>
 
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Mô tả / Đặc điểm nổi bật</label>
-                                <textarea id="p-desc" rows="5" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm leading-relaxed"></textarea>
+                            <div id="shared-gallery-wrapper" class="md:col-span-2 hidden">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Bộ sưu tập ảnh chung</label>
+                                <div id="shared-gallery-view" class="grid grid-cols-5 gap-2"></div>
                             </div>
                         </div>
                     </div>
@@ -156,12 +214,23 @@
                         <div id="specs-form-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 hidden"></div>
                     </div>
 
+                    <div id="tab-content-variants" class="hidden space-y-4 animate-fade-in">
+                        <div id="variants-add-msg" class="hidden p-6 text-center bg-gray-50 border border-dashed border-gray-300 rounded-xl">
+                            <div class="text-gray-400 text-5xl mb-3"><i class="fa-solid fa-layer-group"></i></div>
+                            <h4 class="text-gray-800 font-bold">Chưa tạo sản phẩm</h4>
+                            <p class="text-sm text-gray-500 mt-2">Vui lòng lưu "Thông tin chung" trước.<br>Sau đó bạn có thể thêm màu sắc và phiên bản.</p>
+                        </div>
+                        <div id="variants-view-container" class="space-y-6"></div>
+                    </div>
                 </form>
             </div>
 
             <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-between items-center" id="modal-footer">
                 <p class="text-xs text-gray-500 italic" id="footer-hint">* Các trường có dấu sao là bắt buộc.</p>
                 <div class="flex gap-3">
+                    <button id="btn-goto-detail" class="hidden px-4 py-2 text-sm font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition items-center gap-2">
+                        <i class="fa-solid fa-external-link"></i> Sửa chi tiết / Quản lý ảnh
+                    </button>
                     <button onclick="closeModal()" class="px-5 py-2 text-sm font-medium text-gray-700 hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-300 rounded-lg transition">Đóng</button>
                     <button id="btn-save" onclick="saveProduct()" class="px-6 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md transition flex items-center gap-2">
                         <i class="fa-solid fa-floppy-disk"></i> Lưu dữ liệu
@@ -176,361 +245,496 @@
     <script type="module">
         import { renderAdminLayout, formatPrice } from '../assets/js/admin.js';
         import { api } from '../assets/js/api.js';
-        import { getToken } from '../assets/js/utils/storage.js';
         import { showToast } from '../assets/js/ui/toast.js';
 
-        renderAdminLayout('products');
+        (async () => {
+            await renderAdminLayout('products');
 
-        // Biến lưu trữ specs tạm thời khi nhập liệu
-        let currentSpecsData = {}; 
+            let currentSpecsData = {}; 
+            let filesToUpload = []; 
+            let currentPage = 1;
 
-        // ================= LOGIC GIAO DIỆN =================
+            document.getElementById('btn-add').addEventListener('click', () => window.openModal('add'));
 
-        window.switchTab = (tabName) => {
-            document.getElementById('tab-content-general').classList.add('hidden');
-            document.getElementById('tab-content-specs').classList.add('hidden');
-            
-            document.getElementById('tab-btn-general').className = 'tab-inactive py-3 px-4 text-sm transition-all hover:bg-gray-50';
-            document.getElementById('tab-btn-specs').className = 'tab-inactive py-3 px-4 text-sm transition-all hover:bg-gray-50';
-
-            document.getElementById(`tab-content-${tabName}`).classList.remove('hidden');
-            document.getElementById(`tab-btn-${tabName}`).className = 'tab-active py-3 px-4 text-sm transition-all hover:bg-gray-50';
-        };
-
-        // Sự kiện thay đổi danh mục -> Load lại hãng & Form thông số
-        document.getElementById('p-category').addEventListener('change', function() {
-            handleCategoryChange(this.value);
-        });
-
-        // HÀM LOAD DANH MỤC VÀO SELECT (GỌI 1 LẦN KHI LOAD TRANG)
-        async function loadCategoriesForSelect() {
-            const catSelect = document.getElementById('p-category');
-            try {
-                const res = await api.getCategories();
-                const cats = res.data || [];
-                window.allCategories = cats; // Lưu lại để dùng template
-                
-                catSelect.innerHTML = '<option value="">-- Chọn loại --</option>';
-                cats.forEach(c => {
-                    catSelect.innerHTML += `<option value="${c.slug}">${c.name}</option>`;
+            const fileInput = document.getElementById('p-image-file');
+            const previewImg = document.getElementById('preview-img');
+            if (fileInput) {
+                fileInput.addEventListener('change', function (e) {
+                    const file = e.target.files[0];
+                    if (file) previewImg.src = URL.createObjectURL(file);
                 });
-            } catch(e) {
-                console.error(e);
-                catSelect.innerHTML = '<option value="">Lỗi tải danh mục</option>';
-            }
-        }
-
-        // HÀM XỬ LÝ KHI CHỌN DANH MỤC
-        async function handleCategoryChange(categorySlug, selectedBrand = '', existingSpecs = null) {
-            await updateBrandSelect(categorySlug, selectedBrand);
-
-            // Render Specs Form từ Template trong window.allCategories
-            const categoryData = window.allCategories?.find(c => c.slug === categorySlug);
-            
-            let template = [];
-            if (categoryData && categoryData.specs_template) {
-                try { 
-                    template = typeof categoryData.specs_template === 'string' 
-                        ? JSON.parse(categoryData.specs_template) 
-                        : categoryData.specs_template; 
-                } catch(e){}
             }
 
-            // Nếu có existingSpecs (khi View/Edit), dùng nó. Nếu không (Add), dùng currentSpecsData hoặc rỗng
-            const dataToFill = existingSpecs || currentSpecsData;
-            renderSpecsFormFromTemplate(template, dataToFill);
-        }
-
-        // HÀM RENDER FORM SPECS
-        function renderSpecsFormFromTemplate(template, data) {
-            const container = document.getElementById('specs-form-container');
-            const warning = document.getElementById('specs-warning');
-            const warningText = document.getElementById('specs-status-text');
-
-            container.innerHTML = '';
-
-            if (!template || template.length === 0) {
-                container.classList.add('hidden');
-                warning.classList.remove('hidden');
-                warningText.textContent = "Danh mục này chưa được cấu hình thông số kỹ thuật.";
-                return;
-            }
-
-            container.classList.remove('hidden');
-            warning.classList.add('hidden');
-
-            template.forEach(group => {
-                let fieldsHtml = '';
-                group.fields.forEach(f => {
-                    const val = data[f.k] || ''; 
-                    fieldsHtml += `
-                        <div>
-                            <label class="block text-[11px] font-bold text-gray-500 mb-1 uppercase tracking-wide">${f.l}</label>
-                            <input type="text" name="spec_${f.k}" value="${val}" 
-                                class="w-full px-3 py-2 border border-gray-200 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-gray-50 focus:bg-white transition-colors placeholder-gray-300 shadow-sm"
-                                oninput="currentSpecsData['${f.k}'] = this.value"> 
-                        </div>`;
+            const galleryInput = document.getElementById('p-gallery-files');
+            const galleryPreview = document.getElementById('gallery-upload-preview');
+            if (galleryInput && galleryPreview) {
+                galleryInput.addEventListener('change', (e) => {
+                    const newFiles = Array.from(e.target.files);
+                    filesToUpload = [...filesToUpload, ...newFiles];
+                    renderGalleryPreview();
+                    e.target.value = '';
                 });
-
-                container.innerHTML += `
-                    <div class="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
-                        <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
-                            <span class="w-1.5 h-4 bg-blue-600 rounded-full"></span>
-                            ${group.group}
-                        </h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                            ${fieldsHtml}
-                        </div>
-                    </div>`;
-            });
-        }
-
-        async function updateBrandSelect(category, selectedBrand = '') {
-            const brandSelect = document.getElementById('p-brand');
-            brandSelect.innerHTML = '<option value="">Đang tải...</option>';
-            brandSelect.disabled = true;
-
-            try {
-                const res = await api.getBrands(category);
-                const brands = res.data || [];
-                brandSelect.innerHTML = '<option value="">-- Chọn hãng --</option>';
-                
-                if (brands.length > 0) {
-                    brandSelect.disabled = false;
-                    brands.forEach(b => {
-                        const bName = typeof b === 'object' ? b.name : b;
-                        const selected = bName === selectedBrand ? 'selected' : '';
-                        brandSelect.innerHTML += `<option value="${bName}" ${selected}>${bName}</option>`;
-                    });
-                } else {
-                    brandSelect.innerHTML = '<option value="">Không có hãng nào</option>';
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        }
-
-        function setFormState(isReadOnly) {
-            const form = document.getElementById('product-form');
-            const inputs = form.querySelectorAll('input, textarea, select');
-            const btnSave = document.getElementById('btn-save');
-            const footerHint = document.getElementById('footer-hint');
-
-            inputs.forEach(input => {
-                if (isReadOnly) {
-                    input.setAttribute('readonly', true);
-                    if(input.tagName === 'SELECT') input.setAttribute('disabled', true);
-                } else {
-                    input.removeAttribute('readonly');
-                    if(input.tagName === 'SELECT') input.removeAttribute('disabled');
-                }
-            });
-
-            // Logic riêng cho category/brand khi không readonly
-            if (!isReadOnly) {
-                const cat = document.getElementById('p-category').value;
-                if (!cat) document.getElementById('p-brand').setAttribute('disabled', true);
             }
 
-            if (isReadOnly) {
-                btnSave.classList.add('hidden');
-                footerHint.classList.add('hidden');
-            } else {
-                btnSave.classList.remove('hidden');
-                footerHint.classList.remove('hidden');
+            window.renderGalleryPreview = () => {
+                const addBtn = galleryPreview.querySelector('label');
+                galleryPreview.innerHTML = '';
+                galleryPreview.appendChild(addBtn);
+
+                filesToUpload.forEach((file, index) => {
+                    const url = URL.createObjectURL(file);
+                    const div = document.createElement('div');
+                    div.className = 'relative aspect-square border rounded-lg overflow-hidden group bg-white shadow-sm';
+                    div.innerHTML = `
+                        <img src="${url}" class="w-full h-full object-cover">
+                        <button type="button" onclick="removeFileFromQueue(${index})" 
+                            class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-90 hover:bg-red-600 transition shadow-md">
+                            <i class="fa-solid fa-xmark text-xs"></i>
+                        </button>
+                    `;
+                    galleryPreview.appendChild(div);
+                });
             }
-        }
 
-        // ================= MODAL ACTIONS =================
-
-        window.openModal = async (mode, data = null) => {
-            const modal = document.getElementById('product-modal');
-            const panel = document.getElementById('modal-panel');
-            const title = document.getElementById('modal-title');
-
-            modal.classList.remove('hidden');
-            setTimeout(() => panel.classList.remove('translate-x-full'), 10);
-            
-            document.getElementById('product-form').reset();
-            document.getElementById('preview-img').src = 'https://placehold.co/80?text=Preview';
-            switchTab('general');
-            currentSpecsData = {}; // Reset dữ liệu specs tạm
-
-            if (mode === 'add') {
-                title.innerText = 'Thêm sản phẩm mới';
-                setFormState(false);
-                document.getElementById('p-id').value = '';
-                document.getElementById('p-stock').value = '0';
-                
-                // Reset Specs Panel
-                document.getElementById('specs-form-container').classList.add('hidden');
-                document.getElementById('specs-warning').classList.remove('hidden');
-            } 
-            else {
-                title.innerText = mode === 'view' ? 'Chi tiết sản phẩm' : 'Cập nhật sản phẩm';
-                setFormState(mode === 'view');
-
-                // Fill Basic Data
-                document.getElementById('p-id').value = data.id;
-                document.getElementById('p-title').value = data.title;
-                document.getElementById('p-price').value = data.price;
-                document.getElementById('p-stock').value = data.stock_quantity || 0;
-                document.getElementById('p-compare').value = data.compare_at || '';
-                document.getElementById('p-image').value = data.image || '';
-                document.getElementById('preview-img').src = data.image || 'https://placehold.co/80?text=Preview';
-                document.getElementById('p-desc').value = data.description || '';
-                
-                // Set Category
-                document.getElementById('p-category').value = data.category || '';
-
-                // Parse Specs Data từ sản phẩm
-                let specsData = {};
-                try { specsData = typeof data.specs === 'string' ? JSON.parse(data.specs) : (data.specs || {}); } catch(e){}
-                currentSpecsData = specsData; // Lưu vào biến tạm
-
-                // Trigger logic load Brands & Render Specs
-                await handleCategoryChange(data.category, data.brand, specsData);
-            }
-        };
-
-        window.closeModal = () => {
-            document.getElementById('modal-panel').classList.add('translate-x-full');
-            setTimeout(() => document.getElementById('product-modal').classList.add('hidden'), 300);
-        };
-
-        // ================= API CALLS =================
-
-        window.viewProduct = async (id) => {
-            try {
-                const p = await api.getProduct(id);
-                window.openModal('view', p);
-            } catch(e) { console.error(e); }
-        };
-
-        // Redirect sang trang sửa chi tiết (như cũ) hoặc mở modal Edit (nếu muốn)
-        // Ở đây mình sửa để mở Modal Edit luôn cho đồng bộ, đỡ phải chuyển trang
-        // Tuy nhiên theo code cũ bạn dùng redirect, mình sẽ giữ redirect nếu bạn muốn, 
-        // nhưng tốt nhất là dùng Modal Edit luôn ở đây.
-        // -> Mình sẽ dùng Modal Edit ở đây luôn cho tiện.
-        /* window.editProduct = async (id) => {
-             // Nếu muốn dùng trang riêng: window.location.href='product-detail.html?id=' + id;
-             try {
-                const p = await api.getProduct(id);
-                window.openModal('edit', p);
-            } catch(e) { console.error(e); }
-        };
-        */
-       // Giữ nguyên redirect như bạn yêu cầu trước đó
-       // window.location.href='product-detail.html?id=${p.id}' đã có trong HTML
-
-        window.deleteProduct = async (id) => {
-            if(!confirm('Xóa sản phẩm này?')) return;
-            try {
-                await api.deleteProduct(id);
-                showToast('Đã xóa thành công', 'success');
-                loadProducts(currentPage);
-            } catch(e) { showToast(e.message || 'Lỗi xóa', 'error'); }
-        };
-
-        window.saveProduct = async () => {
-            const id = document.getElementById('p-id').value;
-            
-            // Gom dữ liệu specs từ input (để chắc chắn lấy giá trị mới nhất)
-            const specInputs = document.querySelectorAll('input[name^="spec_"]');
-            specInputs.forEach(input => {
-                const key = input.name.replace('spec_', '');
-                currentSpecsData[key] = input.value.trim();
-            });
-
-            const data = {
-                title: document.getElementById('p-title').value,
-                price: document.getElementById('p-price').value,
-                stock_quantity: document.getElementById('p-stock').value,
-                compare_at: document.getElementById('p-compare').value,
-                category: document.getElementById('p-category').value,
-                brand: document.getElementById('p-brand').value,
-                image: document.getElementById('p-image').value,
-                description: document.getElementById('p-desc').value,
-                specs: currentSpecsData // Gửi object (như đã fix lỗi JSON)
+            window.removeFileFromQueue = (index) => {
+                filesToUpload.splice(index, 1);
+                renderGalleryPreview();
             };
 
-            if (!data.title || !data.price) {
-                alert('Vui lòng nhập Tên và Giá sản phẩm');
-                return;
+            document.getElementById('p-category').addEventListener('change', function () {
+                handleCategoryChange(this.value);
+            });
+
+            window.switchTab = (tabName) => {
+                ['general', 'specs', 'variants'].forEach(t => {
+                    document.getElementById(`tab-content-${t}`).classList.add('hidden');
+                    document.getElementById(`tab-btn-${t}`).className = 'tab-inactive py-3 px-4 text-sm transition-all hover:bg-gray-50';
+                });
+                document.getElementById(`tab-content-${tabName}`).classList.remove('hidden');
+                document.getElementById(`tab-btn-${tabName}`).className = 'tab-active py-3 px-4 text-sm transition-all hover:bg-gray-50';
+            };
+
+            async function loadCategoriesForSelect() {
+                const catSelect = document.getElementById('p-category');
+                try {
+                    const res = await api.getCategories();
+                    const cats = res.data || [];
+                    window.allCategories = cats;
+                    catSelect.innerHTML = '<option value="">-- Chọn loại --</option>';
+                    cats.forEach(c => catSelect.innerHTML += `<option value="${c.slug}">${c.name}</option>`);
+                } catch (e) { console.error(e); }
             }
 
-            try {
-                if (id) await api.updateProduct(id, data);
-                else await api.createProduct(data);
-                
-                showToast(id ? 'Đã cập nhật' : 'Đã thêm mới', 'success');
-                window.closeModal();
-                loadProducts(currentPage);
-            } catch(e) {
-                showToast(e.message || 'Có lỗi xảy ra', 'error');
+            async function handleCategoryChange(categorySlug, selectedBrand = '', existingSpecs = null) {
+                await updateBrandSelect(categorySlug, selectedBrand);
+                const categoryData = window.allCategories?.find(c => c.slug === categorySlug);
+                let template = [];
+                if (categoryData && categoryData.specs_template) {
+                    try {
+                        template = typeof categoryData.specs_template === 'string'
+                            ? JSON.parse(categoryData.specs_template)
+                            : categoryData.specs_template;
+                    } catch (e) { }
+                }
+                renderSpecsFormFromTemplate(template, existingSpecs || currentSpecsData);
             }
-        };
 
-        let currentPage = 1;
+            function renderSpecsFormFromTemplate(template, data) {
+                const container = document.getElementById('specs-form-container');
+                const warning = document.getElementById('specs-warning');
+                container.innerHTML = '';
 
-        async function loadProducts(page = 1) {
-            currentPage = page;
-            try {
-                const res = await api.getProducts({ page: 1 });
-                // API getProducts trả về danh sách có cả thông tin stock (đã cập nhật Model Product search)
-                
-                const html = (res.data || []).map(p => {
-                    // Logic hiển thị tồn kho
-                    let stockHtml = '';
-                    const stock = parseInt(p.stock_quantity || 0);
-                    if (stock > 0) {
-                        stockHtml = `<span class="text-gray-700 font-bold">${stock}</span>`;
+                if (!template || template.length === 0) {
+                    container.classList.add('hidden');
+                    warning.classList.remove('hidden');
+                    document.getElementById('specs-status-text').textContent = "Danh mục này chưa được cấu hình thông số kỹ thuật.";
+                    return;
+                }
+                container.classList.remove('hidden');
+                warning.classList.add('hidden');
+
+                template.forEach(group => {
+                    let fieldsHtml = '';
+                    group.fields.forEach(f => {
+                        const val = data[f.k] || '';
+                        fieldsHtml += `
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-500 mb-1 uppercase tracking-wide">${f.l}</label>
+                                <input type="text" name="spec_${f.k}" value="${val}"
+                                    class="w-full px-3 py-2 border border-gray-200 rounded focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-gray-50 focus:bg-white transition-colors placeholder-gray-300 shadow-sm"
+                                    oninput="currentSpecsData['${f.k}'] = this.value">
+                            </div>`;
+                    });
+                    container.innerHTML += `
+                        <div class="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
+                            <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
+                                <span class="w-1.5 h-4 bg-blue-600 rounded-full"></span>${group.group}
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">${fieldsHtml}</div>
+                        </div>`;
+                });
+            }
+
+            async function updateBrandSelect(category, selectedBrand = '') {
+                const brandSelect = document.getElementById('p-brand');
+                brandSelect.innerHTML = '<option value="">Đang tải...</option>';
+                brandSelect.disabled = true;
+                try {
+                    const res = await api.getBrands(category);
+                    const brands = res.data || [];
+                    brandSelect.innerHTML = '<option value="">-- Chọn hãng --</option>';
+                    if (brands.length > 0) {
+                        brandSelect.disabled = false;
+                        brands.forEach(b => {
+                            const bName = typeof b === 'object' ? b.name : b;
+                            brandSelect.innerHTML += `<option value="${bName}" ${bName === selectedBrand ? 'selected' : ''}>${bName}</option>`;
+                        });
                     } else {
-                        stockHtml = `<span class="text-red-500 font-bold text-xs bg-red-50 px-2 py-1 rounded border border-red-100">Hết hàng</span>`;
+                        brandSelect.innerHTML = '<option value="">Không có hãng nào</option>';
+                    }
+                } catch (e) { console.error(e); }
+            }
+
+            function setFormState(isReadOnly) {
+                const form = document.getElementById('product-form');
+                const inputs = form.querySelectorAll('input:not([type="hidden"]), textarea, select');
+                const btnSave = document.getElementById('btn-save');
+                const footerHint = document.getElementById('footer-hint');
+                const btnGotoDetail = document.getElementById('btn-goto-detail');
+                const uploadLabel = document.getElementById('upload-label');
+                const sharedGalleryWrapper = document.getElementById('shared-gallery-wrapper');
+                const galleryUploadContainer = document.getElementById('gallery-upload-container');
+
+                inputs.forEach(input => {
+                    if (input.id === 'p-gallery-files') return;
+                    // Bỏ qua checkbox Toggle trạng thái khi readonly (để nhìn thấy nó check hay không)
+                    if (input.type === 'checkbox') {
+                         input.disabled = isReadOnly; 
+                         return;
                     }
 
-                    return `
-                    <tr class="hover:bg-blue-50/50 transition-colors border-b border-gray-100 last:border-0 group">
-                        <td class="px-6 py-4 w-24">
-                            <div class="relative w-16 h-16 rounded-lg border border-gray-200 bg-white p-1 overflow-hidden shadow-sm group-hover:shadow-md transition-all">
-                                <img src="../${p.image}" class="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-300" onerror="this.src='https://placehold.co/64?text=No+Img'">
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <p class="font-semibold text-gray-800 line-clamp-2 mb-1">${p.title}</p>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">ID: #${p.id}</span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="flex flex-col gap-1">
-                                <span class="text-xs font-bold uppercase tracking-wide text-blue-600 bg-blue-50 px-2 py-1 rounded w-fit">${p.category || '---'}</span>
-                                <span class="text-xs text-gray-500 flex items-center gap-1"><i class="fa-solid fa-tag text-[10px]"></i> ${p.brand || '---'}</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-center">${stockHtml}</td>
-                        <td class="px-6 py-4">
-                            <span class="font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-100">${formatPrice(p.price)}</span>
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex justify-end gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
-                                <button onclick="window.viewProduct(${p.id})" class="w-9 h-9 rounded-lg bg-white border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:shadow-sm transition flex items-center justify-center" title="Xem chi tiết"><i class="fa-solid fa-eye"></i></button>
-                                <button onclick="window.location.href='product-detail.html?id=${p.id}'" class="w-9 h-9 rounded-lg bg-white border border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 hover:shadow-sm transition flex items-center justify-center" title="Chỉnh sửa"><i class="fa-solid fa-pen-to-square"></i></button>
-                                <button onclick="window.deleteProduct(${p.id})" class="w-9 h-9 rounded-lg bg-white border border-gray-200 text-red-500 hover:bg-red-50 hover:border-red-300 hover:shadow-sm transition flex items-center justify-center" title="Xóa"><i class="fa-solid fa-trash-can"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                `}).join('');
-                
-                document.getElementById('product-list').innerHTML = html;
-            } catch (e) { 
-                console.error(e);
-                document.getElementById('product-list').innerHTML = `<tr><td colspan="6" class="text-center py-8 text-red-500">Lỗi tải dữ liệu!</td></tr>`;
-            }
-        }
+                    if (isReadOnly) {
+                        input.setAttribute('readonly', true);
+                        input.classList.add('read-only-input');
+                        if (input.tagName === 'SELECT') input.setAttribute('disabled', true);
+                    } else {
+                        input.removeAttribute('readonly');
+                        input.classList.remove('read-only-input');
+                        if (input.tagName === 'SELECT') input.removeAttribute('disabled');
+                    }
+                });
 
-        // Init
-        loadCategoriesForSelect(); // Load danh mục vào select trước
-        document.getElementById('btn-add').addEventListener('click', () => window.openModal('add'));
-        loadProducts();
+                if (!isReadOnly) {
+                    uploadLabel.classList.remove('pointer-events-none', 'opacity-50');
+                    sharedGalleryWrapper.classList.add('hidden'); 
+                    galleryUploadContainer.classList.remove('hidden'); 
+                    btnSave.classList.remove('hidden');
+                    footerHint.classList.remove('hidden');
+                    btnGotoDetail.classList.add('hidden');
+                    document.getElementById('variants-add-msg').classList.remove('hidden');
+                    document.getElementById('variants-view-container').classList.add('hidden');
+                } else {
+                    uploadLabel.classList.add('pointer-events-none', 'opacity-50');
+                    sharedGalleryWrapper.classList.remove('hidden');
+                    galleryUploadContainer.classList.add('hidden'); 
+                    btnSave.classList.add('hidden');
+                    footerHint.classList.add('hidden');
+                    btnGotoDetail.classList.remove('hidden');
+                    document.getElementById('variants-add-msg').classList.add('hidden');
+                    document.getElementById('variants-view-container').classList.remove('hidden');
+                }
+            }
+
+            window.openModal = async (mode, data = null) => {
+                const modal = document.getElementById('product-modal');
+                const panel = document.getElementById('modal-panel');
+                const title = document.getElementById('modal-title');
+                const tabVariants = document.getElementById('tab-btn-variants');
+                const stockInput = document.getElementById('p-stock');
+                const stockBadge = document.getElementById('stock-badge');
+                
+                // Toggle status
+                const activeCheck = document.getElementById('p-is-active');
+
+                modal.classList.remove('hidden');
+                setTimeout(() => panel.classList.remove('translate-x-full'), 10);
+
+                document.getElementById('product-form').reset();
+                document.getElementById('preview-img').src = 'https://placehold.co/150?text=No+Img';
+                document.getElementById('p-image-url-old').value = '';
+                document.getElementById('shared-gallery-view').innerHTML = '';
+                switchTab('general');
+                currentSpecsData = {};
+                
+                filesToUpload = [];
+                renderGalleryPreview();
+
+                stockInput.classList.remove('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
+                stockInput.classList.add('bg-white', 'text-gray-800');
+                stockInput.removeAttribute('readonly');
+                stockBadge.classList.add('hidden');
+
+                if (mode === 'add') {
+                    title.innerText = 'Thêm sản phẩm mới';
+                    setFormState(false);
+                    document.getElementById('p-id').value = '';
+                    document.getElementById('p-stock').value = '0';
+                    activeCheck.checked = true; // Mặc định bật khi thêm mới
+                    document.getElementById('specs-form-container').classList.add('hidden');
+                    document.getElementById('specs-warning').classList.remove('hidden');
+                    tabVariants.classList.add('hidden');
+                } else {
+                    title.innerText = 'Chi tiết sản phẩm (Chỉ xem)';
+                    tabVariants.classList.remove('hidden');
+                    document.getElementById('btn-goto-detail').onclick = () => window.location.href = `product-detail.html?id=${data.id}`;
+
+                    document.getElementById('p-id').value = data.id;
+                    document.getElementById('p-title').value = data.title;
+                    document.getElementById('p-price').value = data.price;
+                    document.getElementById('p-stock').value = data.stock_quantity || 0;
+                    document.getElementById('p-compare').value = data.compare_at || '';
+                    document.getElementById('p-desc').value = data.description || '';
+                    document.getElementById('p-category').value = data.category || '';
+                    
+                    // Set Toggle Status
+                    activeCheck.checked = (data.is_active != 0); 
+
+                    const imgUrl = data.image ? (data.image.startsWith('http') ? data.image : `../${data.image}`) : 'https://placehold.co/150?text=No+Img';
+                    document.getElementById('preview-img').src = imgUrl;
+                    document.getElementById('p-image-url-old').value = data.image || '';
+
+                    if (data.shared_gallery && data.shared_gallery.length > 0) {
+                        const galleryHtml = data.shared_gallery.map(url => `
+                            <div class="aspect-square border rounded overflow-hidden">
+                                <img src="../${url}" class="w-full h-full object-cover">
+                            </div>
+                        `).join('');
+                        document.getElementById('shared-gallery-view').innerHTML = galleryHtml;
+                    } else {
+                        document.getElementById('shared-gallery-view').innerHTML = '<span class="text-xs text-gray-400 italic col-span-5">Không có ảnh chung.</span>';
+                    }
+
+                    let specsData = {};
+                    try { specsData = typeof data.specs === 'string' ? JSON.parse(data.specs) : (data.specs || {}); } catch (e) { }
+                    currentSpecsData = specsData;
+                    await handleCategoryChange(data.category, data.brand, specsData);
+                    await loadVariantsReadOnly(data.id);
+                    setFormState(true);
+
+                    if (stockInput.hasAttribute('readonly') && stockBadge.classList.contains('hidden') === false) {
+                        stockInput.classList.add('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
+                    }
+                }
+            };
+
+            window.closeModal = () => {
+                document.getElementById('modal-panel').classList.add('translate-x-full');
+                setTimeout(() => document.getElementById('product-modal').classList.add('hidden'), 300);
+            };
+
+            window.saveProduct = async () => {
+                const id = document.getElementById('p-id').value;
+                const specInputs = document.querySelectorAll('input[name^="spec_"]');
+                specInputs.forEach(input => {
+                    currentSpecsData[input.name.replace('spec_', '')] = input.value.trim();
+                });
+
+                const data = {
+                    title: document.getElementById('p-title').value,
+                    price: document.getElementById('p-price').value,
+                    stock_quantity: document.getElementById('p-stock').value,
+                    compare_at: document.getElementById('p-compare').value,
+                    category: document.getElementById('p-category').value,
+                    brand: document.getElementById('p-brand').value,
+                    description: document.getElementById('p-desc').value,
+                    specs: currentSpecsData,
+                    image: document.getElementById('p-image-url-old').value,
+                    // Lấy trạng thái từ Toggle
+                    is_active: document.getElementById('p-is-active').checked ? 1 : 0
+                };
+
+                if (!data.title || !data.price) return showToast('Vui lòng nhập Tên và Giá sản phẩm', 'warning');
+
+                const btnSave = document.getElementById('btn-save');
+                const originalText = btnSave.innerHTML;
+                btnSave.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
+                btnSave.disabled = true;
+
+                try {
+                    let productId = id;
+                    let isNew = false;
+
+                    if (!id) {
+                        const res = await api.createProduct(data);
+                        productId = res.id;
+                        isNew = true;
+                    } else {
+                        // Gọi update nếu là edit
+                        await api.updateProduct(productId, data);
+                    }
+
+                    const file = document.getElementById('p-image-file').files[0];
+                    if (file) {
+                        const formData = new FormData();
+                        formData.append('image', file);
+                        await api.uploadProductImage(productId, formData);
+                    }
+
+                    if (filesToUpload.length > 0) {
+                        for (const galleryFile of filesToUpload) {
+                            const fd = new FormData();
+                            fd.append('image', galleryFile);
+                            await api.uploadProductImage(productId, fd);
+                        }
+                    }
+
+                    if (isNew) {
+                        if (confirm('Sản phẩm đã tạo thành công! Bạn có muốn chuyển sang trang chi tiết để thêm Biến thể (Màu sắc/Cấu hình) không?')) {
+                            window.location.href = `product-detail.html?id=${productId}`;
+                        } else {
+                            window.closeModal();
+                            loadProducts(currentPage);
+                            showToast('Tạo sản phẩm thành công', 'success');
+                        }
+                    } else {
+                        window.closeModal();
+                        loadProducts(currentPage);
+                        showToast('Cập nhật thành công', 'success');
+                    }
+
+                } catch (e) {
+                    showToast(e.message || 'Có lỗi xảy ra', 'error');
+                    console.error(e);
+                } finally {
+                    btnSave.innerHTML = originalText;
+                    btnSave.disabled = false;
+                }
+            };
+
+            async function loadVariantsReadOnly(productId) {
+                const container = document.getElementById('variants-view-container');
+                container.innerHTML = '<p class="text-center text-gray-500">Đang tải biến thể...</p>';
+                try {
+                    const res = await api.request(`/products/${productId}/variants`);
+                    const variants = res.data || [];
+                    const stockInput = document.getElementById('p-stock');
+                    const stockBadge = document.getElementById('stock-badge');
+                    
+                    if (variants.length > 0) {
+                        stockInput.setAttribute('readonly', true);
+                        stockInput.classList.add('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
+                        stockBadge.classList.remove('hidden');
+                    }
+
+                    if (variants.length === 0) {
+                        container.innerHTML = '<p class="text-center text-gray-400 italic">Chưa có biến thể.</p>';
+                        return;
+                    }
+                    
+                    const groups = {};
+                    variants.forEach(v => {
+                        const c = (v.attributes?.color || v.color || 'Mặc định').trim();
+                        if (!groups[c]) groups[c] = [];
+                        groups[c].push(v);
+                    });
+                    
+                    let html = '';
+                    Object.entries(groups).forEach(([color, vars]) => {
+                        let imgs = [];
+                        vars.forEach(v => {
+                            if (v.gallery && v.gallery.length) v.gallery.forEach(i => !imgs.includes(i) && imgs.push(i));
+                            else if (v.image && !imgs.includes(v.image)) imgs.push(v.image);
+                        });
+                        
+                        html += `
+                        <div class="border rounded-lg bg-white mb-4 overflow-hidden">
+                            <div class="bg-gray-50 px-4 py-2 border-b flex items-center gap-2 font-bold text-gray-700 text-sm uppercase">
+                                <span class="w-3 h-3 rounded-full bg-blue-500"></span> Màu: ${color}
+                            </div>
+                            <div class="grid grid-cols-4 divide-x">
+                                <div class="p-3 bg-white grid grid-cols-2 gap-2 content-start">
+                                    ${imgs.length ? imgs.map(i => `<img src="../${i}" class="aspect-square object-cover rounded border">`).join('') : '<span class="text-xs text-gray-400 col-span-2 text-center">No Img</span>'}
+                                </div>
+                                <div class="col-span-3">
+                                    <div class="p-3 text-sm text-gray-600">
+                                        Có <b>${vars.length}</b> phân loại hàng. Tổng tồn kho: <b>${vars.reduce((sum,v)=>sum+(v.stock_quantity||0),0)}</b>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                    });
+                    container.innerHTML = html;
+                } catch (e) {
+                    container.innerHTML = '<p class="text-red-500 text-center">Lỗi tải</p>';
+                }
+            }
+
+            window.viewProduct = async (id) => {
+                try { window.openModal('view', await api.getProduct(id)); }
+                catch (e) { console.error(e); }
+            };
+
+            window.deleteProduct = async (id) => {
+                if (!confirm('Xóa sản phẩm này?')) return;
+                try {
+                    await api.deleteProduct(id);
+                    showToast('Đã xóa', 'success');
+                    loadProducts(currentPage);
+                } catch (e) {
+                    showToast('Lỗi xóa', 'error');
+                }
+            };
+
+            async function loadProducts(page = 1) {
+                currentPage = page;
+                try {
+                    // Thêm param status: 'all' để Admin lấy cả sản phẩm ẩn
+                    const res = await api.getProducts({ page: currentPage, status: 'all' });
+                    const html = (res.data || []).map(p => {
+                        // Xử lý badge trạng thái
+                        const isActive = (p.is_active != 0);
+                        const statusBadge = isActive 
+                            ? `<span class="bg-green-100 text-green-700 border border-green-200 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide">Đang bán</span>`
+                            : `<span class="bg-red-100 text-red-700 border border-red-200 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide">Ngừng KD</span>`;
+
+                        return `
+                        <tr class="hover:bg-blue-50/50 transition border-b border-gray-100 last:border-0 group ${!isActive ? 'bg-gray-50 opacity-70' : ''}">
+                            <td class="px-6 py-4 w-24">
+                                <div class="w-16 h-16 rounded-lg border bg-white p-1 overflow-hidden">
+                                    <img src="../${p.image}" class="w-full h-full object-contain group-hover:scale-110 transition" onerror="this.src='https://placehold.co/64?text=No+Img'">
+                                </div>
+                            </td>
+                            <td class="px-6 py-4"><p class="font-semibold text-gray-800 line-clamp-2">${p.title}</p></td>
+                            <td class="px-6 py-4">${p.category || '--'}</td>
+                            <td class="px-6 py-4 text-center">${p.stock_quantity}</td>
+                            <td class="px-6 py-4 text-center">${statusBadge}</td> <td class="px-6 py-4">${formatPrice(p.price)}</td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex justify-end gap-2 opacity-80 group-hover:opacity-100">
+                                    <button onclick="window.viewProduct(${p.id})" class="w-9 h-9 rounded bg-white border hover:border-blue-300 hover:text-blue-600 transition flex items-center justify-center">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                    
+                                    <button onclick="window.location.href='product-detail.html?id=${p.id}'" class="w-9 h-9 rounded bg-white border hover:bg-blue-50 hover:text-blue-600 transition flex items-center justify-center">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+
+                                    <button onclick="window.deleteProduct(${p.id})" class="w-9 h-9 rounded bg-white border hover:bg-red-50 hover:text-red-500 transition flex items-center justify-center">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `}).join('');
+                    document.getElementById('product-list').innerHTML = html;
+                } catch (e) {
+                    console.error(e);
+                    document.getElementById('product-list').innerHTML = `<tr><td colspan="7" class="text-center py-8 text-red-500">Lỗi tải dữ liệu!</td></tr>`;
+                }
+            }
+
+            await loadCategoriesForSelect();
+            loadProducts();
+        })();
     </script>
 </body>
 </html>

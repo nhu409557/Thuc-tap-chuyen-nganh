@@ -27,24 +27,27 @@
       <div class="md:col-span-2 space-y-6">
 
         <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h1 id="product-title" class="text-3xl font-bold mb-4 text-gray-800 leading-tight">Đang tải...</h1>
+          <h1 id="product-title" class="text-3xl font-bold mb-2 text-gray-800 leading-tight">Đang tải...</h1>
           
           <div class="mb-6 relative h-96 w-full flex items-center justify-center bg-gray-50 rounded-lg border border-gray-100">
             <img id="main-image" src="https://via.placeholder.com/600x600?text=Loading" alt="Ảnh sản phẩm" class="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-105 cursor-zoom-in mix-blend-multiply" />
           </div>
           
           <div id="gallery-container" class="flex gap-3 overflow-x-auto pb-2 justify-center custom-scrollbar px-4">
-             </div>
+          </div>
         </div>
         
         <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
           <div class="border-b border-gray-200 bg-gray-50">
-            <nav class="flex -mb-px px-6" aria-label="Tabs">
-              <button id="tab-desc" data-tab="description" class="tab-btn text-blue-600 border-blue-600 whitespace-nowrap py-4 px-4 border-b-2 font-bold text-sm transition-colors">
+            <nav class="flex -mb-px px-6 gap-6 overflow-x-auto custom-scrollbar" aria-label="Tabs">
+              <button id="tab-desc" data-tab="description" class="tab-btn text-blue-600 border-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm transition-colors">
                 Mô tả sản phẩm
               </button>
-              <button id="tab-spec" data-tab="specs" class="tab-btn text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm transition-colors">
+              <button id="tab-spec" data-tab="specs" class="tab-btn text-gray-500 hover:text-gray-700 border-transparent hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
                 Thông số kỹ thuật
+              </button>
+              <button id="tab-review" data-tab="reviews" class="tab-btn text-gray-500 hover:text-gray-700 border-transparent hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+                Đánh giá & Nhận xét
               </button>
             </nav>
           </div>
@@ -59,6 +62,19 @@
                   <p class="p-4 text-center text-gray-500">Đang cập nhật thông số...</p>
                </div>
             </div>
+
+            <div id="reviews-content" class="tab-content hidden">
+                <div id="reviews-summary" class="bg-gray-50 rounded-lg p-6 mb-6 flex flex-col items-center justify-center border border-gray-100">
+                    <div class="text-4xl font-bold text-gray-800 mb-1" id="avg-rating-text">0/5</div>
+                    <div class="flex text-yellow-400 text-xl mb-2" id="avg-rating-stars">
+                        </div>
+                    <div class="text-sm text-gray-500" id="total-reviews-text">Chưa có đánh giá nào</div>
+                </div>
+
+                <div id="reviews-list" class="space-y-6">
+                    <p class="text-center text-gray-400 italic py-4">Đang tải đánh giá...</p>
+                </div>
+            </div>
           </div>
         </div>
         
@@ -68,10 +84,13 @@
         <div class="sticky top-24 space-y-6">
           
           <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-            <div class="flex flex-col mb-2">
+            <div class="flex flex-col mb-4">
               <span id="product-price" class="text-3xl font-bold text-red-600">...</span>
               <span id="product-compare-price" class="text-sm text-gray-400 line-through mt-1">...</span>
             </div>
+
+            <div id="dynamic-variants" class="space-y-4 mb-6 hidden border-t border-gray-100 pt-4">
+                </div>
 
             <div id="product-stock-status" class="mb-4 text-sm font-medium min-h-[20px]"></div>
 

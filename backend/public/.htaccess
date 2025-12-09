@@ -1,12 +1,28 @@
 <IfModule mod_rewrite.c>
-  RewriteEngine On
+    RewriteEngine On
 
-  # Dùng ngoặc kép để bao quanh đường dẫn có dấu cách
-  RewriteBase "/Web ban thiet bi dien tu/backend/public/"
+    # --- CẤU HÌNH HEADER (QUAN TRỌNG) ---
+    # Giữ lại Header Authorization để PHP nhận được Token
+    RewriteCond %{HTTP:Authorization} ^(.*)
+    RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
 
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
-  
-  # Chuyển hướng tất cả yêu cầu đến index.php
-  RewriteRule ^ index.php [QSA,L]
+    # Cấp quyền cho các method, đặc biệt là OPTIONS (cho Preflight Request)
+    <Limit GET POST PUT DELETE OPTIONS>
+        Require all granted
+    </Limit>
+
+    # --- CẤU HÌNH ĐƯỜNG DẪN (REWRITE BASE) ---
+    # LƯU Ý QUAN TRỌNG:
+    # 1. Nếu bạn upload code lên Hosting và tên miền trỏ thẳng vào thư mục public 
+    #    (ví dụ: api.techhub.com) -> Dùng: RewriteBase /
+    # 2. Nếu bạn chạy Localhost kiểu http://localhost/backend/public/ 
+    #    -> Dùng: RewriteBase /backend/public/
+    
+    # Ở đây tôi để mặc định là /, nếu bạn chạy trong thư mục con hãy sửa lại dòng dưới:
+    RewriteBase /backend/public/
+
+    # --- ĐIỀU HƯỚNG MỌI REQUEST VÀO index.php ---
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [QSA,L]
 </IfModule>

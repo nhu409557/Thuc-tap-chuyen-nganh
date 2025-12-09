@@ -6,6 +6,17 @@
     <title>Quản lý Hãng - TechHub Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Trạng thái chỉ đọc */
+        input[readonly], textarea[readonly] {
+            background-color: #f9fafb;
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+        input[type="checkbox"]:disabled {
+            cursor: not-allowed;
+        }
+    </style>
 </head>
 <body class="bg-gray-50 font-sans antialiased">
 
@@ -35,6 +46,7 @@
         </table>
     </div>
 
+    <!-- MODAL -->
     <div id="brand-modal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
         
@@ -57,8 +69,8 @@
                 </div>
 
                 <div class="flex justify-end gap-3 pt-2 border-t border-gray-100">
-                    <button type="button" onclick="closeModal()" class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition">Hủy</button>
-                    <button type="submit" class="px-5 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 shadow-md transition">Lưu</button>
+                    <button type="button" id="brand-cancel-btn" onclick="closeModal()" class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition">Hủy</button>
+                    <button type="submit" id="brand-submit-btn" class="px-5 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 shadow-md transition">Lưu</button>
                 </div>
             </form>
         </div>
@@ -74,23 +86,29 @@
         // Render Layout
         renderAdminLayout('brands');
 
-        // Load danh sách Hãng
+        // ================== HÀM LOAD BRAND ==================
         async function loadBrands() {
             try {
                 const res = await api.getAllBrandsAdmin();
                 const brands = res.data || [];
                 
                 if (brands.length === 0) {
-                    document.getElementById('brands-list').innerHTML = `<tr><td colspan="4" class="text-center py-8 text-gray-500 italic">Chưa có dữ liệu</td></tr>`;
+                    document.getElementById('brands-list').innerHTML =
+                        `<tr><td colspan="4" class="text-center py-8 text-gray-500 italic">Chưa có dữ liệu</td></tr>`;
                     return;
                 }
 
                 const html = brands.map(b => {
-                    // Tạo các badge danh mục đẹp mắt
-                    const catsHtml = (b.categories || '').split(',').filter(c => c).map(c => {
-                        // Map slug sang tên đẹp hơn (nếu cần), ở đây dùng slug luôn cho nhanh hoặc bạn có thể map lại
-                        return `<span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100 mr-1 mb-1">${c}</span>`;
-                    }).join('');
+                    const catsHtml = (b.categories || '')
+                        .split(',')
+                        .filter(c => c)
+                        .map(c => `
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100 mr-1 mb-1">
+                                ${c}
+                            </span>
+                        `).join('');
+
+                    const dataJson = JSON.stringify(b).replace(/'/g, "&#39;");
 
                     return `
                     <tr class="hover:bg-blue-50/30 transition border-b border-gray-50 last:border-0">
@@ -103,36 +121,54 @@
                         </td>
                         <td class="px-6 py-4 text-right">
                             <div class="flex justify-end gap-2">
-                                <button onclick='window.editBrand(${JSON.stringify(b).replace(/'/g, "&#39;")})' class="w-8 h-8 rounded bg-white border border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition flex items-center justify-center"><i class="fa-solid fa-pen"></i></button>
-                                <button onclick="window.deleteBrand(${b.id})" class="w-8 h-8 rounded bg-white border border-gray-200 text-red-500 hover:bg-red-50 hover:border-red-300 transition flex items-center justify-center"><i class="fa-solid fa-trash"></i></button>
+                                <!-- Xem chi tiết -->
+                                <button onclick='window.viewBrand(${dataJson})'
+                                        class="w-8 h-8 rounded bg-white border border-gray-200 text-gray-600 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition flex items-center justify-center"
+                                        title="Xem chi tiết">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                                <!-- Sửa -->
+                                <button onclick='window.editBrand(${dataJson})'
+                                        class="w-8 h-8 rounded bg-white border border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition flex items-center justify-center"
+                                        title="Chỉnh sửa">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <!-- Xóa -->
+                                <button onclick="window.deleteBrand(${b.id})"
+                                        class="w-8 h-8 rounded bg-white border border-gray-200 text-red-500 hover:bg-red-50 hover:border-red-300 transition flex items-center justify-center"
+                                        title="Xóa">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
-                `}).join('');
+                `;
+                }).join('');
                 
                 document.getElementById('brands-list').innerHTML = html;
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error(e);
+                document.getElementById('brands-list').innerHTML =
+                    `<tr><td colspan="4" class="text-center py-8 text-red-500">Lỗi tải dữ liệu</td></tr>`;
+            }
         }
 
-        // Load danh mục động vào Modal (Checkbox)
+        // ================== LOAD CATEGORIES VÀO MODAL ==================
         async function loadCategoriesForModal() {
             const container = document.getElementById('checkbox-container');
             try {
-                // Sử dụng API lấy danh mục (Public hoặc Admin đều được)
-                // Ở đây giả định dùng api.getCategories() (bạn đã thêm ở bước trước)
-                // Nếu chưa có thì dùng api.getProducts() để lấy filter hoặc tạo endpoint mới.
-                // Tốt nhất là dùng api.getCategories() từ CategoryController
-                const res = await api.getCategories(); 
+                const res = await api.getCategories();
                 const cats = res.data || [];
 
-                if(cats.length === 0) {
+                if (cats.length === 0) {
                     container.innerHTML = '<p class="text-xs text-gray-400 col-span-2">Chưa có danh mục nào.</p>';
                     return;
                 }
 
                 container.innerHTML = cats.map(c => `
                     <label class="flex items-center gap-2 cursor-pointer p-2 hover:bg-white rounded border border-transparent hover:border-gray-200 transition">
-                        <input type="checkbox" name="cats" value="${c.slug}" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer">
+                        <input type="checkbox" name="cats" value="${c.slug}"
+                               class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer">
                         <span class="text-sm text-gray-700 font-medium select-none">${c.name}</span>
                     </label>
                 `).join('');
@@ -143,40 +179,76 @@
             }
         }
 
+        // ================== SET TRẠNG THÁI FORM (VIEW / EDIT) ==================
+        function setBrandFormState(isReadOnly) {
+            const form = document.getElementById('brand-form');
+            const nameInput = document.getElementById('b-name');
+            const checkboxes = form.querySelectorAll('input[name="cats"]');
+            const submitBtn = document.getElementById('brand-submit-btn');
+            const cancelBtn = document.getElementById('brand-cancel-btn');
+
+            if (isReadOnly) {
+                // Khóa input text
+                nameInput.setAttribute('readonly', true);
+                // Khóa checkbox
+                checkboxes.forEach(cb => cb.setAttribute('disabled', true));
+                // Ẩn nút lưu
+                submitBtn.classList.add('hidden');
+                // Đổi text nút Hủy → Đóng
+                cancelBtn.textContent = 'Đóng';
+            } else {
+                nameInput.removeAttribute('readonly');
+                checkboxes.forEach(cb => cb.removeAttribute('disabled'));
+                submitBtn.classList.remove('hidden');
+                cancelBtn.textContent = 'Hủy';
+            }
+        }
+
+        // ================== MODAL ACTIONS ==================
         window.openModal = async (mode, data = null) => {
             const modal = document.getElementById('brand-modal');
             const title = document.getElementById('modal-title');
-            
-            // 1. Load Checkbox Danh mục MỚI NHẤT
+            const form = document.getElementById('brand-form');
+
+            // Lưu mode hiện tại lên form để submit handler biết
+            form.dataset.mode = mode;
+
+            // 1. Load checkbox danh mục mới nhất
             await loadCategoriesForModal();
 
-            // 2. Reset Form
-            document.getElementById('brand-form').reset();
-            
-            // 3. Xử lý dữ liệu
+            // 2. Reset form
+            form.reset();
+            document.getElementById('b-id').value = '';
+
             if (mode === 'add') {
                 title.innerText = 'Thêm hãng mới';
-                document.getElementById('b-id').value = '';
+                setBrandFormState(false);
             } else {
-                title.innerText = 'Cập nhật hãng';
-                document.getElementById('b-id').value = data.id;
-                document.getElementById('b-name').value = data.name;
-                
-                // Tick các checkbox đã có
-                const cats = (data.categories || '').split(',');
+                // mode = 'edit' hoặc 'view'
+                const { id, name, categories } = data || {};
+                title.innerText = (mode === 'view') ? 'Chi tiết hãng' : 'Cập nhật hãng';
+
+                document.getElementById('b-id').value = id || '';
+                document.getElementById('b-name').value = name || '';
+
+                const cats = (categories || '').split(',').filter(c => c);
                 const checkboxes = document.querySelectorAll('input[name="cats"]');
                 checkboxes.forEach(cb => {
-                    if (cats.includes(cb.value)) cb.checked = true;
+                    cb.checked = cats.includes(cb.value);
                 });
+
+                // Khóa / mở tùy theo mode
+                setBrandFormState(mode === 'view');
             }
 
             modal.classList.remove('hidden');
-        }
+        };
 
         window.closeModal = () => {
             document.getElementById('brand-modal').classList.add('hidden');
-        }
+        };
 
+        window.viewBrand = (data) => window.openModal('view', data);
         window.editBrand = (data) => window.openModal('edit', data);
 
         window.deleteBrand = async (id) => {
@@ -185,26 +257,47 @@
                 await api.deleteBrand(id);
                 showToast('Đã xóa', 'success');
                 loadBrands();
-            } catch(e) { showToast('Lỗi xóa', 'error'); }
-        }
+            } catch(e) {
+                console.error(e);
+                showToast('Lỗi xóa', 'error');
+            }
+        };
 
-        document.getElementById('brand-form').addEventListener('submit', async (e) => {
+        // ================== SUBMIT FORM ==================
+        const brandForm = document.getElementById('brand-form');
+        brandForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            // Nếu đang ở chế độ view thì không làm gì
+            if (brandForm.dataset.mode === 'view') return;
+
             const id = document.getElementById('b-id').value;
-            const name = document.getElementById('b-name').value;
-            // Lấy danh sách Slug từ checkbox
-            const cats = Array.from(document.querySelectorAll('input[name="cats"]:checked')).map(cb => cb.value);
+            const name = document.getElementById('b-name').value.trim();
+            const cats = Array.from(document.querySelectorAll('input[name="cats"]:checked'))
+                              .map(cb => cb.value);
+
+            if (!name) {
+                showToast('Vui lòng nhập tên hãng', 'error');
+                return;
+            }
 
             try {
-                if (id) await api.updateBrand(id, { name, categories: cats });
-                else await api.createBrand({ name, categories: cats });
+                if (id) {
+                    await api.updateBrand(id, { name, categories: cats });
+                } else {
+                    await api.createBrand({ name, categories: cats });
+                }
                 
                 closeModal();
-                showToast('Thành công', 'success');
+                showToast('Lưu thành công', 'success');
                 loadBrands();
-            } catch(e) { showToast('Lỗi lưu: ' + e.message, 'error'); }
+            } catch(e) {
+                console.error(e);
+                showToast('Lỗi lưu: ' + (e.message || ''), 'error');
+            }
         });
 
+        // ================== INIT ==================
         loadBrands();
     </script>
 </body>

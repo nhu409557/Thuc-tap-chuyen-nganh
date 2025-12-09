@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Mã giảm giá - TechHub Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style> body { font-family: 'Inter', sans-serif; } </style>
+</head>
+<body class="bg-slate-50">
+
+    <div class="p-6">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">Quản lý Mã giảm giá</h1>
+                <p class="text-sm text-slate-500 mt-1">Tạo và quản lý các chương trình khuyến mãi</p>
+            </div>
+            <button onclick="window.openModal()" 
+                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i> Tạo mã mới
+            </button>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-slate-50 text-slate-500 font-bold uppercase text-xs border-b tracking-wider">
+                        <tr>
+                            <th class="px-6 py-4">Mã Code</th>
+                            <th class="px-6 py-4">Mức giảm</th>
+                            <th class="px-6 py-4">Điều kiện áp dụng</th>
+                            <th class="px-6 py-4">Lượt sử dụng</th>
+                            <th class="px-6 py-4">Thời gian</th>
+                            <th class="px-6 py-4 text-center">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="coupon-list" class="divide-y divide-slate-100">
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-slate-400">
+                                <i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Đang tải dữ liệu...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="coupon-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-xl p-6 w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh] transform transition-all scale-100">
+            <div class="flex justify-between items-center mb-5 border-b pb-3">
+                <h2 class="text-xl font-bold text-slate-800" id="modal-title">Thông tin mã giảm giá</h2>
+                <button onclick="window.closeModal()" class="text-slate-400 hover:text-red-500 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <form id="coupon-form" class="space-y-5">
+                <input type="hidden" id="coupon_id">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Mã Code <span class="text-red-500">*</span></label>
+                        <input type="text" name="code" class="w-full border border-slate-300 p-2.5 rounded-lg uppercase font-bold focus:ring-2 focus:ring-blue-500 outline-none" required placeholder="VD: SALE50">
+                        <p class="text-[10px] text-slate-400 mt-1">Viết liền không dấu, tự động in hoa</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">% Giảm giá <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <input type="number" name="percent" class="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none pl-3 pr-8" required min="1" max="100" placeholder="10">
+                            <span class="absolute right-3 top-2.5 text-slate-400 font-bold">%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 bg-slate-50 p-4 rounded-lg border border-slate-100">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Giảm tối đa (VNĐ)</label>
+                        <input type="number" name="max_discount_amount" class="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0">
+                        <p class="text-[10px] text-slate-400 mt-1">Nhập 0 nếu không giới hạn số tiền giảm</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Đơn tối thiểu (VNĐ)</label>
+                        <input type="number" name="min_order_value" class="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="0">
+                        <p class="text-[10px] text-slate-400 mt-1">Giá trị đơn hàng tối thiểu để áp dụng</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tổng lượt dùng toàn hệ thống</label>
+                        <input type="number" name="usage_limit" class="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="100">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Giới hạn mỗi khách hàng</label>
+                        <input type="number" name="usage_per_user" class="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="1">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày bắt đầu</label>
+                        <input type="datetime-local" name="start_date" class="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày kết thúc</label>
+                        <input type="datetime-local" name="end_date" class="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="window.closeModal()" class="px-5 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg font-medium transition-colors">Hủy bỏ</button>
+                    <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-md transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-save"></i> Lưu mã
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast-root"></div>
+
+    <script type="module">
+    import { renderAdminLayout, formatPrice } from '../assets/js/admin.js';
+    import { api } from '../assets/js/api.js';
+
+    // Toast đơn giản cho trang này
+    function showToast(msg, type = 'success') {
+        const div = document.createElement('div');
+        div.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white font-medium z-[9999] animate-bounce ${
+            type === 'success' ? 'bg-green-500' : 'bg-red-500'
+        }`;
+        div.textContent = msg;
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 3000);
+    }
+
+    // ===== 1. Load danh sách coupon =====
+    async function loadCoupons() {
+        const tbody = document.getElementById('coupon-list');
+        if (!tbody) return;
+
+        try {
+            const res = await api.getCouponsAdmin(); // gọi /admin/coupons
+            // API được khai báo ở api.js
+            // getCouponsAdmin() -> request('/admin/coupons', { auth: true })
+            // :contentReference[oaicite:2]{index=2}
+
+            if (!res.data || res.data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center italic text-slate-500">
+                            Chưa có mã giảm giá nào
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            tbody.innerHTML = res.data.map(c => {
+                const isExpired = c.end_date && new Date(c.end_date) < new Date();
+                const isUsedUp = c.usage_limit > 0 && c.used_count >= c.usage_limit;
+
+                let statusDot = '<span class="w-2 h-2 rounded-full bg-green-500 inline-block mr-1"></span>';
+                let rowClass = '';
+
+                if (isExpired) {
+                    statusDot = '<span class="w-2 h-2 rounded-full bg-slate-400 inline-block mr-1"></span>';
+                    rowClass = 'opacity-60 bg-slate-50';
+                } else if (isUsedUp) {
+                    statusDot = '<span class="w-2 h-2 rounded-full bg-red-500 inline-block mr-1"></span>';
+                }
+
+                return `
+                <tr class="border-b hover:bg-blue-50/50 transition-colors ${rowClass}">
+                    <td class="px-6 py-4">
+                        <div class="font-bold text-blue-600 text-base font-mono">${c.code}</div>
+                        <div class="text-[10px] text-slate-400 uppercase font-bold tracking-wide mt-0.5">
+                            ${statusDot} ${isExpired ? 'Đã hết hạn' : (isUsedUp ? 'Hết lượt' : 'Đang chạy')}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="text-red-600 font-bold bg-red-50 px-2 py-1 rounded border border-red-100">
+                            -${c.percent}%
+                        </span>
+                        ${
+                            c.max_discount_amount > 0
+                                ? `<div class="text-xs text-slate-500 mt-1">
+                                        Tối đa: <b>${formatPrice(c.max_discount_amount)}</b>
+                                   </div>`
+                                : ''
+                        }
+                    </td>
+                    <td class="px-6 py-4 text-xs text-slate-600">
+                        ${c.min_order_value > 0 ? `Đơn từ: <b>${formatPrice(c.min_order_value)}</b>` : 'Mọi đơn hàng'}
+                    </td>
+                    <td class="px-6 py-4 text-xs">
+                        <span class="font-bold">${c.used_count}</span> / ${
+                            c.usage_limit > 0 ? c.usage_limit : '∞'
+                        }
+                    </td>
+                    <td class="px-6 py-4 text-xs text-slate-500 font-mono">
+                        <div>${c.start_date ? new Date(c.start_date).toLocaleDateString('vi-VN') : '_'}</div>
+                        <div>${c.end_date ? new Date(c.end_date).toLocaleDateString('vi-VN') : '_'}</div>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <button onclick='window.handleEdit(${JSON.stringify(c)})'
+                                class="text-blue-600 hover:text-blue-800 mx-2">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button onclick="window.handleDelete(${c.id})"
+                                class="text-red-500 hover:text-red-700 mx-2">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>`;
+            }).join('');
+        } catch (err) {
+            console.error(err);
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-red-500">
+                        Lỗi tải dữ liệu: ${err.message}
+                    </td>
+                </tr>`;
+        }
+    }
+
+    // ===== 2. Các hàm modal & action, dùng ID mỗi lần nên không sợ DOM thay =====
+    window.openModal = () => {
+        document.getElementById('coupon-modal')?.classList.remove('hidden');
+        const form = document.getElementById('coupon-form');
+        if (form) form.reset();
+        const idInput = document.getElementById('coupon_id');
+        if (idInput) idInput.value = '';
+        document.getElementById('modal-title').textContent = 'Tạo mã giảm giá mới';
+    };
+
+    window.closeModal = () => {
+        document.getElementById('coupon-modal')?.classList.add('hidden');
+    };
+
+    window.handleEdit = (c) => {
+        window.openModal();
+        document.getElementById('modal-title').textContent = `Sửa mã: ${c.code}`;
+        document.getElementById('coupon_id').value = c.id;
+
+        const form = document.getElementById('coupon-form');
+        if (!form) return;
+
+        form.querySelector('[name="code"]').value               = c.code;
+        form.querySelector('[name="percent"]').value            = c.percent;
+        form.querySelector('[name="max_discount_amount"]').value= c.max_discount_amount;
+        form.querySelector('[name="min_order_value"]').value    = c.min_order_value;
+        form.querySelector('[name="usage_limit"]').value        = c.usage_limit;
+        form.querySelector('[name="usage_per_user"]').value     = c.usage_per_user;
+
+        if (c.start_date) form.querySelector('[name="start_date"]').value = c.start_date.replace(' ', 'T').substring(0,16);
+        if (c.end_date)   form.querySelector('[name="end_date"]').value   = c.end_date.replace(' ', 'T').substring(0,16);
+    };
+
+    window.handleDelete = async (id) => {
+        if (!confirm('Xóa mã này?')) return;
+        try {
+            await api.deleteCoupon(id);
+            showToast('Đã xóa!');
+            await loadCoupons();
+        } catch (e) {
+            showToast(e.message, 'error');
+        }
+    };
+
+    // ===== 3. Gắn submit form SAU KHI layout đã render =====
+    function initFormSubmit() {
+        const form = document.getElementById('coupon-form');
+        if (!form) return;
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const btn = form.querySelector('button[type="submit"]');
+            btn.innerHTML = '...';
+            btn.disabled = true;
+
+            const fd  = new FormData(form);
+            const raw = Object.fromEntries(fd.entries());
+            const id  = document.getElementById('coupon_id').value;
+
+            // Chuẩn hóa số
+            raw.percent             = raw.percent ? parseInt(raw.percent) : 0;
+            raw.max_discount_amount = raw.max_discount_amount ? parseInt(raw.max_discount_amount) : 0;
+            raw.min_order_value     = raw.min_order_value ? parseInt(raw.min_order_value) : 0;
+            raw.usage_limit         = raw.usage_limit ? parseInt(raw.usage_limit) : 0;
+            raw.usage_per_user      = raw.usage_per_user ? parseInt(raw.usage_per_user) : 1;
+
+            // Chuẩn hóa ngày
+            raw.start_date = raw.start_date ? raw.start_date.replace('T', ' ') + ':00' : null;
+            raw.end_date   = raw.end_date   ? raw.end_date.replace('T', ' ') + ':00' : null;
+
+            try {
+                if (id) {
+                    await api.updateCoupon(id, raw);
+                } else {
+                    await api.createCoupon(raw);
+                }
+                window.closeModal();
+                showToast('Lưu thành công!');
+                await loadCoupons();
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                btn.innerHTML = '<i class="fa-solid fa-save"></i> Lưu mã';
+                btn.disabled = false;
+            }
+        });
+    }
+
+    // ===== 4. ENTRY POINT: đảm bảo mọi thứ chạy sau khi layout admin dựng xong =====
+    renderAdminLayout('coupons').then(() => {
+        initFormSubmit();
+        loadCoupons();
+    });
+</script>
+
+</body>
+</html>
