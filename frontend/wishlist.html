@@ -2,51 +2,59 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>Yêu thích</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Danh sách yêu thích</title>
   <link rel="stylesheet" href="assets/css/reset.css" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="assets/css/app.css" />
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 flex flex-col min-h-screen">
 
-  <div id="site-header"></div>
+  <div id="site-header" class="sticky top-0 z-50"></div>
 
-  <div class="bg-white border-b border-gray-300">
+  <div class="bg-white border-b border-gray-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-      <div class="flex items-center gap-2 text-sm">
-        <a class="text-blue-600 hover:underline" href="/frontend/index.html">Trang chủ</a>
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-gray-500"><path d="m9 18 6-6-6-6"></path></svg>
-        <span class="text-gray-700 font-medium">Danh sách yêu thích</span>
+      <div class="flex items-center gap-2 text-xs md:text-sm text-gray-500">
+        <a class="hover:text-blue-600 transition" href="index.html">Trang chủ</a>
+        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+        <span class="text-gray-900 font-medium">Yêu thích</span>
       </div>
     </div>
   </div>
 
-  <section class="bg-gradient-to-r from-blue-50 to-indigo-100 border-b border-gray-300">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-      <div class="flex items-center justify-center gap-3 mb-4">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-8 w-8 text-red-500 fill-red-500"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
-        <h1 class="text-4xl md:text-5xl font-bold">Danh sách yêu thích</h1>
+  <section class="bg-white border-b border-gray-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-8 md:py-10 text-center">
+      <div class="flex items-center justify-center gap-3 mb-2">
+        <i class="fa-solid fa-heart text-3xl md:text-4xl text-red-500 animate-pulse"></i>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Sản phẩm yêu thích</h1>
       </div>
-      <p class="text-lg text-gray-600 max-w-2xl mx-auto">Lưu lại những sản phẩm bạn yêu thích để mua sau.</p>
+      <p class="text-sm md:text-base text-gray-500">Lưu lại những món đồ công nghệ bạn quan tâm.</p>
     </div>
   </section>
 
-
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="flex items-center justify-between mb-8">
-      <p class="text-sm text-gray-500">Hiển thị <span id="wishlist-count">0</span> sản phẩm</p>
-      <div class="relative">
-        <select class="appearance-none px-4 py-2 pr-10 rounded-lg border border-gray-300 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
-          <option value="newest" selected>Mới nhất</option>
+  <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 w-full">
+    
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+      <p class="text-sm text-gray-600 font-medium">
+          Bạn đang có <span id="wishlist-count" class="font-bold text-blue-600">0</span> sản phẩm
+      </p>
+      
+      <div class="relative w-full sm:w-auto">
+        <select class="w-full sm:w-48 appearance-none pl-4 pr-10 py-2 rounded-lg border border-gray-300 bg-white text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer hover:border-gray-400 transition shadow-sm">
+          <option value="newest" selected>Mới thêm gần đây</option>
           <option value="price-asc">Giá: Thấp đến Cao</option>
           <option value="price-desc">Giá: Cao đến Thấp</option>
         </select>
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none"><path d="m6 9 6 6 6-6"></path></svg>
+        <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none"></i>
       </div>
     </div>
     
-    <div id="wishlist-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <p class="col-span-full text-gray-500">Đang tải danh sách yêu thích...</p>
+    <div id="wishlist-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+      <div class="col-span-full flex flex-col items-center justify-center py-12 text-gray-400">
+          <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i>
+          <p class="text-sm">Đang tải danh sách...</p>
+      </div>
     </div>
   </main>
 

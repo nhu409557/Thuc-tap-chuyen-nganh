@@ -2,45 +2,49 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Giỏ hàng</title>
   <link rel="stylesheet" href="assets/css/reset.css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/app.css" />
-  <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+      /* Ẩn scrollbar ngang nếu có */
+      body { overflow-x: hidden; }
+  </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 flex flex-col min-h-screen pb-32 lg:pb-0"> <div id="site-header" class="sticky top-0 z-50"></div>
 
-  <!-- Header sẽ được load bằng JS -->
-  <div id="site-header"></div>
+  <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-8 w-full">
+    
+    <div class="flex items-center justify-between mb-4 lg:mb-8">
+        <h1 class="text-xl lg:text-3xl font-bold text-gray-800">Giỏ hàng</h1>
+        <span class="text-sm text-gray-500 hidden lg:inline">Kiểm tra lại sản phẩm trước khi thanh toán</span>
+    </div>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <h1 class="text-3xl font-bold mb-8">Giỏ hàng</h1>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 relative">
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-      <!-- Cột trái: danh sách sản phẩm -->
-      <div class="lg:col-span-2 space-y-6">
-        <div id="cart-items-list"
-             class="bg-white rounded-lg border border-gray-300 divide-y divide-gray-200">
-          <p class="p-6 text-gray-500">Đang tải giỏ hàng...</p>
+      <div class="lg:col-span-2 space-y-4 lg:space-y-6">
+        <div id="cart-items-list" class="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100 shadow-sm">
+          <p class="p-8 text-center text-gray-500">
+              <i class="fa-solid fa-spinner fa-spin text-2xl mb-2 text-blue-500"></i><br>
+              Đang tải giỏ hàng...
+          </p>
         </div>
       </div>
 
-      <!-- Cột phải: tóm tắt đơn hàng -->
-      <div class="lg:col-span-1">
-        <div id="cart-summary"
-             class="bg-white rounded-lg border border-gray-300 p-6 sticky top-24 space-y-4">
-          <h3 class="font-bold text-lg">Tóm tắt đơn hàng</h3>
-          <p class="text-sm text-gray-500">Vui lòng đăng nhập để xem giỏ hàng.</p>
-        </div>
+      <div class="hidden lg:block lg:col-span-1">
+        <div id="cart-summary-desktop" class="bg-white rounded-xl border border-gray-200 p-6 sticky top-24 space-y-4 shadow-sm">
+          </div>
       </div>
 
     </div>
   </main>
 
-  <!-- Footer sẽ được load bằng JS -->
-  <div id="site-footer"></div>
+  <div id="cart-summary-mobile" class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40 transition-transform duration-300 translate-y-full safe-area-bottom">
+      </div>
+
+  <div id="site-footer" class="hidden lg:block"></div>
 
   <script type="module" src="assets/js/main.js"></script>
   <script type="module" src="assets/js/cart.js"></script>

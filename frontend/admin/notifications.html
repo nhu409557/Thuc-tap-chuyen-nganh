@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Thông báo - TechHub Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style> 
+        body { font-family: 'Inter', sans-serif; } 
+        
+        /* Custom scrollbar mỏng */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+
+        /* Animation cho Toast (MỚI) */
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast-enter {
+            animation: slideInRight 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <div class="p-4 lg:p-6 pb-20 lg:pb-6">
+        
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div>
+                <h1 class="text-xl lg:text-2xl font-bold text-slate-800">Thông báo & Newsletter</h1>
+                <p class="text-sm text-slate-500 mt-1">Soạn thảo và gửi email thông báo</p>
+            </div>
+            <button type="button" onclick="window.openModal('create')" class="w-full sm:w-auto bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-plus"></i> Tạo thông báo mới
+            </button>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left whitespace-nowrap sm:whitespace-normal">
+                    <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-xs tracking-wider border-b border-slate-200">
+                        <tr>
+                            <th class="px-4 py-3 lg:px-6 lg:py-4 w-12 text-center text-[10px] lg:text-xs">ID</th>
+                            <th class="px-4 py-3 lg:px-6 lg:py-4">Tiêu đề</th>
+                            <th class="hidden lg:table-cell px-4 py-3 lg:px-6 lg:py-4">Nội dung tóm tắt</th>
+                            <th class="px-4 py-3 lg:px-6 lg:py-4 text-center w-24 lg:w-32">Trạng thái</th>
+                            <th class="hidden sm:table-cell px-4 py-3 lg:px-6 lg:py-4 text-center w-32 lg:w-40">Thời gian gửi</th>
+                            <th class="px-4 py-3 lg:px-6 lg:py-4 text-center lg:w-48">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="notification-list" class="divide-y divide-slate-100 text-slate-600">
+                        <tr>
+                            <td colspan="6" class="px-6 py-10 text-center text-slate-400">
+                                <i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Đang tải dữ liệu...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="noti-modal" class="fixed inset-0 z-[60] hidden bg-black/60 flex items-center justify-center backdrop-blur-sm transition-opacity duration-300 opacity-0">
+        <div class="bg-white rounded-xl shadow-2xl w-[95%] sm:w-full max-w-lg p-4 lg:p-6 transform scale-95 transition-all duration-300 flex flex-col max-h-[90vh]" id="noti-modal-content">
+            <div class="flex justify-between items-center mb-4 lg:mb-5 border-b pb-2 lg:border-none lg:pb-0">
+                <h3 id="modal-title" class="text-lg lg:text-xl font-bold text-slate-800">Tạo thông báo mới</h3>
+                <button type="button" onclick="window.closeModal()" class="text-slate-400 hover:text-red-500 transition p-1"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            
+            <div class="overflow-y-auto flex-1 pr-1 custom-scrollbar">
+                <form id="noti-form" class="space-y-4 lg:space-y-5 pb-2">
+                    <input type="hidden" id="noti-id">
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tiêu đề Email <span class="text-red-500">*</span></label>
+                        <input type="text" id="noti-title" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition text-sm" placeholder="VD: Khuyến mãi tết 2025..." required>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nội dung <span class="text-red-500">*</span></label>
+                        <textarea id="noti-content" rows="6" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition text-sm" placeholder="Nhập nội dung thông báo..." required></textarea>
+                        <p class="text-[10px] text-slate-400 mt-1 italic">* Hỗ trợ gửi text thuần. (Có thể mở rộng HTML sau)</p>
+                    </div>
+                </form>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-slate-100">
+                <button type="button" onclick="window.closeModal()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition">Hủy</button>
+                <button type="button" onclick="document.getElementById('noti-form').dispatchEvent(new Event('submit'))" class="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-md flex items-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i> Lưu lại
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-root" class="fixed top-5 right-5 z-[100] flex flex-col gap-3 w-full max-w-xs pointer-events-none"></div>
+
+    <script type="module">
+        import { renderAdminLayout } from '../assets/js/admin.js';
+        import { api } from '../assets/js/api.js';
+        import { showToast } from '../assets/js/utils/common.js';
+
+        // Bọc toàn bộ logic trong IIFE async để đảm bảo tuần tự
+        (async () => {
+            
+            // 1. QUAN TRỌNG: Đợi render Layout xong hoàn toàn mới chạy tiếp
+            try {
+                await renderAdminLayout('notifications');
+            } catch (error) {
+                console.error("Lỗi render layout:", error);
+            }
+
+            // 2. Sau khi layout render xong, mới lấy các element từ DOM
+            const modal = document.getElementById('noti-modal');
+            const modalContent = document.getElementById('noti-modal-content');
+            const form = document.getElementById('noti-form');
+            const tbody = document.getElementById('notification-list');
+            
+            let notifications = [];
+            let currentMode = 'create'; // create | edit
+
+            // 3. Định nghĩa các hàm Global (gắn vào window) để HTML gọi được
+            
+            window.openModal = (mode, id = null) => {
+                if (!modal) return console.error("Không tìm thấy modal!");
+
+                currentMode = mode;
+                const titleEl = document.getElementById('modal-title');
+                
+                if (mode === 'create') {
+                    titleEl.textContent = 'Tạo thông báo mới';
+                    form.reset();
+                    document.getElementById('noti-id').value = '';
+                } else {
+                    titleEl.textContent = 'Chỉnh sửa thông báo';
+                    const item = notifications.find(n => n.id == id);
+                    if (item) {
+                        document.getElementById('noti-id').value = item.id;
+                        document.getElementById('noti-title').value = item.title;
+                        document.getElementById('noti-content').value = item.content;
+                    }
+                }
+                
+                modal.classList.remove('hidden');
+                // Force reflow để animation hoạt động
+                void modal.offsetWidth;
+                
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            };
+
+            window.closeModal = () => {
+                if (!modal) return;
+                modal.classList.add('opacity-0');
+                modalContent.classList.remove('scale-100');
+                modalContent.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            };
+
+            window.handleDelete = async (id) => {
+                if (!confirm('Bạn có chắc chắn muốn xóa thông báo này?')) return;
+                try {
+                    await api.deleteNotification(id);
+                    showToast('Đã xóa thông báo', 'success');
+                    loadNotifications();
+                } catch (err) {
+                    showToast(err.message, 'error');
+                }
+            };
+
+            window.handleSend = async (id) => {
+                const item = notifications.find(n => n.id == id);
+                if (!confirm(`XÁC NHẬN GỬI:\n\nTiêu đề: "${item.title}"\n\nThông báo này sẽ được gửi đến TOÀN BỘ khách hàng đã đăng ký nhận tin.\nHành động này không thể hoàn tác.`)) return;
+
+                showToast('Đang tiến hành gửi email... Vui lòng không tắt trang.', 'info', 5000);
+
+                try {
+                    const res = await api.sendNotification(id);
+                    showToast(res.message || 'Đã gửi email thành công!', 'success');
+                    loadNotifications();
+                } catch (err) {
+                    showToast(err.message || 'Lỗi khi gửi email', 'error');
+                }
+            };
+
+            // 4. Logic xử lý Form
+            if (form) {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const id = document.getElementById('noti-id').value;
+                    const data = {
+                        title: document.getElementById('noti-title').value,
+                        content: document.getElementById('noti-content').value
+                    };
+
+                    // Tìm nút submit trong modal footer (vì layout mới nút submit nằm ngoài form)
+                    const modalFooterBtn = document.querySelector('#noti-modal button i.fa-floppy-disk')?.parentElement;
+                    
+                    if(modalFooterBtn) {
+                        var originalText = modalFooterBtn.innerHTML;
+                        modalFooterBtn.disabled = true;
+                        modalFooterBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Đang xử lý...';
+                    }
+
+                    try {
+                        if (currentMode === 'create') {
+                            await api.createNotification(data);
+                            showToast('Tạo thông báo thành công', 'success');
+                        } else {
+                            await api.updateNotification(id, data);
+                            showToast('Cập nhật thành công', 'success');
+                        }
+                        window.closeModal();
+                        loadNotifications();
+                    } catch (err) {
+                        showToast(err.message || 'Lỗi xử lý', 'error');
+                    } finally {
+                        if(modalFooterBtn) {
+                            modalFooterBtn.disabled = false;
+                            modalFooterBtn.innerHTML = originalText;
+                        }
+                    }
+                });
+            }
+
+            // 5. Hàm tải dữ liệu
+            async function loadNotifications() {
+                if (!tbody) return;
+                try {
+                    const res = await api.getNotifications();
+                    notifications = res.data || [];
+                    renderTable(notifications);
+                } catch (err) {
+                    console.error(err);
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-red-500">Lỗi tải dữ liệu: ${err.message}</td></tr>`;
+                }
+            }
+
+            function renderTable(data) {
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-10 italic text-slate-500">Chưa có thông báo nào. Hãy tạo mới!</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = data.map(item => {
+                    const isSent = item.is_sent == 1;
+                    const statusHtml = isSent 
+                        ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] lg:text-xs font-medium bg-green-100 text-green-700 border border-green-200 whitespace-nowrap"><i class="fa-solid fa-check-double"></i> Đã gửi</span>`
+                        : `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] lg:text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 whitespace-nowrap"><i class="fa-regular fa-pen-to-square"></i> Bản nháp</span>`;
+
+                    const sentDate = isSent && item.sent_at 
+                        ? new Date(item.sent_at).toLocaleString('vi-VN') 
+                        : '<span class="text-slate-400">---</span>';
+
+                    const sendBtn = !isSent 
+                        ? `<button onclick="window.handleSend(${item.id})" class="text-[10px] lg:text-xs bg-blue-600 text-white px-2 lg:px-3 py-1.5 rounded hover:bg-blue-700 transition shadow-sm font-bold flex items-center gap-1 whitespace-nowrap">
+                            <i class="fa-regular fa-paper-plane"></i> Gửi
+                        </button>`
+                        : `<button disabled class="text-[10px] lg:text-xs bg-gray-100 text-gray-400 px-2 lg:px-3 py-1.5 rounded cursor-not-allowed font-medium flex items-center gap-1 whitespace-nowrap">
+                            <i class="fa-solid fa-check"></i> Đã gửi
+                        </button>`;
+
+                    return `
+                    <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0 group">
+                        <td class="px-4 py-3 lg:px-6 lg:py-4 font-mono text-[10px] lg:text-xs text-slate-400 text-center">#${item.id}</td>
+                        <td class="px-4 py-3 lg:px-6 lg:py-4 font-semibold text-slate-700 text-sm lg:text-base whitespace-normal min-w-[150px]">${item.title}</td>
+                        <td class="hidden lg:table-cell px-4 py-3 lg:px-6 lg:py-4 text-xs text-slate-500 line-clamp-2 max-w-xs">${item.content}</td>
+                        <td class="px-4 py-3 lg:px-6 lg:py-4 text-center">${statusHtml}</td>
+                        <td class="hidden sm:table-cell px-4 py-3 lg:px-6 lg:py-4 text-center text-xs whitespace-nowrap">${sentDate}</td>
+                        <td class="px-4 py-3 lg:px-6 lg:py-4">
+                            <div class="flex items-center justify-center gap-2 opacity-100 lg:opacity-70 group-hover:opacity-100 transition">
+                                ${sendBtn}
+                                <div class="h-4 w-px bg-slate-300 mx-1 hidden lg:block"></div>
+                                <button onclick="window.openModal('edit', ${item.id})" class="w-8 h-8 rounded border border-slate-200 text-slate-500 hover:bg-white hover:border-blue-400 hover:text-blue-600 transition flex items-center justify-center" title="Sửa">
+                                    <i class="fa-solid fa-pencil"></i>
+                                </button>
+                                <button onclick="window.handleDelete(${item.id})" class="w-8 h-8 rounded border border-slate-200 text-slate-500 hover:bg-white hover:border-red-400 hover:text-red-600 transition flex items-center justify-center" title="Xóa">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    `;
+                }).join('');
+            }
+
+            // Khởi chạy load data
+            loadNotifications();
+
+        })(); // End IIFE
+    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Tài khoản của tôi</title>
-  <link rel="stylesheet" href="assets/css/reset.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <link rel="stylesheet" href="assets/css/reset.css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/app.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -12,12 +12,12 @@
 
   <div id="site-header"></div>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-    <h1 class="text-3xl font-bold mb-8 text-gray-900">Tài khoản của tôi</h1>
+  <main class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-gray-900">Tài khoản của tôi</h1>
     
-    <div class="grid md:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
       
-      <aside class="md:col-span-1">
+      <aside class="col-span-1">
         <div class="bg-white rounded-lg border border-gray-300 divide-y divide-gray-200 shadow-sm overflow-hidden">
           <button data-tab="profile" class="tab-btn w-full flex items-center gap-3 px-4 py-3 text-left font-medium transition bg-blue-50 text-blue-600 border-l-4 border-blue-600">
             <i class="fa-regular fa-user text-lg w-5 text-center"></i>
@@ -42,57 +42,83 @@
         </div>
       </aside>
 
-      <div class="md:col-span-3">
+      <div class="col-span-1 md:col-span-3">
         
-        <div id="profile-content" class="tab-content bg-white rounded-lg border border-gray-300 p-6 shadow-sm">
+        <div id="profile-content" class="tab-content bg-white rounded-lg border border-gray-300 p-4 md:p-6 shadow-sm w-full">
           
           <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Hồ sơ cá nhân</h2>
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800">Hồ sơ cá nhân</h2>
+            <button id="btn-edit-profile" class="text-blue-600 hover:text-blue-800 text-sm font-semibold flex items-center gap-1 transition">
+                <i class="fa-solid fa-pen-to-square"></i> Chỉnh sửa
+            </button>
           </div>
           
-          <form id="profile-form" class="space-y-4 max-w-lg">
-            <div>
+          <form id="profile-form" class="space-y-4 w-full md:max-w-lg">
+            <div class="w-full">
               <label class="block text-sm font-medium mb-2 text-gray-700">Họ và Tên</label>
-              <input type="text" id="account-name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+              <input type="text" id="account-name" disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition disabled:bg-gray-100 disabled:text-gray-600 disabled:cursor-not-allowed bg-white" />
             </div>
-            <div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                <div class="w-full">
+                    <label class="block text-sm font-medium mb-2 text-gray-700">Giới tính</label>
+                    <select id="account-gender" disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition disabled:bg-gray-100 disabled:text-gray-600 disabled:cursor-not-allowed bg-white">
+                        <option value="other">-- Chọn --</option>
+                        <option value="male">Nam</option>
+                        <option value="female">Nữ</option>
+                        <option value="other">Khác</option>
+                    </select>
+                </div>
+                <div class="w-full">
+                    <label class="block text-sm font-medium mb-2 text-gray-700">Ngày sinh</label>
+                    <input type="date" id="account-birthday" disabled class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition disabled:bg-gray-100 disabled:text-gray-600 disabled:cursor-not-allowed bg-white" required />
+                    <p class="text-[11px] text-red-500 mt-1 italic">* Yêu cầu > 16 tuổi</p>
+                </div>
+            </div>
+            <div class="w-full">
               <label class="block text-sm font-medium mb-2 text-gray-700">Email</label>
               <input type="email" id="account-email" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed" disabled />
             </div>
-            <button type="submit" class="mt-2 bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition shadow-sm">
-              Lưu thông tin
-            </button>
+
+            <div id="profile-actions" class="hidden flex flex-col sm:flex-row gap-3 pt-2 w-full">
+                <button type="submit" class="w-full sm:w-auto bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition shadow-sm">
+                  Lưu thông tin
+                </button>
+                <button type="button" id="btn-cancel-profile" class="w-full sm:w-auto bg-white border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">
+                  Hủy
+                </button>
+            </div>
           </form>
 
-          <div class="my-8 border-t border-gray-200"></div>
+          <div class="my-8 border-t border-gray-200 w-full"></div>
 
-          <div>
+          <div class="w-full">
             <button id="btn-show-change-pw" class="text-blue-600 font-semibold hover:text-blue-800 flex items-center gap-2 transition">
                 <i class="fa-solid fa-key"></i> Đổi mật khẩu
             </button>
           </div>
 
-          <div id="change-pw-container" class="hidden mt-6 bg-gray-50 p-6 rounded-lg border border-gray-200 animate-fade-in">
+          <div id="change-pw-container" class="hidden mt-6 bg-gray-50 p-4 md:p-6 rounded-lg border border-gray-200 animate-fade-in w-full">
               <h2 class="text-lg font-bold mb-4 text-gray-800">Đổi mật khẩu</h2>
-              <form id="change-password-form" class="space-y-4 max-w-lg">
-                <div>
+              <form id="change-password-form" class="space-y-4 w-full md:max-w-lg">
+                <div class="w-full">
                   <label class="block text-sm font-medium mb-2 text-gray-700">Mật khẩu hiện tại</label>
                   <input type="password" name="old_password" placeholder="••••••••" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-white" required />
                 </div>
-                <div>
+                <div class="w-full">
                   <label class="block text-sm font-medium mb-2 text-gray-700">Mật khẩu mới</label>
                   <input type="password" name="new_password" placeholder="••••••••" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-white" required />
                 </div>
-                <div>
+                <div class="w-full">
                   <label class="block text-sm font-medium mb-2 text-gray-700">Xác nhận mật khẩu mới</label>
                   <input type="password" name="confirm_password" placeholder="••••••••" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition bg-white" required />
                 </div>
                 
-                <div class="flex gap-3 pt-2">
-                    <button type="submit" class="bg-gray-800 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-900 transition shadow-sm">
+                <div class="flex flex-col sm:flex-row gap-3 pt-2 w-full">
+                    <button type="submit" class="w-full sm:w-auto bg-gray-800 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-900 transition shadow-sm">
                       Cập nhật
                     </button>
-                    <button type="button" id="btn-cancel-change-pw" class="bg-white border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">
+                    <button type="button" id="btn-cancel-change-pw" class="w-full sm:w-auto bg-white border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">
                       Hủy
                     </button>
                 </div>
@@ -101,19 +127,19 @@
 
         </div>
         
-        <div id="address-content" class="tab-content hidden bg-white rounded-lg border border-gray-300 p-6 shadow-sm">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Địa chỉ của tôi</h2>
-            <button id="btn-show-add-address-form" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition shadow-sm">
+        <div id="address-content" class="tab-content hidden bg-white rounded-lg border border-gray-300 p-4 md:p-6 shadow-sm w-full">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800">Địa chỉ của tôi</h2>
+            <button id="btn-show-add-address-form" class="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition shadow-sm">
               <i class="fa-solid fa-plus mr-1"></i> Thêm địa chỉ mới
             </button>
           </div>
           
-          <form id="address-form" class="space-y-4 max-w-lg mb-8 border border-blue-100 bg-blue-50 p-5 rounded-lg hidden animate-fade-in">
+          <form id="address-form" class="space-y-4 w-full md:max-w-lg mb-8 border border-blue-100 bg-blue-50 p-4 md:p-5 rounded-lg hidden animate-fade-in">
             <h3 id="address-form-title" class="text-lg font-bold text-blue-800 mb-4">Thêm địa chỉ mới</h3>
             <input type="hidden" id="address-id" value="" />
             
-            <div class="grid md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
               <div>
                   <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Họ và Tên</label>
                   <input type="text" id="address-full_name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 outline-none" required />
@@ -124,7 +150,7 @@
               </div>
             </div>
 
-            <div class="grid md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
               <div>
                   <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tỉnh/Thành phố</label>
                   <select id="address-province" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 outline-none" required><option value="">-- Chọn Tỉnh --</option></select>
@@ -135,37 +161,37 @@
               </div>
             </div>
 
-            <div>
+            <div class="w-full">
                 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Phường/Xã</label>
                 <select id="address-ward" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 outline-none" required disabled><option value="">-- Chọn Xã --</option></select>
             </div>
             
-            <div>
+            <div class="w-full">
                 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Địa chỉ cụ thể</label>
                 <input type="text" id="address-street_address" placeholder="Số nhà, tên đường" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 outline-none" required />
             </div>
             
-            <div class="flex gap-2 pt-2">
-              <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">Lưu</button>
-              <button type="button" id="btn-cancel-edit-address" class="bg-white border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-semibold hover:bg-gray-50 transition">Hủy</button>
+            <div class="flex flex-col sm:flex-row gap-2 pt-2 w-full">
+              <button type="submit" class="w-full sm:w-auto bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">Lưu</button>
+              <button type="button" id="btn-cancel-edit-address" class="w-full sm:w-auto bg-white border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-semibold hover:bg-gray-50 transition">Hủy</button>
             </div>
           </form>
 
-          <div id="address-list" class="space-y-4">
+          <div id="address-list" class="space-y-4 w-full">
             <div class="flex justify-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>
           </div>
         </div>
 
-        <div id="orders-content" class="tab-content hidden bg-white rounded-lg border border-gray-300 p-6 shadow-sm">
-          <h2 class="text-2xl font-bold mb-6 text-gray-800">Đơn hàng của tôi</h2>
-          <div id="orders-list" class="space-y-4">
+        <div id="orders-content" class="tab-content hidden bg-white rounded-lg border border-gray-300 p-4 md:p-6 shadow-sm w-full">
+          <h2 class="text-xl md:text-2xl font-bold mb-6 text-gray-800">Đơn hàng của tôi</h2>
+          <div id="orders-list" class="space-y-4 w-full">
             <div class="flex justify-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>
           </div>
         </div>
 
-        <div id="wishlist-content" class="tab-content hidden bg-white rounded-lg border border-gray-300 p-6 shadow-sm">
-          <h2 class="text-2xl font-bold mb-6 text-gray-800">Danh sách yêu thích</h2>
-          <div id="wishlist-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div id="wishlist-content" class="tab-content hidden bg-white rounded-lg border border-gray-300 p-4 md:p-6 shadow-sm w-full">
+          <h2 class="text-xl md:text-2xl font-bold mb-6 text-gray-800">Danh sách yêu thích</h2>
+          <div id="wishlist-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
             <div class="col-span-full flex justify-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>
           </div>
         </div>

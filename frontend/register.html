@@ -2,130 +2,130 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Đăng ký tài khoản</title>
   <link rel="stylesheet" href="assets/css/reset.css" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="assets/css/app.css" />
 </head>
-<body class="bg-gray-100">
-  <div id="site-header"></div>
+<body class="bg-gray-50 flex flex-col min-h-screen">
+  <div id="site-header" class="sticky top-0 z-50"></div>
 
-  <main class="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
+  <main class="flex-1 flex items-center justify-center px-4 py-8 md:py-12 w-full">
     <div class="w-full max-w-md">
       
-      <!-- BƯỚC 1: ĐĂNG KÝ THÔNG TIN -->
-      <div id="step1-register" class="bg-white rounded-lg border border-gray-300 p-8 shadow-md">
-        <h1 class="text-3xl font-bold mb-2">Đăng ký</h1>
-        <p class="text-gray-500 mb-8">Tạo tài khoản mới tại TechHub</p>
+      <div id="step1-register" class="bg-white rounded-xl border border-gray-200 p-6 md:p-8 shadow-sm">
+        <h1 class="text-2xl md:text-3xl font-bold mb-2 text-gray-800">Đăng ký</h1>
+        <p class="text-gray-500 mb-6 text-sm md:text-base">Tạo tài khoản mới tại TechHub</p>
+        
         <form id="register-form" class="space-y-4">
           <div>
-            <label class="block text-sm font-medium mb-2">Họ và tên</label>
+            <label class="block text-sm font-bold text-gray-700 mb-1.5">Họ và tên</label>
             <input 
               type="text" 
               name="name" 
               placeholder="Nguyễn Văn A" 
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm md:text-base" 
               required 
             />
           </div>
           <div>
-            <label class="block text-sm font-medium mb-2">Email</label>
+            <label class="block text-sm font-bold text-gray-700 mb-1.5">Email</label>
             <input 
               type="email" 
               name="email" 
               placeholder="your@email.com" 
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm md:text-base" 
               required 
             />
           </div>
           
-          <!-- Mật khẩu -->
           <div>
-            <label class="block text-sm font-medium mb-2">Mật khẩu</label>
+            <label class="block text-sm font-bold text-gray-700 mb-1.5">Mật khẩu</label>
             <div class="relative">
               <input 
                 id="reg-password"
                 type="password" 
                 name="password" 
                 placeholder="••••••••" 
-                class="w-full px-4 py-2 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm md:text-base" 
                 required 
               />
               <button
                 type="button"
                 id="toggle-reg-password"
-                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-700 text-sm select-none"
+                class="absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 hover:text-gray-700 select-none"
                 aria-label="Hiện/ẩn mật khẩu"
               >
-                <span id="toggle-reg-password-text" class="text-xs font-medium">Hiện</span>
+                <span id="toggle-reg-password-text" class="text-xs font-semibold uppercase">Hiện</span>
               </button>
             </div>
           </div>
 
-          <!-- Xác nhận mật khẩu -->
           <div>
-            <label class="block text-sm font-medium mb-2">Xác nhận mật khẩu</label>
+            <label class="block text-sm font-bold text-gray-700 mb-1.5">Xác nhận mật khẩu</label>
             <div class="relative">
               <input 
                 id="reg-password2"
                 type="password" 
                 name="password2" 
                 placeholder="••••••••" 
-                class="w-full px-4 py-2 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm md:text-base" 
                 required 
               />
               <button
                 type="button"
                 id="toggle-reg-password2"
-                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-700 text-sm select-none"
+                class="absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 hover:text-gray-700 select-none"
                 aria-label="Hiện/ẩn mật khẩu xác nhận"
               >
-                <span id="toggle-reg-password2-text" class="text-xs font-medium">Hiện</span>
+                <span id="toggle-reg-password2-text" class="text-xs font-semibold uppercase">Hiện</span>
               </button>
             </div>
           </div>
 
           <button 
             type="submit" 
-            class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:opacity-90 transition"
+            class="w-full bg-blue-600 text-white py-3.5 rounded-lg font-bold hover:bg-blue-700 active:scale-[0.98] transition-all shadow-md shadow-blue-500/30 text-sm md:text-base mt-2"
           >
             Nhận mã xác thực
           </button>
         </form>
         <div class="mt-6 text-center text-sm">
           <span class="text-gray-500">Đã có tài khoản? </span>
-          <a class="text-blue-600 font-semibold hover:underline" href="login.html">Đăng nhập</a>
+          <a class="text-blue-600 font-bold hover:underline p-1" href="login.html">Đăng nhập</a>
         </div>
       </div>
 
-      <!-- BƯỚC 2: XÁC THỰC EMAIL -->
-      <div id="step2-verify" class="hidden bg-white rounded-lg border border-gray-300 p-8 shadow-md">
-        <h1 class="text-3xl font-bold mb-2">Xác thực Email</h1>
+      <div id="step2-verify" class="hidden bg-white rounded-xl border border-gray-200 p-6 md:p-8 shadow-sm">
+        <h1 class="text-2xl md:text-3xl font-bold mb-2 text-gray-800">Xác thực Email</h1>
         
-        <p class="text-gray-500 mb-8 text-sm">
-          Mã 6 chữ số đã được gửi đến 
-          <b id="verify-email-display" class="text-gray-800"></b>.
-          <br>
-          <a href="javascript:;" id="btn-back-to-register" class="text-blue-600 hover:underline font-medium flex items-center gap-1 mt-1">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-            Nhập sai email? Quay lại sửa
-          </a>
-        </p>
+        <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
+            <p class="text-gray-600 text-sm mb-1">
+              Mã 6 chữ số đã được gửi đến:
+            </p>
+            <b id="verify-email-display" class="text-gray-900 break-all block mb-2"></b>
+            <a href="javascript:;" id="btn-back-to-register" class="text-blue-600 hover:text-blue-800 text-xs font-bold flex items-center gap-1">
+                <i class="fa-solid fa-pen"></i> Nhập sai email? Sửa lại
+            </a>
+        </div>
 
-        <form id="verify-form" class="space-y-4">
+        <form id="verify-form" class="space-y-5">
           <div>
-            <label class="block text-sm font-medium mb-2">Mã xác thực</label>
+            <label class="block text-sm font-bold text-gray-700 mb-1.5 text-center uppercase tracking-wide">Nhập mã xác thực</label>
             <input 
               type="text" 
               name="code" 
-              placeholder="123456" 
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-lg tracking-widest" 
+              placeholder="0 0 0 0 0 0" 
+              maxlength="6"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center text-2xl tracking-[0.5em] font-bold text-gray-800" 
               required 
             />
           </div>
           <button 
             type="submit" 
-            class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:opacity-90 transition"
+            class="w-full bg-blue-600 text-white py-3.5 rounded-lg font-bold hover:bg-blue-700 active:scale-[0.98] transition-all shadow-md shadow-blue-500/30"
           >
             Xác nhận Đăng ký
           </button>
@@ -133,7 +133,7 @@
         
         <div class="mt-6 text-center text-sm">
           <span class="text-gray-500">Chưa nhận được mã? </span>
-          <button id="resend-code-btn" class="text-blue-600 font-semibold hover:underline">Gửi lại mã</button>
+          <button id="resend-code-btn" class="text-blue-600 font-bold hover:underline p-2">Gửi lại mã</button>
         </div>
       </div>
       
@@ -145,7 +145,6 @@
   <script type="module" src="assets/js/main.js"></script>
   <script type="module" src="assets/js/auth.js"></script>
 
-  <!-- Script toggle hiện/ẩn mật khẩu đăng ký -->
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       function setupToggle(inputId, btnId, textId) {

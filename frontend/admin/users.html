@@ -11,59 +11,63 @@
         body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body>
+<body class="bg-slate-50">
 
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full">
-        <div class="px-6 py-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-            <div>
-                <h3 class="font-bold text-slate-800 text-lg">Danh sách Khách hàng</h3>
-                <p class="text-xs text-slate-500 mt-1">Quản lý và theo dõi trạng thái người dùng</p>
+    <div class="p-4 lg:p-6 pb-20 lg:pb-6 h-full flex flex-col">
+        
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full">
+            <div class="px-4 py-4 lg:px-6 lg:py-5 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50 gap-3">
+                <div>
+                    <h3 class="font-bold text-slate-800 text-lg">Danh sách Khách hàng</h3>
+                    <p class="text-xs text-slate-500 mt-1">Quản lý và theo dõi trạng thái người dùng</p>
+                </div>
+                <div class="text-xs lg:text-sm text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm self-start sm:self-auto">
+                    Tổng số: <span id="total-users" class="font-bold text-blue-600">0</span>
+                </div>
             </div>
-            <div class="text-sm text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm">
-                Tổng số: <span id="total-users" class="font-bold text-blue-600">0</span>
+
+            <div class="overflow-x-auto flex-1">
+                <table class="w-full text-sm text-left whitespace-nowrap sm:whitespace-normal">
+                    <thead class="bg-slate-100 text-slate-500 font-semibold uppercase text-xs tracking-wider border-b sticky top-0 z-10">
+                        <tr>
+                            <th class="px-4 py-3 lg:px-6 lg:py-4 w-12 text-center text-[10px] lg:text-xs">ID</th>
+                            <th class="px-4 py-3 lg:px-6 lg:py-4">Họ tên / Email</th>
+                            <th class="hidden md:table-cell px-4 py-3 lg:px-6 lg:py-4">Email</th>
+                            <th class="px-4 py-3 lg:px-6 lg:py-4 text-center">Trạng thái</th>
+                            <th class="px-4 py-3 lg:px-6 lg:py-4 text-center lg:w-32">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-list-body" class="divide-y divide-slate-100 text-slate-600 bg-white">
+                        <tr><td colspan="5" class="px-6 py-12 text-center text-slate-400">Đang tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
             </div>
-        </div>
 
-        <div class="overflow-x-auto flex-1">
-            <table class="w-full text-sm text-left">
-                <thead class="bg-slate-100 text-slate-500 font-semibold uppercase text-xs tracking-wider border-b sticky top-0 z-10">
-                    <tr>
-                        <th class="px-6 py-4 w-16">ID</th>
-                        <th class="px-6 py-4">Họ tên</th>
-                        <th class="px-6 py-4">Email</th>
-                        <th class="px-6 py-4">Trạng thái</th>
-                        <th class="px-6 py-4 text-center w-32">Hành động</th>
-                    </tr>
-                </thead>
-                <tbody id="users-list-body" class="divide-y divide-slate-100 text-slate-600 bg-white">
-                    <tr><td colspan="5" class="px-6 py-12 text-center text-slate-400">Đang tải dữ liệu...</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
-            <span class="text-sm text-slate-500">
-                Trang <span id="page-current" class="font-bold text-slate-800">1</span> 
-                / <span id="page-total">1</span>
-            </span>
-            <div class="flex gap-2">
-                <button id="btn-prev" class="px-3 py-1.5 border rounded hover:bg-slate-100">Trước</button>
-                <button id="btn-next" class="px-3 py-1.5 border rounded hover:bg-slate-100">Sau</button>
+            <div class="px-4 py-4 lg:px-6 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+                <span class="text-xs lg:text-sm text-slate-500">
+                    Trang <span id="page-current" class="font-bold text-slate-800">1</span> 
+                    / <span id="page-total">1</span>
+                </span>
+                <div class="flex gap-2">
+                    <button id="btn-prev" class="px-3 py-1.5 text-xs lg:text-sm border rounded hover:bg-slate-100 bg-white">Trước</button>
+                    <button id="btn-next" class="px-3 py-1.5 text-xs lg:text-sm border rounded hover:bg-slate-100 bg-white">Sau</button>
+                </div>
             </div>
         </div>
     </div>
 
+    <div id="toast-root"></div>
+
     <script type="module">
-        // LƯU Ý: Kiểm tra kỹ đường dẫn này. Nếu file html ở root thì sửa thành './assets/...'
         import { renderAdminLayout } from '../assets/js/admin.js';
         import { api } from '../assets/js/api.js';
-        import { showToast } from '../assets/js/utils/common.js';
+        import { showToast } from '../assets/js/ui/toast.js';
 
         // Render layout
         try {
-            renderAdminLayout('users');
+            await renderAdminLayout('users');
         } catch (e) {
-            console.error("Lỗi renderAdminLayout (có thể do sai đường dẫn import):", e);
+            console.error("Lỗi renderAdminLayout:", e);
         }
 
         let currentPage = 1;
@@ -71,22 +75,18 @@
         // --- HÀM XỬ LÝ SỰ KIỆN (Gán vào window) ---
         
         window.handleToggleBlock = async (id, currentIsLocked) => {
-            // currentIsLocked: 1 (đang khóa) hoặc 0 (đang mở)
-            // nextStatus: Muốn chuyển thành gì?
             const nextStatus = currentIsLocked == 1 ? 0 : 1; 
             const actionText = nextStatus == 1 ? "CHẶN" : "MỞ KHÓA";
 
             if (!confirm(`Bạn có chắc muốn ${actionText} khách hàng #${id} không?`)) return;
 
             try {
-                console.log(`Đang gọi API toggleUserBlock: ID=${id}, Status=${nextStatus}`);
                 await api.toggleUserBlock(id, nextStatus);
-                
                 showToast(`Đã ${actionText} thành công!`, 'success');
-                loadUsers(currentPage); // Load lại trang
+                loadUsers(currentPage); 
             } catch (err) {
                 console.error("Lỗi Toggle:", err);
-                alert("Lỗi: " + err.message); // Dùng alert để dễ thấy lỗi
+                showToast("Lỗi: " + err.message, 'error');
             }
         };
 
@@ -94,21 +94,19 @@
             if (!confirm(`CẢNH BÁO: Xóa vĩnh viễn khách hàng #${id}? Hành động không thể hoàn tác.`)) return;
 
             try {
-                console.log(`Đang gọi API deleteUser: ID=${id}`);
                 await api.deleteUser(id);
-                
                 showToast('Đã xóa thành công!', 'success');
                 loadUsers(currentPage);
             } catch (err) {
                 console.error("Lỗi Delete:", err);
-                alert("Lỗi: " + err.message);
+                showToast("Lỗi: " + err.message, 'error');
             }
         };
 
         // --- HÀM LOAD DATA ---
         async function loadUsers(page = 1) {
             const tbody = document.getElementById('users-list-body');
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Đang tải...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8"><i class="fa-solid fa-circle-notch fa-spin text-slate-400"></i></td></tr>';
 
             try {
                 const res = await api.getAdminUsers(page);
@@ -134,14 +132,13 @@
         function renderTable(users) {
             const tbody = document.getElementById('users-list-body');
             if (!users.length) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 italic text-slate-500">Chưa có khách hàng nào.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 italic text-slate-500">Chưa có khách hàng nào.</td></tr>';
                 return;
             }
 
             tbody.innerHTML = users.map(u => {
-                const isLocked = u.is_locked == 1; // Ép kiểu so sánh
+                const isLocked = u.is_locked == 1;
                 
-                // Nút Khóa/Mở: Truyền thẳng giá trị is_locked hiện tại vào hàm
                 const btnLockHtml = `
                     <button onclick="window.handleToggleBlock(${u.id}, ${isLocked ? 1 : 0})" 
                             class="w-8 h-8 rounded border flex items-center justify-center transition-colors ${isLocked ? 'border-emerald-200 bg-emerald-50 text-emerald-600' : 'border-amber-200 bg-amber-50 text-amber-600'}"
@@ -159,16 +156,23 @@
                 `;
 
                 return `
-                    <tr class="hover:bg-slate-50 border-b border-slate-100">
-                        <td class="px-6 py-4 text-slate-500 font-mono text-xs">#${u.id}</td>
-                        <td class="px-6 py-4 font-medium text-slate-800">${u.name || '---'}</td>
-                        <td class="px-6 py-4 text-slate-600">${u.email}</td>
-                        <td class="px-6 py-4">
-                            ${isLocked 
-                                ? '<span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs">Đã khóa</span>' 
-                                : '<span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-xs">Hoạt động</span>'}
+                    <tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0">
+                        <td class="px-4 py-3 lg:px-6 lg:py-4 text-slate-500 font-mono text-[10px] lg:text-xs text-center">#${u.id}</td>
+                        
+                        <td class="px-4 py-3 lg:px-6 lg:py-4">
+                            <div class="font-medium text-slate-800 text-sm lg:text-base">${u.name || '---'}</div>
+                            <div class="text-xs text-slate-500 md:hidden mt-0.5 truncate max-w-[150px]">${u.email}</div>
                         </td>
-                        <td class="px-6 py-4 text-center">
+                        
+                        <td class="hidden md:table-cell px-4 py-3 lg:px-6 lg:py-4 text-slate-600 text-sm">${u.email}</td>
+                        
+                        <td class="px-4 py-3 lg:px-6 lg:py-4 text-center">
+                            ${isLocked 
+                                ? '<span class="px-2 py-1 bg-red-100 text-red-700 rounded text-[10px] lg:text-xs font-bold uppercase">Đã khóa</span>' 
+                                : '<span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-[10px] lg:text-xs font-bold uppercase">Hoạt động</span>'}
+                        </td>
+                        
+                        <td class="px-4 py-3 lg:px-6 lg:py-4 text-center">
                             <div class="flex justify-center gap-2">
                                 ${btnLockHtml}
                                 ${btnDeleteHtml}

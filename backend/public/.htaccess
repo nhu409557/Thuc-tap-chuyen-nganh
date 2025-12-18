@@ -1,28 +1,17 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # --- CẤU HÌNH HEADER (QUAN TRỌNG) ---
-    # Giữ lại Header Authorization để PHP nhận được Token
+    # --- CẤU HÌNH HEADER Authorization ---
+    # Giúp PHP nhận được Token Bearer
     RewriteCond %{HTTP:Authorization} ^(.*)
     RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
 
-    # Cấp quyền cho các method, đặc biệt là OPTIONS (cho Preflight Request)
-    <Limit GET POST PUT DELETE OPTIONS>
-        Require all granted
-    </Limit>
-
-    # --- CẤU HÌNH ĐƯỜNG DẪN (REWRITE BASE) ---
-    # LƯU Ý QUAN TRỌNG:
-    # 1. Nếu bạn upload code lên Hosting và tên miền trỏ thẳng vào thư mục public 
-    #    (ví dụ: api.techhub.com) -> Dùng: RewriteBase /
-    # 2. Nếu bạn chạy Localhost kiểu http://localhost/backend/public/ 
-    #    -> Dùng: RewriteBase /backend/public/
-    
-    # Ở đây tôi để mặc định là /, nếu bạn chạy trong thư mục con hãy sửa lại dòng dưới:
-    RewriteBase /backend/public/
-
-    # --- ĐIỀU HƯỚNG MỌI REQUEST VÀO index.php ---
+    # --- ĐIỀU HƯỚNG ---
+    # Kiểm tra nếu không phải file thực (!) hoặc thư mục thực (!-d)
+    # thì chuyển tất cả về index.php
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^ index.php [QSA,L]
+    
+    # Quan trọng: Không dùng RewriteBase cứng, để tự động nhận diện
+    RewriteRule ^(.*)$ index.php [QSA,L]
 </IfModule>

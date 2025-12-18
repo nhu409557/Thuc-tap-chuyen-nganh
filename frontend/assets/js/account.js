@@ -5,27 +5,42 @@ import { getToken, removeToken } from './utils/storage.js';
 import { showToast } from './ui/toast.js';
 import { syncCartBadge } from './main.js';
 
-// ... (Các hằng số API_PROVINCE_URL, ORDER_STATUS_MAP giữ nguyên) ...
+// --- CONSTANTS & HELPERS ---
 const API_PROVINCE_URL = 'https://provinces.open-api.vn/api';
-// ... (Hàm helper formatPrice giữ nguyên) ...
+
 function formatPrice(vnd) {
   if (typeof vnd !== 'number') return vnd;
   return vnd.toLocaleString('vi-VN') + ' ₫';
 }
-// ... (Hàm checkMomoCallback giữ nguyên) ...
-// ... (Hàm fetchProvinces, populateSelect giữ nguyên) ...
+
 async function fetchProvinces() { const res = await fetch(`${API_PROVINCE_URL}/p/`); return res.json(); }
 async function fetchDistricts(provinceCode) { const res = await fetch(`${API_PROVINCE_URL}/p/${provinceCode}?depth=2`); const data = await res.json(); return data.districts || []; }
 async function fetchWards(districtCode) { const res = await fetch(`${API_PROVINCE_URL}/d/${districtCode}?depth=2`); const data = await res.json(); return data.wards || []; }
-function populateSelect(selectEl, data, placeholder, preSelectedValue = '') { selectEl.innerHTML = `<option value="">-- ${placeholder} --</option>`; selectEl.disabled = false; for (const item of data) { const option = document.createElement('option'); option.value = item.name; option.textContent = item.name; option.dataset.code = item.code; if (item.name === preSelectedValue) option.selected = true; selectEl.appendChild(option); } }
+function populateSelect(selectEl, data, placeholder, preSelectedValue = '') { 
+    selectEl.innerHTML = `<option value="">-- ${placeholder} --</option>`; 
+    selectEl.disabled = false; 
+    for (const item of data) { 
+        const option = document.createElement('option'); 
+        option.value = item.name; 
+        option.textContent = item.name; 
+        option.dataset.code = item.code; 
+        if (item.name === preSelectedValue) option.selected = true; 
+        selectEl.appendChild(option); 
+    } 
+}
 
 const ORDER_STATUS_MAP = {
-    'pending':    { label: 'Chờ xác nhận', color: 'text-yellow-700 bg-yellow-100 border-yellow-200' },
-    'confirmed':  { label: 'Đã xác nhận',  color: 'text-blue-700 bg-blue-100 border-blue-200' },
-    'shipping':   { label: 'Đang giao',    color: 'text-indigo-700 bg-indigo-100 border-indigo-200' },
-    'delivered':  { label: 'Giao thành công', color: 'text-green-700 bg-green-100 border-green-200' },
-    'cancelled':  { label: 'Đã hủy',       color: 'text-red-700 bg-red-100 border-red-200' }
+    'pending':          { label: 'Chờ xác nhận', color: 'text-yellow-700 bg-yellow-100 border-yellow-200' },
+    'confirmed':        { label: 'Đã xác nhận',  color: 'text-blue-700 bg-blue-100 border-blue-200' },
+    'shipping':         { label: 'Đang giao',    color: 'text-indigo-700 bg-indigo-100 border-indigo-200' },
+    'delivered':        { label: 'Giao thành công', color: 'text-green-700 bg-green-100 border-green-200' },
+    'cancelled':        { label: 'Đã hủy',       color: 'text-red-700 bg-red-100 border-red-200' },
+    'returned':         { label: 'Đã hoàn trả',  color: 'text-purple-700 bg-purple-100 border-purple-200' },
+    'return requested': { label: 'Yêu cầu trả hàng', color: 'text-orange-700 bg-orange-100 border-orange-200' }
 };
+
+// --- MAIN FUNCTIONS ---
+
 async function checkMomoCallback() {
   const urlParams = new URLSearchParams(window.location.search);
   if (!urlParams.has('partnerCode')) return;
@@ -42,11 +57,12 @@ async function checkMomoCallback() {
     if (orderId) { try { showToast('Đang khôi phục giỏ hàng...', 'info'); await api.restoreOrderToCart(orderId); await syncCartBadge(); setTimeout(() => { window.location.href = 'cart.html'; }, 1500); } catch (err) { console.error('Lỗi khôi phục giỏ:', err); } }
   }
 }
+
 function renderAddressCard(addr) {
   const fullAddress = `${addr.street_address}, ${addr.ward}, ${addr.district}, ${addr.province}`;
   return `
-    <div class="border border-gray-200 rounded-lg p-4 bg-white shadow-sm mb-4">
-      <div class="flex justify-between items-start mb-2">
+    <div class="border border-gray-200 rounded-lg p-4 bg-white shadow-sm mb-4 w-full">
+      <div class="flex flex-col sm:flex-row justify-between items-start mb-2 gap-2">
         <div>
           <p class="font-bold text-gray-800">${addr.full_name}
             ${addr.is_default ? '<span class="ml-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Mặc định</span>' : ''}
@@ -54,21 +70,22 @@ function renderAddressCard(addr) {
           <p class="text-sm text-gray-600 mt-1">${addr.phone}</p>
           <p class="text-sm text-gray-600">${fullAddress}</p>
         </div>
-        <div class="flex gap-3">
+        <div class="flex gap-3 mt-2 sm:mt-0">
           <button class="text-xs text-blue-600 hover:underline btn-edit-address" data-id="${addr.id}">Sửa</button>
           <button class="text-xs text-red-600 hover:underline btn-delete-address" data-id="${addr.id}">Xóa</button>
         </div>
       </div>
       ${!addr.is_default ? `
-        <button class="text-xs text-gray-600 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded transition btn-set-default" data-id="${addr.id}">
+        <button class="text-xs text-gray-600 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded transition btn-set-default mt-2" data-id="${addr.id}">
           Đặt làm mặc định
         </button>` : ''}
     </div>
   `;
 }
+
 function renderWishlistProductCard(item) {
   return `
-    <div class="bg-white rounded-lg border border-gray-200 p-4 flex flex-col hover:shadow-md transition relative group">
+    <div class="bg-white rounded-lg border border-gray-200 p-4 flex flex-col hover:shadow-md transition relative group w-full">
       <a href="product.html?id=${item.product_id}" class="block mb-3">
         <img src="${item.image}" class="w-full h-40 object-contain" alt="${item.title}" />
       </a>
@@ -78,7 +95,7 @@ function renderWishlistProductCard(item) {
         <div class="flex gap-2">
           <button class="flex-1 bg-blue-600 text-white py-1.5 rounded text-xs hover:bg-blue-700 transition btn-add-to-cart" data-product-id="${item.product_id}">Thêm vào giỏ</button>
           <button class="px-3 py-1.5 bg-gray-100 text-red-500 rounded hover:bg-red-50 transition btn-remove-wishlist" data-wishlist-id="${item.id}">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+            <i class="fa-solid fa-trash"></i>
           </button>
         </div>
       </div>
@@ -86,20 +103,129 @@ function renderWishlistProductCard(item) {
   `;
 }
 
-// A. Hồ Sơ
+// ==========================================
+// A. HỒ SƠ (ĐÃ CẬP NHẬT LOGIC KHÓA/MỞ)
+// ==========================================
+
+// Hàm chuyển đổi trạng thái (Edit <-> View)
+function toggleProfileEdit(isEditable) {
+    const nameInput = document.querySelector('#account-name');
+    const genderSelect = document.querySelector('#account-gender');
+    const birthdayInput = document.querySelector('#account-birthday');
+    
+    const btnEdit = document.querySelector('#btn-edit-profile');
+    const actionsDiv = document.querySelector('#profile-actions');
+
+    if (isEditable) {
+        // Mở khóa input
+        nameInput.disabled = false;
+        genderSelect.disabled = false;
+        birthdayInput.disabled = false;
+        
+        // UI
+        btnEdit.classList.add('hidden');
+        actionsDiv.classList.remove('hidden');
+        nameInput.focus();
+    } else {
+        // Khóa input
+        nameInput.disabled = true;
+        genderSelect.disabled = true;
+        birthdayInput.disabled = true;
+
+        // UI
+        btnEdit.classList.remove('hidden');
+        actionsDiv.classList.add('hidden');
+    }
+}
+
 async function loadProfile() {
   const nameInput = document.querySelector('#account-name');
   const emailInput = document.querySelector('#account-email');
+  const genderSelect = document.querySelector('#account-gender');
+  const birthdayInput = document.querySelector('#account-birthday');
+
   if(!nameInput) return;
 
   try {
     const user = await api.me();
-    nameInput.value = user.name;
-    emailInput.value = user.email;
+    nameInput.value = user.name || '';
+    emailInput.value = user.email || '';
+    if (genderSelect && user.gender) genderSelect.value = user.gender;
+    if (birthdayInput && user.birthday) birthdayInput.value = user.birthday;
   } catch (err) { console.error(err); }
 }
 
-// B. Đơn Hàng
+function initProfileForm() {
+    const form = document.querySelector('#profile-form');
+    if (!form) return;
+
+    const btnEdit = document.querySelector('#btn-edit-profile');
+    const btnCancel = document.querySelector('#btn-cancel-profile');
+
+    // 1. Xử lý nút Chỉnh sửa
+    if(btnEdit) {
+        btnEdit.addEventListener('click', () => {
+            toggleProfileEdit(true);
+        });
+    }
+
+    // 2. Xử lý nút Hủy (Reset dữ liệu và khóa lại)
+    if(btnCancel) {
+        btnCancel.addEventListener('click', async () => {
+            toggleProfileEdit(false);
+            await loadProfile(); // Tải lại dữ liệu cũ
+        });
+    }
+
+    // 3. Xử lý Submit (Lưu)
+    const newForm = form.cloneNode(true);
+    form.parentNode.replaceChild(newForm, form);
+
+    newForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const name = document.querySelector('#account-name').value.trim();
+        const gender = document.querySelector('#account-gender').value;
+        const birthday = document.querySelector('#account-birthday').value;
+
+        if (!name) { showToast('Vui lòng nhập tên', 'error'); return; }
+        if (!birthday) { showToast('Vui lòng chọn ngày sinh', 'error'); return; }
+
+        const birthDate = new Date(birthday);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+
+        if (age < 16) {
+            showToast('Xin lỗi, bạn phải trên 16 tuổi mới được sử dụng dịch vụ.', 'error');
+            return;
+        }
+
+        try {
+            await api.updateProfile({ name, gender, birthday });
+            showToast('Cập nhật hồ sơ thành công!', 'success');
+            toggleProfileEdit(false); // Khóa lại sau khi lưu thành công
+        } catch (err) {
+            showToast(err.message || 'Lỗi cập nhật', 'error');
+        }
+    });
+
+    // Cần gán lại sự kiện cho nút Hủy và Sửa vì ta vừa clone form (nếu nút nằm trong form, nhưng ở đây nút Sửa ở ngoài form nên không ảnh hưởng, nút Hủy nằm trong form nên cần gán lại nếu querySelector bên trong form mới).
+    // Tuy nhiên, logic ở trên đang querySelector từ document nên vẫn ổn, trừ khi cấu trúc DOM thay đổi.
+    // Để an toàn nhất, ta nên gán sự kiện Hủy vào newForm
+    const newBtnCancel = newForm.querySelector('#btn-cancel-profile');
+    if(newBtnCancel) {
+        newBtnCancel.addEventListener('click', async () => {
+            toggleProfileEdit(false);
+            await loadProfile();
+        });
+    }
+}
+
+// ==========================================
+// B. ĐƠN HÀNG
+// ==========================================
 async function loadOrders() {
   const container = document.querySelector('#orders-list');
   if (!container) return;
@@ -117,18 +243,23 @@ async function loadOrders() {
     container.innerHTML = orders.map((o) => {
         const statusKey = (o.status || 'pending').toLowerCase();
         const statusObj = ORDER_STATUS_MAP[statusKey] || ORDER_STATUS_MAP['pending'];
-        const isPaid = o.payment_status === 'Paid';
-        const payStatusHtml = isPaid 
-            ? `<span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-green-600 border border-green-200 bg-green-50 px-2 py-0.5 rounded"><i class="fa-solid fa-check"></i> Đã thanh toán</span>`
-            : `<span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-gray-500 border border-gray-300 bg-gray-50 px-2 py-0.5 rounded">Chưa thanh toán</span>`;
+        
+        let payStatusHtml = '';
+        if (o.payment_status === 'Paid') {
+            payStatusHtml = `<span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-green-600 border border-green-200 bg-green-50 px-2 py-0.5 rounded"><i class="fa-solid fa-check"></i> Đã thanh toán</span>`;
+        } else if (o.payment_status === 'Refunded') {
+            payStatusHtml = `<span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-purple-600 border border-purple-200 bg-purple-50 px-2 py-0.5 rounded"><i class="fa-solid fa-rotate-left"></i> Đã hoàn tiền</span>`;
+        } else {
+            payStatusHtml = `<span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-gray-500 border border-gray-300 bg-gray-50 px-2 py-0.5 rounded">Chưa thanh toán</span>`;
+        }
 
         let methodText = 'COD';
         if (o.payment_method === 'momo') methodText = 'MoMo';
         if (o.payment_method === 'banking') methodText = 'Chuyển khoản';
 
         return `
-        <a href="order-detail.html?id=${o.id}" class="block bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition mb-4 group">
-          <div class="flex justify-between items-start mb-3">
+        <a href="order-detail.html?id=${o.id}" class="block bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition mb-4 group w-full">
+          <div class="flex flex-col sm:flex-row justify-between items-start mb-3 gap-2">
             <div class="space-y-1">
                <div class="flex items-center gap-2">
                    <span class="font-bold text-gray-800 text-lg group-hover:text-blue-600 transition">#${o.id}</span>
@@ -341,39 +472,31 @@ function attachDynamicAddressEvents(addresses) {
   });
 }
 
-// 4. TAB & LOGOUT
 function initTabs() {
   const buttons = document.querySelectorAll('.tab-btn');
   const contents = document.querySelectorAll('.tab-content');
 
   const urlParams = new URLSearchParams(window.location.search);
-  const initialTab = urlParams.get('tab') || 'profile'; // Mặc định là profile
+  const initialTab = urlParams.get('tab') || 'profile';
 
   const activateTab = (tabId) => {
       buttons.forEach(b => {
-         // Reset style (thêm class hover, bỏ class active)
          b.className = `tab-btn w-full flex items-center gap-3 px-4 py-3 text-left font-medium transition hover:bg-gray-50 text-gray-700 border-l-4 border-transparent`;
-         
          if(b.dataset.tab === tabId) {
-             // Active style
              b.className = `tab-btn w-full flex items-center gap-3 px-4 py-3 text-left font-medium transition bg-blue-50 text-blue-600 border-l-4 border-blue-600`;
          }
       });
-
       contents.forEach(c => {
         if (c.id === `${tabId}-content`) c.classList.remove('hidden');
         else c.classList.add('hidden');
       });
   };
 
-  // Init lần đầu
   activateTab(initialTab);
 
-  // Gắn sự kiện click
   buttons.forEach(btn => {
     btn.addEventListener('click', () => {
       activateTab(btn.dataset.tab);
-      // Update URL không reload (optional)
       const newUrl = new URL(window.location);
       newUrl.searchParams.set('tab', btn.dataset.tab);
       window.history.pushState({}, '', newUrl);
@@ -388,7 +511,6 @@ function initLogout() {
   });
 }
 
-// 👇 HÀM XỬ LÝ ĐỔI MẬT KHẨU (MỚI)
 function initChangePassword() {
     const btnShow = document.querySelector('#btn-show-change-pw');
     const container = document.querySelector('#change-pw-container');
@@ -397,20 +519,17 @@ function initChangePassword() {
 
     if (!btnShow || !container || !form) return;
 
-    // Mở Form
     btnShow.addEventListener('click', () => {
         container.classList.remove('hidden');
         btnShow.classList.add('hidden');
     });
 
-    // Đóng Form
     btnCancel.addEventListener('click', () => {
         container.classList.add('hidden');
         btnShow.classList.remove('hidden');
         form.reset();
     });
 
-    // Submit
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const oldPass = form.querySelector('input[name="old_password"]').value;
@@ -418,34 +537,21 @@ function initChangePassword() {
         const confirmPass = form.querySelector('input[name="confirm_password"]').value;
 
         if (newPass !== confirmPass) {
-            showToast('Mật khẩu xác nhận không khớp', 'error');
-            return;
+            showToast('Mật khẩu xác nhận không khớp', 'error'); return;
         }
 
         const btn = form.querySelector('button[type="submit"]');
         const originalText = btn.textContent;
-        btn.disabled = true;
-        btn.textContent = 'Đang xử lý...';
+        btn.disabled = true; btn.textContent = 'Đang xử lý...';
 
         try {
-            await api.changePassword({
-                old_password: oldPass,
-                new_password: newPass,
-                confirm_password: confirmPass
-            });
-            
+            await api.changePassword({ old_password: oldPass, new_password: newPass, confirm_password: confirmPass });
             showToast('Đổi mật khẩu thành công!', 'success');
-            
-            // Reset & Đóng
-            form.reset();
-            container.classList.add('hidden');
-            btnShow.classList.remove('hidden');
-
+            form.reset(); container.classList.add('hidden'); btnShow.classList.remove('hidden');
         } catch (err) {
             showToast(err.message || 'Lỗi đổi mật khẩu', 'error');
         } finally {
-            btn.disabled = false;
-            btn.textContent = originalText;
+            btn.disabled = false; btn.textContent = originalText;
         }
     });
 }
@@ -460,10 +566,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initTabs();
   initLogout();
   initAddressForm();
-  
-  // Gọi hàm xử lý đổi pass
   initChangePassword(); 
-  
+  initProfileForm(); 
   loadProfile();
   loadOrders();
   loadWishlist();

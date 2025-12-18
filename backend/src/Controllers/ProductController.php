@@ -10,9 +10,7 @@ use PDO;
 
 class ProductController extends Controller
 {
-    // =================================================================
-    // HELPER: Chuẩn hóa dữ liệu màu sắc
-    // =================================================================
+    // ... (Giữ nguyên phần normalizeColorInput) ...
     private function normalizeColorInput($colorInput)
     {
         if ($colorInput === null || $colorInput === '') return null;
@@ -35,9 +33,10 @@ class ProductController extends Controller
         $maxPrice = $this->request->query['max_price'] ?? null;
         $brand    = $this->request->query['brand'] ?? null;
         $sort     = $this->request->query['sort'] ?? 'newest';
-        $status   = $this->request->query['status'] ?? 'active'; // active | inactive | all
+        $status   = $this->request->query['status'] ?? 'active'; 
         
-        $res = Product::search($category, $q, $page, 16, $minPrice, $maxPrice, $brand, $sort, $status);
+        // --- THAY ĐỔI Ở ĐÂY: Đổi 16 thành 20 ---
+        $res = Product::search($category, $q, $page, 20, $minPrice, $maxPrice, $brand, $sort, $status);
 
         $this->json([
             'data'       => $res['items'],
@@ -48,6 +47,7 @@ class ProductController extends Controller
         ]);
     }
 
+    // ... (Giữ nguyên các hàm còn lại: getBrands, show, store, update, destroy...) ...
     public function getBrands()
     {
         $brands = Product::getAllBrands($this->request->query['category'] ?? null);
@@ -109,10 +109,6 @@ class ProductController extends Controller
         $this->json($product);
     }
 
-    // =================================================================
-    // ADMIN APIS
-    // =================================================================
-
     public function store()
     {
         AdminMiddleware::guard($this->request, $this->response);
@@ -173,10 +169,6 @@ class ProductController extends Controller
             $this->error($e->getMessage(), 500);
         }
     }
-
-    // =================================================================
-    // IMAGE HANDLING
-    // =================================================================
 
     public function uploadImage(array $params)
     {
@@ -242,10 +234,6 @@ class ProductController extends Controller
         }
     }
 
-    // =================================================================
-    // VARIANT MANAGEMENT (ĐÃ CẬP NHẬT COLOR_CODE)
-    // =================================================================
-
     public function getVariants(array $params)
     {
         $id = (int)$params['id'];
@@ -281,7 +269,6 @@ class ProductController extends Controller
             $db = Database::getConnection();
             $db->beginTransaction();
 
-            // Lấy ID hiện tại
             $stmtCurrent = $db->prepare("SELECT id FROM product_variants WHERE product_id = ?");
             $stmtCurrent->execute([$productId]);
             $currentIds = $stmtCurrent->fetchAll(PDO::FETCH_COLUMN);
@@ -291,52 +278,47 @@ class ProductController extends Controller
             foreach ($b as $item) {
                 if (!isset($item['price'])) continue;
 
-                // 1. Lấy Color Code (ưu tiên từ request root, fallback vào attributes)
-                // 1. Lấy Color Code (Chuyển chuỗi rỗng thành NULL)
                 $rawColorCode = $item['color_code'] ?? ($item['attributes']['color_code'] ?? null);
                 $colorCode = ($rawColorCode === '' || $rawColorCode === 'null') ? null : $rawColorCode;
 
-                // 2. Xử lý Attributes (Xóa color_code khỏi JSON để tránh lưu 2 nơi)
                 $attributesData = $item['attributes'] ?? [];
                 if (isset($attributesData['color_code'])) unset($attributesData['color_code']);
                 $attrs = !empty($attributesData) ? json_encode($attributesData, JSON_UNESCAPED_UNICODE) : null;
 
                 $colorVal = $item['attributes']['color'] ?? ($item['color'] ?? '');
                 $capVal   = $item['attributes']['capacity'] ?? ($item['capacity'] ?? '');
+                
+                $compareAt = isset($item['compare_at']) && $item['compare_at'] !== '' ? (float)$item['compare_at'] : null;
 
-                // Data to insert/update (Có cột color_code)
                 $data = [
                     $attrs, 
                     $colorVal,
-                    $colorCode, // <--- CỘT MỚI
+                    $colorCode,
                     $capVal, 
-                    (float)$item['price'], 
+                    (float)$item['price'],
+                    $compareAt,
                     (int)($item['stock_quantity'] ?? 0), 
                     $item['sku'] ?? null, 
                     $item['image'] ?? null
                 ];
 
                 if (isset($item['id']) && in_array($item['id'], $currentIds)) {
-                    // Update
-                    $sql = "UPDATE product_variants SET attributes=?, color=?, color_code=?, capacity=?, price=?, stock_quantity=?, sku=?, image=? WHERE id=?";
+                    $sql = "UPDATE product_variants SET attributes=?, color=?, color_code=?, capacity=?, price=?, compare_at=?, stock_quantity=?, sku=?, image=? WHERE id=?";
                     $db->prepare($sql)->execute([...$data, $item['id']]);
                     $sentIds[] = $item['id'];
                 } else {
-                    // Create
-                    $sql = "INSERT INTO product_variants (product_id, attributes, color, color_code, capacity, price, stock_quantity, sku, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    $sql = "INSERT INTO product_variants (product_id, attributes, color, color_code, capacity, price, compare_at, stock_quantity, sku, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     $db->prepare($sql)->execute([$productId, ...$data]);
                     $sentIds[] = $db->lastInsertId();
                 }
             }
 
-            // Xóa biến thể thừa
             $toDelete = array_diff($currentIds, $sentIds);
             if (!empty($toDelete)) {
                 $ids = implode(',', array_map('intval', $toDelete));
                 $db->exec("DELETE FROM product_variants WHERE id IN ($ids)");
             }
 
-            // Cập nhật tổng tồn kho
             $total = $db->query("SELECT SUM(stock_quantity) FROM product_variants WHERE product_id = {$productId}")->fetchColumn();
             $db->prepare("UPDATE products SET stock_quantity = ? WHERE id = ?")->execute([(int)$total, $productId]);
 

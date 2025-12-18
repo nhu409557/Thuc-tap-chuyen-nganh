@@ -5,7 +5,7 @@ class CartItem extends BaseModel
 {
     /**
      * Lấy toàn bộ sản phẩm trong giỏ của 1 user
-     * Kèm theo thông tin product + variant đầy đủ
+     * Kèm theo thông tin tồn kho (stock) để frontend giới hạn
      */
     public static function allByUser(int $userId): array
     {
@@ -15,16 +15,18 @@ class CartItem extends BaseModel
                 c.quantity,
                 c.product_id,
                 c.product_variant_id,
-                c.selected_color, -- Lấy màu đã lưu lúc add to cart (fallback)
+                c.selected_color,
 
                 p.title AS product_title,
                 p.image AS product_image,
                 p.price AS base_price,
+                p.stock_quantity AS product_stock,
 
                 pv.color AS variant_color,
                 pv.price AS variant_price,
                 pv.image AS variant_image,
-                pv.attributes AS variant_attributes -- 👇 LẤY THÊM CỘT NÀY
+                pv.attributes AS variant_attributes,
+                pv.stock_quantity AS variant_stock
             FROM cart_items c
             JOIN products p ON c.product_id = p.id
             LEFT JOIN product_variants pv ON c.product_variant_id = pv.id
@@ -37,10 +39,9 @@ class CartItem extends BaseModel
         return $stmt->fetchAll();
     }
 
-    // ... (Các hàm addOrUpdate, updateQuantity, remove, clearByUser giữ nguyên như cũ)
     public static function addOrUpdate(int $userId, int $productId, int $qty, ?int $variantId = null): void
     {
-        // Logic check trùng: sản phẩm giống nhau + variant giống nhau
+        // Check trùng: sản phẩm giống nhau + variant giống nhau
         $sqlCheck = "
             SELECT id FROM cart_items 
             WHERE user_id = ? AND product_id = ? 
@@ -54,7 +55,6 @@ class CartItem extends BaseModel
             $stmt = self::db()->prepare("UPDATE cart_items SET quantity = quantity + ? WHERE id = ?");
             $stmt->execute([$qty, $existing['id']]);
         } else {
-            // Khi insert, lưu ý selected_color sẽ được lưu nếu controller gửi xuống (nhưng ở đây ta dùng variant_id là chính)
             $stmt = self::db()->prepare("
                 INSERT INTO cart_items (user_id, product_id, quantity, product_variant_id) 
                 VALUES (?, ?, ?, ?)
@@ -63,7 +63,17 @@ class CartItem extends BaseModel
         }
     }
     
-    // ... Copy lại các hàm updateQuantity, remove, clearByUser từ file cũ của bạn
+    // MỚI: Hàm lấy số lượng hiện tại của sản phẩm trong giỏ
+    public static function getQuantity(int $userId, int $productId, ?int $variantId = null): int
+    {
+        $sql = "SELECT quantity FROM cart_items 
+                WHERE user_id = ? AND product_id = ? 
+                AND (product_variant_id = ? OR (product_variant_id IS NULL AND ? IS NULL))";
+        $stmt = self::db()->prepare($sql);
+        $stmt->execute([$userId, $productId, $variantId, $variantId]);
+        return (int)$stmt->fetchColumn();
+    }
+
     public static function updateQuantity(int $id, int $qty, int $userId): void
     {
         if ($qty <= 0) {

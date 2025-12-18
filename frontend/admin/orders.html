@@ -7,40 +7,32 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
-        
-        /* Dropdown nổi lên trên cùng */
-        .suggestions-dropdown-fixed {
+        .suggestions-dropdown-fixed { 
             position: fixed; 
-            z-index: 99999 !important;
-            background: white;
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            display: none;
-        }
-        
-        .animate-fade-in-up { animation: fadeInUp 0.3s ease-out; }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            z-index: 99999 !important; 
+            background: white; 
+            max-height: 300px; 
+            overflow-y: auto; 
+            border: 1px solid #e5e7eb; 
+            border-radius: 0.5rem; 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); 
+            display: none; 
         }
     </style>
 </head>
 <body class="bg-gray-50 font-sans antialiased">
 
-    <div class="p-6">
+    <div class="p-4 lg:p-6 pb-20 lg:pb-6">
+        
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div>
-                <h1 class="text-2xl font-bold text-gray-800">Quản lý Đơn hàng</h1>
+                <h1 class="text-xl lg:text-2xl font-bold text-gray-800">Quản lý Đơn hàng</h1>
                 <p class="text-sm text-gray-500">Theo dõi và xử lý đơn đặt hàng</p>
             </div>
-            <button onclick="openCreateOrderModal()" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 flex items-center gap-2 shadow-lg shadow-blue-500/30 transition-all">
+            <button onclick="openCreateOrderModal()" class="w-full sm:w-auto bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 flex items-center justify-center gap-2 shadow-lg transition-all">
                 <i class="fa-solid fa-plus"></i> Tạo đơn hàng
             </button>
         </div>
@@ -48,141 +40,168 @@
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6 flex flex-col sm:flex-row gap-4">
             <div class="relative flex-1">
                 <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                <input type="text" id="search-input" placeholder="Tìm mã đơn, tên khách, SĐT..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg outline-none text-sm">
+                <input type="text" id="search-input" placeholder="Tìm mã đơn, tên khách, SĐT..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg outline-none text-sm focus:border-blue-500 transition">
             </div>
             <div class="w-full sm:w-48">
-                <select id="status-filter" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none text-sm bg-white">
+                <select id="status-filter" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none text-sm bg-white focus:border-blue-500 cursor-pointer">
                     <option value="all">Tất cả trạng thái</option>
                     <option value="Pending">Chờ xác nhận</option>
                     <option value="Confirmed">Đã xác nhận</option>
                     <option value="Shipping">Đang giao hàng</option>
                     <option value="Delivered">Giao thành công</option>
+                    <option value="Return Requested">⚠️ Yêu cầu trả hàng</option>
+                    <option value="Returned">Đã hoàn trả</option>
                     <option value="Cancelled">Đã hủy</option>
                 </select>
             </div>
-            <button onclick="loadOrders()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition">
+            <button onclick="loadOrders()" class="w-full sm:w-auto px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2">
                 <i class="fa-solid fa-filter"></i> Lọc
             </button>
         </div>
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left">
+                <table class="w-full text-sm text-left whitespace-nowrap sm:whitespace-normal">
                     <thead class="bg-gray-50 border-b border-gray-200 text-gray-500 font-semibold uppercase text-xs">
                         <tr>
-                            <th class="px-6 py-4">Mã đơn</th>
-                            <th class="px-6 py-4">Khách hàng</th>
-                            <th class="px-6 py-4">Ngày đặt</th>
-                            <th class="px-6 py-4">Tổng tiền</th>
-                            <th class="px-6 py-4">TT Thanh toán</th>
-                            <th class="px-6 py-4">Trạng thái đơn</th>
-                            <th class="px-6 py-4 text-right">Hành động</th>
+                            <th class="px-4 py-3 lg:px-6 lg:py-4">Mã đơn</th>
+                            <th class="px-4 py-3 lg:px-6 lg:py-4">Khách hàng</th>
+                            <th class="hidden lg:table-cell px-4 py-3 lg:px-6 lg:py-4">Ngày đặt</th>
+                            <th class="px-4 py-3 lg:px-6 lg:py-4">Tổng tiền</th>
+                            <th class="hidden md:table-cell px-4 py-3 lg:px-6 lg:py-4">TT Thanh toán</th>
+                            <th class="px-4 py-3 lg:px-6 lg:py-4">Trạng thái đơn</th>
+                            <th class="px-4 py-3 lg:px-6 lg:py-4 text-right">Hành động</th>
                         </tr>
                     </thead>
-                    <tbody id="orders-list" class="divide-y divide-gray-100">
+                    <tbody id="orders-list" class="divide-y divide-gray-100 text-gray-600">
                         <tr><td colspan="7" class="text-center py-8 text-gray-500">Đang tải dữ liệu...</td></tr>
                     </tbody>
                 </table>
             </div>
-            <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center bg-gray-50">
-                <button id="btn-prev" class="px-3 py-1 border rounded bg-white hover:bg-gray-50 disabled:opacity-50" disabled>Trước</button>
-                <span class="text-xs text-gray-500" id="page-info">Trang 1</span>
-                <button id="btn-next" class="px-3 py-1 border rounded bg-white hover:bg-gray-50 disabled:opacity-50" disabled>Sau</button>
+            <div class="px-4 py-4 border-t border-gray-200 flex justify-between items-center bg-gray-50">
+                <button id="btn-prev" class="px-3 py-1 border rounded bg-white hover:bg-gray-50 disabled:opacity-50 text-sm font-medium text-gray-600" disabled>Trước</button>
+                <span class="text-xs text-gray-500 font-medium" id="page-info">Trang 1</span>
+                <button id="btn-next" class="px-3 py-1 border rounded bg-white hover:bg-gray-50 disabled:opacity-50 text-sm font-medium text-gray-600" disabled>Sau</button>
             </div>
         </div>
     </div>
 
-    <div id="order-modal" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeModal()"></div>
-        <div class="absolute right-0 top-0 h-full w-full md:w-[600px] bg-white shadow-2xl transform transition-transform duration-300 translate-x-full flex flex-col" id="modal-panel">
-            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-                <h3 class="text-lg font-bold text-gray-800">Chi tiết đơn hàng <span id="modal-order-id" class="text-blue-600">...</span></h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            <div class="flex-1 overflow-y-auto p-6 space-y-6 bg-white">
-                 <div class="p-4 bg-blue-50 rounded-lg border border-blue-100 space-y-3">
-                    <h4 class="font-bold text-blue-800 text-sm uppercase">Cập nhật trạng thái</h4>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">Quy trình</label>
-                            <select id="edit-status" class="w-full px-3 py-2 border rounded text-sm bg-white">
-                                <option value="Pending">Chờ xác nhận</option>
-                                <option value="Confirmed">Đã xác nhận</option>
-                                <option value="Shipping">Đang giao hàng</option>
-                                <option value="Delivered">Giao thành công</option>
-                                <option value="Cancelled">Đã hủy</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">Thanh toán</label>
-                            <select id="edit-payment-status" class="w-full px-3 py-2 border rounded text-sm bg-white">
-                                <option value="Unpaid">Chưa thanh toán</option>
-                                <option value="Paid">Đã thanh toán</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button onclick="updateOrderStatus()" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold hover:bg-blue-700 transition shadow-sm">Cập nhật thay đổi</button>
-                </div>
-                <div class="border-t pt-4"><h4 class="font-bold text-sm mb-3">Thông tin giao hàng</h4><div id="modal-info" class="text-sm space-y-1"></div></div>
-                <div class="border-t pt-4"><h4 class="font-bold text-sm mb-3">Sản phẩm</h4><div id="modal-items" class="space-y-3"></div></div>
-                <div class="border-t pt-4 flex justify-between"><span class="font-bold">Tổng tiền</span><span class="font-bold text-xl text-red-600" id="modal-total">...</span></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="create-order-modal" class="fixed inset-0 z-50 hidden">
+    <div id="create-order-modal" class="fixed inset-0 z-50 hidden transition-opacity">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeCreateOrderModal()"></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl w-full max-w-4xl p-0 flex flex-col max-h-[90vh]">
-            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-xl">
-                <h3 class="text-lg font-bold text-gray-800">Tạo đơn hàng mới</h3>
-                <button onclick="closeCreateOrderModal()" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl w-[95%] sm:w-full max-w-5xl p-0 flex flex-col max-h-[95vh]">
+            
+            <div class="px-4 py-3 lg:px-6 lg:py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-xl">
+                <h3 class="text-base lg:text-lg font-bold text-gray-800">Tạo đơn hàng mới</h3>
+                <button onclick="closeCreateOrderModal()" class="text-gray-400 hover:text-red-500 p-1"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
-            <div class="flex-1 overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-6 relative">
+            <div class="flex-1 overflow-y-auto p-4 lg:p-6 grid grid-cols-1 md:grid-cols-2 gap-6 relative custom-scrollbar pb-40">
+                
                 <div class="space-y-4">
-                    <h4 class="font-bold text-gray-800 border-b pb-2">1. Thông tin khách hàng</h4>
-                    <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Họ tên</label><input type="text" id="new-order-name" class="w-full px-3 py-2 border rounded text-sm outline-none"></div>
-                    <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">SĐT</label><input type="text" id="new-order-phone" class="w-full px-3 py-2 border rounded text-sm outline-none"></div>
-                    <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Địa chỉ</label><textarea id="new-order-address" rows="3" class="w-full px-3 py-2 border rounded text-sm outline-none"></textarea></div>
+                    <h4 class="font-bold text-gray-800 border-b pb-2 text-sm uppercase">1. Thông tin khách hàng</h4>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Họ tên <span class="text-red-500">*</span></label>
+                            <input type="text" id="new-order-name" class="w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">SĐT <span class="text-red-500">*</span></label>
+                            <input type="text" id="new-order-phone" class="w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Địa chỉ giao hàng <span class="text-red-500">*</span></label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
+                            <select id="addr-city" class="px-3 py-2 border rounded-lg text-xs bg-white focus:border-blue-500 outline-none cursor-pointer">
+                                <option value="">Tỉnh/Thành</option>
+                            </select>
+                            <select id="addr-dist" class="px-3 py-2 border rounded-lg text-xs bg-white focus:border-blue-500 outline-none cursor-pointer" disabled>
+                                <option value="">Quận/Huyện</option>
+                            </select>
+                            <select id="addr-ward" class="px-3 py-2 border rounded-lg text-xs bg-white focus:border-blue-500 outline-none cursor-pointer" disabled>
+                                <option value="">Phường/Xã</option>
+                            </select>
+                        </div>
+                        <input type="text" id="addr-detail" placeholder="Số nhà, tên đường..." class="w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500">
+                    </div>
+
                     <div>
                         <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Thanh toán</label>
-                        <select id="new-order-payment" class="w-full px-3 py-2 border rounded text-sm outline-none bg-white">
-                            <option value="cod">COD</option>
-                            <option value="banking">Chuyển khoản</option>
+                        <select id="new-order-payment" class="w-full px-3 py-2 border rounded-lg text-sm outline-none bg-white cursor-pointer">
+                            <option value="cod">COD (Thanh toán khi nhận)</option>
+                            <option value="banking">Chuyển khoản ngân hàng</option>
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="space-y-4 flex flex-col h-full relative" id="product-selection-container">
-                    <h4 class="font-bold text-gray-800 border-b pb-2">2. Sản phẩm</h4>
+                    <h4 class="font-bold text-gray-800 border-b pb-2 text-sm uppercase">2. Chọn Sản phẩm</h4>
                     
                     <div class="relative w-full z-[1000]">
                         <div class="relative">
-                            <input type="text" id="product-search" placeholder="Gõ tên sản phẩm..." 
-                                   class="w-full pl-9 pr-10 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500 shadow-sm" autocomplete="off">
+                            <input type="text" id="product-search" placeholder="Gõ tên sản phẩm, cấu hình (VD: Cam 8GB)..." 
+                                   class="w-full pl-9 pr-10 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500 shadow-sm" 
+                                   autocomplete="off">
                             <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                            <i id="search-loading" class="fa-solid fa-circle-notch fa-spin absolute right-3 top-1/2 -translate-y-1/2 text-blue-500 hidden"></i>
                         </div>
                     </div>
-
-                    <div id="product-suggestions" class="suggestions-dropdown-fixed divide-y divide-gray-100"></div>
-
+                    
+                    <div id="product-suggestions" class="suggestions-dropdown-fixed divide-y divide-gray-100 custom-scrollbar w-full"></div>
+                    
                     <div class="flex-1 bg-gray-50 border border-gray-200 rounded-lg p-3 overflow-y-auto custom-scrollbar min-h-[200px]" id="selected-products-list">
-                        <p class="text-center text-gray-400 text-xs py-10">Chưa có sản phẩm nào.</p>
+                        <p class="text-center text-gray-400 text-xs py-10 italic">Chưa có sản phẩm nào được chọn.</p>
                     </div>
-
+                    
                     <div class="flex justify-between items-center pt-3 border-t border-gray-200 bg-white">
-                        <span class="font-bold text-gray-800">Tổng cộng:</span>
+                        <span class="font-bold text-gray-800">Tổng tiền hàng:</span>
                         <span class="font-bold text-xl text-blue-600" id="new-order-total">0 ₫</span>
                     </div>
                 </div>
             </div>
 
-            <div class="p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl flex justify-end gap-3">
+            <div class="p-4 lg:p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl flex justify-end gap-3 z-10">
                 <button onclick="closeCreateOrderModal()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-100">Hủy</button>
                 <button onclick="submitCreateOrder()" class="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 shadow-md flex items-center gap-2">
-                    <i class="fa-solid fa-paper-plane"></i> Tạo đơn
+                    <i class="fa-solid fa-check"></i> Hoàn tất
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="order-modal" class="fixed inset-0 z-50 hidden transition-opacity duration-300">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+        <div class="absolute right-0 top-0 h-full w-full md:w-[700px] bg-white shadow-2xl transform transition-transform duration-300 translate-x-full flex flex-col" id="modal-panel">
+            <div class="px-4 py-3 lg:px-6 lg:py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                <h3 class="text-base lg:text-lg font-bold text-gray-800">Chi tiết đơn hàng <span id="modal-order-id" class="text-blue-600 font-mono">...</span></h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-red-500 transition p-1"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6 bg-white custom-scrollbar pb-20">
+                <div class="p-4 lg:p-5 bg-blue-50 rounded-xl border border-blue-100 shadow-sm" id="update-status-section">
+                    <h4 class="font-bold text-blue-800 text-sm uppercase mb-3 flex items-center gap-2"><i class="fa-solid fa-pen-to-square"></i> Cập nhật trạng thái</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div><label class="block text-xs font-bold text-gray-600 mb-1 uppercase">Quy trình xử lý</label><select id="edit-status" class="w-full px-3 py-2 border border-blue-200 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"></select></div>
+                        <div><label class="block text-xs font-bold text-gray-600 mb-1 uppercase">Thanh toán</label><select id="edit-payment-status" class="w-full px-3 py-2 border border-blue-200 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"></select></div>
+                    </div>
+                    <button id="btn-update-status" onclick="updateOrderStatus()" class="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-bold hover:bg-blue-700 transition shadow-md mt-4 flex justify-center items-center gap-2"><i class="fa-solid fa-check"></i> Lưu thay đổi</button>
+                </div>
+                <div id="return-request-block" class="hidden p-4 lg:p-5 bg-orange-50 rounded-xl border border-orange-200 shadow-sm relative overflow-hidden transition-all">
+                    <div class="absolute top-0 right-0 p-3 opacity-10 pointer-events-none"><i class="fa-solid fa-rotate-left text-7xl text-orange-600"></i></div>
+                    <h4 class="font-bold text-orange-800 text-sm uppercase mb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-orange-600"></i> Yêu cầu Trả hàng</h4>
+                    <div class="bg-white/60 p-3 rounded-lg border border-orange-100 mb-4 text-sm text-gray-700">
+                        <div class="flex justify-between items-center mb-1"><span>Trạng thái phiếu trả:</span><span class="font-bold text-orange-700 uppercase" id="return-req-status">Đang chờ xử lý</span></div>
+                        <div class="flex justify-between items-center"><span>Tổng hoàn dự kiến:</span><span class="font-bold text-xl text-red-600" id="return-req-total">...</span></div>
+                    </div>
+                    <div><p class="text-[11px] font-bold text-gray-500 uppercase mb-2">Chi tiết sản phẩm hoàn:</p><div id="return-req-items" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1"></div></div>
+                    <div class="flex flex-col sm:flex-row gap-3 mt-4 pt-3 border-t border-orange-200/50" id="return-actions">
+                        <button onclick="adminRejectReturn()" class="w-full sm:flex-1 px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-50 transition flex justify-center items-center gap-1"><i class="fa-solid fa-xmark"></i> Từ chối</button>
+                        <button onclick="adminApproveReturn()" class="w-full sm:flex-1 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-bold hover:bg-green-700 shadow-sm transition flex justify-center items-center gap-1"><i class="fa-solid fa-check"></i> Duyệt hoàn tiền & Nhập kho</button>
+                    </div>
+                </div>
+                <div class="border-t border-gray-100 pt-4"><h4 class="font-bold text-sm text-gray-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-user-tag text-gray-400"></i> Thông tin giao hàng</h4><div id="modal-info" class="text-sm space-y-2 text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200"></div></div>
+                <div class="border-t border-gray-100 pt-4"><h4 class="font-bold text-sm text-gray-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-box-open text-gray-400"></i> Sản phẩm đơn hàng</h4><div id="modal-items" class="space-y-3"></div></div>
+                <div class="border-t border-gray-200 pt-4 flex justify-between items-end pb-4"><span class="font-bold text-gray-600">Tổng thanh toán</span><span class="font-bold text-2xl text-red-600" id="modal-total">...</span></div>
             </div>
         </div>
     </div>
@@ -194,23 +213,63 @@
         import { api } from '../assets/js/api.js';
         import { showToast } from '../assets/js/ui/toast.js';
 
-        // --- AWAIT LAYOUT ---
         await renderAdminLayout('orders');
 
-        let currentPage = 1;
-        let currentOrderId = null;
-        let selectedProducts = []; 
+        const STATUS_TRANSLATIONS = { 'Pending': 'Chờ xác nhận', 'Confirmed': 'Đã xác nhận', 'Shipping': 'Đang giao hàng', 'Delivered': 'Giao thành công', 'Return Requested': 'Yêu cầu trả hàng', 'Cancelled': 'Đã hủy', 'Returned': 'Đã hoàn trả' };
+        const ALLOWED_TRANSITIONS = { 'Pending': ['Confirmed', 'Cancelled'], 'Confirmed': ['Shipping', 'Cancelled'], 'Shipping': ['Delivered', 'Returned', 'Cancelled'], 'Delivered': ['Return Requested', 'Returned'], 'Return Requested': ['Returned', 'Delivered'], 'Cancelled': [], 'Returned': [] };
+
+        let currentPage = 1, currentOrderId = null, currentReturnId = null, selectedProducts = []; 
         window.currentFlattenedProducts = [];
 
-        // --- HÀM XỬ LÝ ĐƯỜNG DẪN ẢNH (FIX LỖI ẢNH KHÔNG HIỆN) ---
-        function resolveUrl(path) {
-            if (!path) return 'https://via.placeholder.com/50';
-            if (path.startsWith('http')) return path;
-            // Nếu file này nằm trong thư mục 'admin/', cần lùi 1 cấp để ra thư mục gốc
-            return '../' + path.replace(/^\//, ''); // Xóa dấu / đầu nếu có để tránh lỗi //
-        }
+        function resolveUrl(path) { if (!path) return 'https://via.placeholder.com/50'; if (path.startsWith('http')) return path; return '../' + path.replace(/^\//, ''); }
 
-        // --- 1. DÀN PHẲNG BIẾN THỂ ---
+        // --- ADDRESS API (ESGOO) ---
+        (async function initAddressSelectors() {
+            const citySel = document.getElementById('addr-city');
+            const distSel = document.getElementById('addr-dist');
+            const wardSel = document.getElementById('addr-ward');
+
+            try {
+                const res = await fetch('https://esgoo.net/api-tinhthanh/1/0.htm');
+                const data = await res.json();
+                if (data.error === 0) {
+                    data.data.forEach(p => citySel.innerHTML += `<option value="${p.id}" data-name="${p.full_name}">${p.full_name}</option>`);
+                }
+            } catch (e) { console.error("Lỗi load tỉnh thành", e); }
+
+            citySel.addEventListener('change', async function() {
+                distSel.innerHTML = '<option value="">Quận/Huyện</option>';
+                wardSel.innerHTML = '<option value="">Phường/Xã</option>';
+                distSel.disabled = true; wardSel.disabled = true;
+                if (this.value) {
+                    try {
+                        const res = await fetch(`https://esgoo.net/api-tinhthanh/2/${this.value}.htm`);
+                        const data = await res.json();
+                        if (data.error === 0) {
+                            data.data.forEach(d => distSel.innerHTML += `<option value="${d.id}" data-name="${d.full_name}">${d.full_name}</option>`);
+                            distSel.disabled = false;
+                        }
+                    } catch(e){}
+                }
+            });
+
+            distSel.addEventListener('change', async function() {
+                wardSel.innerHTML = '<option value="">Phường/Xã</option>';
+                wardSel.disabled = true;
+                if (this.value) {
+                    try {
+                        const res = await fetch(`https://esgoo.net/api-tinhthanh/3/${this.value}.htm`);
+                        const data = await res.json();
+                        if (data.error === 0) {
+                            data.data.forEach(w => wardSel.innerHTML += `<option value="${w.id}" data-name="${w.full_name}">${w.full_name}</option>`);
+                            wardSel.disabled = false;
+                        }
+                    } catch(e){}
+                }
+            });
+        })();
+
+        // --- CẬP NHẬT: FLATTEN VARIANTS VỚI FULL ATTRIBUTES ---
         function flattenProductVariants(products) {
             let flattened = [];
             if (!products) return [];
@@ -218,43 +277,45 @@
 
             arr.forEach(p => {
                 let vars = [];
-                if (p.variants) {
-                    vars = Array.isArray(p.variants) ? p.variants : Object.values(p.variants);
-                }
+                if (p.variants) vars = Array.isArray(p.variants) ? p.variants : Object.values(p.variants);
 
                 if (vars.length > 0) {
-                    // CÓ BIẾN THỂ
                     vars.forEach(v => {
-                        let attrs = {};
-                        if (v.attributes) {
-                            if (typeof v.attributes === 'object') attrs = v.attributes;
-                            else if (typeof v.attributes === 'string') {
-                                try { attrs = JSON.parse(v.attributes); } catch(e){}
-                            }
-                        }
-                        let label = [];
-                        let c = v.color || attrs.color;
-                        let s = v.capacity || attrs.capacity;
-                        if(c) label.push(`Màu: ${c}`);
-                        if(s) label.push(`Size: ${s}`);
-                        for(const [k,val] of Object.entries(attrs)) {
-                            if(k!=='color' && k!=='capacity' && val) label.push(`${k}: ${val}`);
-                        }
+                        // TỰ ĐỘNG LẤY HẾT CẤU HÌNH (RAM, STORAGE, COLOR, CAPACITY...)
+                        let attrStr = '';
+                        try {
+                            const attrs = typeof v.attributes === 'string' ? JSON.parse(v.attributes) : (v.attributes || {});
+                            const parts = [];
+                            
+                            // Ưu tiên hiển thị theo thứ tự
+                            if (attrs.color) parts.push(attrs.color);
+                            if (attrs.ram) parts.push(attrs.ram);
+                            if (attrs.storage) parts.push(attrs.storage);
+                            if (attrs.capacity) parts.push(attrs.capacity);
+
+                            // Lấy thêm các trường khác nếu có (trừ color_code)
+                            Object.keys(attrs).forEach(key => {
+                                if (!['color', 'ram', 'storage', 'capacity', 'color_code'].includes(key) && attrs[key]) {
+                                    parts.push(attrs[key]);
+                                }
+                            });
+
+                            attrStr = parts.join(' - ');
+                        } catch (e) {}
 
                         flattened.push({
                             unique_key: `${p.id}_v${v.id}`,
                             product_id: p.id,
                             variant_id: v.id,
                             title: p.title,
-                            variant_label: label.join(' - ') || 'Tùy chọn',
-                            price: Number(v.price) || Number(p.price) || 0,
-                            // Dùng ảnh chung sản phẩm, và xử lý path
-                            image: resolveUrl(p.image), 
+                            // Hiển thị đầy đủ: Cam - 8GB - 128GB
+                            variant_label: attrStr || 'Biến thể',
+                            price: Number(v.price) || 0,
+                            image: resolveUrl(v.image || p.image), 
                             stock: v.stock_quantity
                         });
                     });
                 } else {
-                    // KHÔNG BIẾN THỂ
                     flattened.push({
                         unique_key: `${p.id}_base`,
                         product_id: p.id,
@@ -269,246 +330,197 @@
             });
             return flattened;
         }
-
-        // --- 2. TÌM KIẾM ---
-        let searchTimer;
-        const searchInput = document.getElementById('product-search');
-        const suggestionsBox = document.getElementById('product-suggestions');
-        const loadingIcon = document.getElementById('search-loading');
         
-        function positionDropdown() {
-            if (suggestionsBox.style.display === 'block') {
-                const rect = searchInput.getBoundingClientRect();
-                suggestionsBox.style.left = `${rect.left}px`;
-                suggestionsBox.style.top = `${rect.bottom + 5}px`;
-                suggestionsBox.style.width = `${rect.width}px`;
-            }
-        }
-        window.addEventListener('scroll', positionDropdown, true);
-        window.addEventListener('resize', positionDropdown);
-
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(searchTimer);
-            const query = e.target.value.trim();
-            if (!query) { 
-                suggestionsBox.style.display = 'none';
-                loadingIcon.classList.add('hidden');
-                return; 
-            }
-            loadingIcon.classList.remove('hidden');
-
-            searchTimer = setTimeout(async () => {
-                try {
-                    // --- CẬP NHẬT: THÊM status: 'active' ĐỂ CHỈ TÌM SẢN PHẨM ĐANG KINH DOANH ---
-                    const res = await api.getProducts({ q: query, status: 'active' });
-                    
-                    let raw = [];
-                    if (res && res.data) raw = res.data;
-                    else if (res && res.items) raw = res.items;
-                    else if (Array.isArray(res)) raw = res;
-
-                    // Safety Check: Lọc thêm lần nữa ở client nếu cần (phòng trường hợp API trả cả inactive)
+        let searchTimer; const searchInput = document.getElementById('product-search'); const suggestionsBox = document.getElementById('product-suggestions');
+        function positionDropdown() { if (suggestionsBox.style.display === 'block') { const rect = searchInput.getBoundingClientRect(); suggestionsBox.style.left = `${rect.left}px`; suggestionsBox.style.top = `${rect.bottom + 5}px`; suggestionsBox.style.width = `${rect.width}px`; } }
+        window.addEventListener('scroll', positionDropdown, true); window.addEventListener('resize', positionDropdown);
+        
+        searchInput.addEventListener('input', (e) => { 
+            clearTimeout(searchTimer); 
+            const query = e.target.value.trim(); 
+            if (!query) { suggestionsBox.style.display = 'none'; return; } 
+            
+            searchTimer = setTimeout(async () => { 
+                try { 
+                    const res = await api.getProducts({ q: query, status: 'active' }); 
+                    let raw = (res && res.data) ? res.data : (res && res.items ? res.items : []); 
                     raw = raw.filter(p => p.is_active == 1); 
-
-                    window.currentFlattenedProducts = flattenProductVariants(raw);
-
-                    if (window.currentFlattenedProducts.length === 0) {
-                        suggestionsBox.innerHTML = `<div class="p-4 text-sm text-gray-500 text-center">Không tìm thấy sản phẩm.</div>`;
-                    } else {
-                        const html = window.currentFlattenedProducts.slice(0, 30).map((p, idx) => {
-                            const badge = p.variant_label ? `<span class="bg-blue-100 text-blue-700 text-[10px] px-1.5 rounded ml-1 border border-blue-200">${p.variant_label}</span>` : '';
-                            return `
-                            <div class="flex items-center gap-3 p-3 hover:bg-blue-50 cursor-pointer border-b last:border-0 transition-colors" onclick="window.selectProductFromSearch(${idx})">
-                                <img src="${p.image}" class="w-10 h-10 object-cover rounded border bg-white" onerror="this.src='https://via.placeholder.com/50'">
-                                <div class="flex-1">
-                                    <div class="text-sm font-semibold text-gray-800 leading-snug">${p.title} ${badge}</div>
-                                    <div class="text-xs text-red-600 font-bold mt-0.5">${formatPrice(p.price)} <span class="text-gray-400 font-normal ml-1">Kho: ${p.stock||0}</span></div>
+                    
+                    let flattened = flattenProductVariants(raw); 
+                    
+                    // [MỚI] LỌC BỎ SẢN PHẨM HẾT HÀNG (Stock <= 0)
+                    window.currentFlattenedProducts = flattened.filter(item => item.stock > 0);
+                    
+                    const html = window.currentFlattenedProducts.slice(0, 15).map((p, idx) => `
+                        <div class="flex items-start gap-3 p-3 hover:bg-blue-50 cursor-pointer border-b last:border-0 group" onclick="window.selectProductFromSearch(${idx})">
+                            <img src="${p.image}" class="w-10 h-10 object-cover rounded border border-gray-200 mt-1 flex-shrink-0 bg-white">
+                            <div class="flex-1 min-w-0">
+                                <div class="text-sm font-bold text-gray-800 line-clamp-1">${p.title}</div>
+                                ${p.variant_label ? `<div class="text-xs font-bold text-blue-600 mt-0.5">${p.variant_label}</div>` : ''}
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="text-sm font-bold text-red-600">${formatPrice(p.price)}</div>
+                                    <div class="text-[10px] text-gray-500 bg-gray-100 px-1.5 rounded">Kho: ${p.stock}</div>
                                 </div>
-                                <button class="text-blue-600 hover:bg-blue-100 w-8 h-8 rounded-full flex items-center justify-center transition"><i class="fa-solid fa-plus"></i></button>
                             </div>
-                            `;
-                        }).join('');
-                        suggestionsBox.innerHTML = html;
-                    }
-                    suggestionsBox.style.display = 'block';
-                    positionDropdown();
-                } catch (e) {
-                    console.error('Lỗi search:', e);
-                    suggestionsBox.style.display = 'none';
-                } finally {
-                    loadingIcon.classList.add('hidden');
-                }
-            }, 300);
+                            <button class="text-blue-600 hover:bg-blue-100 w-8 h-8 flex items-center justify-center rounded-full transition flex-shrink-0 shadow-sm border border-blue-100 group-hover:bg-blue-600 group-hover:text-white"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    `).join(''); 
+                    
+                    suggestionsBox.innerHTML = html || '<div class="p-4 text-center text-sm text-gray-500 italic">Không tìm thấy sản phẩm phù hợp (hoặc đã hết hàng)</div>'; 
+                    suggestionsBox.style.display = 'block'; 
+                    positionDropdown(); 
+                } catch (e) { suggestionsBox.style.display = 'none'; } 
+            }, 300); 
         });
 
-        document.addEventListener('click', (e) => {
-            if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
-                suggestionsBox.style.display = 'none';
-            }
-        });
-
-        // --- 3. LOGIC CHỌN HÀNG ---
-        window.selectProductFromSearch = (idx) => {
-            const product = window.currentFlattenedProducts[idx];
-            if (!product) return;
-            const existing = selectedProducts.find(p => p.unique_key === product.unique_key);
-            if (existing) existing.quantity++;
-            else selectedProducts.push({...product, quantity: 1});
-
-            renderSelectedList();
-            searchInput.value = '';
-            suggestionsBox.style.display = 'none';
+        document.addEventListener('click', (e) => { if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) { suggestionsBox.style.display = 'none'; } });
+        
+        window.selectProductFromSearch = (idx) => { 
+            const product = window.currentFlattenedProducts[idx]; 
+            if (!product) return; 
+            const existing = selectedProducts.find(p => p.unique_key === product.unique_key); 
+            if (existing) existing.quantity++; 
+            else selectedProducts.push({...product, quantity: 1}); 
+            renderSelectedList(); 
+            searchInput.value = ''; 
+            suggestionsBox.style.display = 'none'; 
         };
 
-        function renderSelectedList() {
-            const container = document.getElementById('selected-products-list');
-            const totalEl = document.getElementById('new-order-total');
-            
-            if (selectedProducts.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400 text-xs py-10">Chưa có sản phẩm nào.</p>`;
-                totalEl.innerText = '0 ₫';
-                return;
-            }
-
-            let total = 0;
-            container.innerHTML = selectedProducts.map(p => {
-                total += p.price * p.quantity;
+        function renderSelectedList() { 
+            const container = document.getElementById('selected-products-list'); 
+            const totalEl = document.getElementById('new-order-total'); 
+            let total = 0; 
+            container.innerHTML = selectedProducts.map(p => { 
+                total += p.price * p.quantity; 
                 return `
-                <div class="flex items-center justify-between bg-white p-2 rounded border mb-2 shadow-sm animate-fade-in-up">
-                    <div class="flex items-center gap-2 overflow-hidden">
-                        <img src="${p.image}" class="w-10 h-10 object-cover rounded bg-gray-50" onerror="this.src='https://via.placeholder.com/50'">
+                <div class="flex justify-between items-center bg-white p-3 border border-gray-200 rounded-lg mb-2 shadow-sm">
+                    <div class="flex items-center gap-3 overflow-hidden flex-1">
+                        <img src="${p.image}" class="w-10 h-10 object-cover rounded border">
                         <div class="min-w-0">
-                            <p class="text-sm font-medium truncate">${p.title}</p>
-                            <p class="text-xs text-gray-500">${p.variant_label}</p>
-                            <p class="text-xs text-blue-600 font-bold">${formatPrice(p.price)}</p>
+                            <div class="text-sm font-bold truncate text-gray-800">${p.title}</div>
+                            <div class="text-xs text-gray-500 truncate font-medium">${p.variant_label}</div>
+                            <div class="text-xs font-bold text-blue-600">${formatPrice(p.price)}</div>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <input type="number" min="1" value="${p.quantity}" 
-                               onchange="window.updateQty('${p.unique_key}', this.value)"
-                               class="w-12 border rounded text-center text-sm p-1 outline-none focus:border-blue-500">
-                        <button onclick="window.removeProd('${p.unique_key}')" class="text-gray-400 hover:text-red-500 w-8 h-8 rounded-full hover:bg-red-50 transition"><i class="fa-solid fa-trash"></i></button>
+                    <div class="flex items-center gap-3 ml-2">
+                        <input type="number" min="1" value="${p.quantity}" onchange="window.updateQty('${p.unique_key}', this.value)" class="w-14 border rounded px-1 py-1 text-center text-sm font-bold outline-none focus:border-blue-500">
+                        <button onclick="window.removeProd('${p.unique_key}')" class="text-red-400 hover:text-red-600 p-1 transition"><i class="fa-solid fa-trash"></i></button>
                     </div>
-                </div>`;
-            }).join('');
-            totalEl.innerText = formatPrice(total);
+                </div>`; 
+            }).join('') || '<p class="text-center text-gray-400 text-xs py-10 italic">Chưa chọn sản phẩm</p>'; 
+            totalEl.innerText = formatPrice(total); 
         }
 
-        window.updateQty = (key, val) => {
-            const item = selectedProducts.find(p => p.unique_key === key);
-            if(item) { item.quantity = parseInt(val) > 0 ? parseInt(val) : 1; renderSelectedList(); }
-        };
-        window.removeProd = (key) => {
-            selectedProducts = selectedProducts.filter(p => p.unique_key !== key);
-            renderSelectedList();
-        };
-
-        // --- 4. MODAL & SUBMIT ---
-        window.openCreateOrderModal = () => {
-            document.getElementById('create-order-modal').classList.remove('hidden');
-            selectedProducts = []; renderSelectedList();
-            searchInput.value = ''; suggestionsBox.style.display = 'none';
-            document.getElementById('new-order-name').value = '';
-            document.getElementById('new-order-phone').value = '';
-            document.getElementById('new-order-address').value = '';
-        };
+        window.updateQty = (key, val) => { const item = selectedProducts.find(p => p.unique_key === key); if(item) { item.quantity = parseInt(val) > 0 ? parseInt(val) : 1; renderSelectedList(); } };
+        window.removeProd = (key) => { selectedProducts = selectedProducts.filter(p => p.unique_key !== key); renderSelectedList(); };
+        window.openCreateOrderModal = () => { document.getElementById('create-order-modal').classList.remove('hidden'); selectedProducts = []; renderSelectedList(); };
         window.closeCreateOrderModal = () => document.getElementById('create-order-modal').classList.add('hidden');
         
-        window.submitCreateOrder = async () => {
-            const name = document.getElementById('new-order-name').value.trim();
+        // --- SUBMIT ORDER (CẬP NHẬT ĐỊA CHỈ) ---
+        window.submitCreateOrder = async () => { 
+            const name = document.getElementById('new-order-name').value.trim(); 
             const phone = document.getElementById('new-order-phone').value.trim();
-            const address = document.getElementById('new-order-address').value.trim();
-            const method = document.getElementById('new-order-payment').value;
+            const detail = document.getElementById('addr-detail').value.trim();
+            
+            const citySelect = document.getElementById('addr-city');
+            const distSelect = document.getElementById('addr-dist');
+            const wardSelect = document.getElementById('addr-ward');
+            
+            const city = citySelect.options[citySelect.selectedIndex]?.text;
+            const dist = distSelect.options[distSelect.selectedIndex]?.text;
+            const ward = wardSelect.options[wardSelect.selectedIndex]?.text;
 
-            if (!name || !phone || !address || selectedProducts.length === 0) {
-                showToast('Vui lòng nhập đủ thông tin và chọn sản phẩm', 'error');
-                return;
-            }
-            const items = selectedProducts.map(p => ({
-                product_id: p.product_id,
-                product_variant_id: p.variant_id, 
-                quantity: p.quantity,
-                title: p.title,
-                price: p.price
-            }));
+            if (!name) return showToast('Nhập tên khách', 'error');
+            if (!phone) return showToast('Nhập số điện thoại', 'error');
+            if (!detail || !citySelect.value || !distSelect.value || !wardSelect.value) return showToast('Vui lòng chọn đầy đủ địa chỉ', 'error');
+            if (selectedProducts.length === 0) return showToast('Chưa chọn sản phẩm', 'error');
 
-            try {
-                await api.createOrder({ name, phone, address, payment_method: method, items });
-                showToast('Tạo đơn thành công!', 'success');
-                closeCreateOrderModal();
+            const fullAddress = `${detail}, ${ward}, ${dist}, ${city}`;
+
+            const items = selectedProducts.map(p => ({ product_id: p.product_id, product_variant_id: p.variant_id, quantity: p.quantity })); 
+            
+            try { 
+                await api.createOrder({ 
+                    name, 
+                    phone, 
+                    address: fullAddress, 
+                    payment_method: document.getElementById('new-order-payment').value, 
+                    items 
+                }); 
+                showToast('Tạo đơn hàng thành công!', 'success'); 
+                closeCreateOrderModal(); 
                 loadOrders(); 
-            } catch(e) { showToast('Lỗi: ' + e.message, 'error'); }
+            } catch(e) { showToast(e.message, 'error'); } 
         };
 
-        // --- 5. LOAD ORDERS ---
-        window.loadOrders = async (page=1) => {
-            const q = document.getElementById('search-input').value;
-            const status = document.getElementById('status-filter').value;
-            const list = document.getElementById('orders-list');
-            list.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-gray-500">Đang tải...</td></tr>`;
-            try {
-                const res = await api.getOrdersAdmin({page, q, status});
-                const orders = res.data || res.items || [];
-                if(orders.length===0) {
-                    list.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-gray-500">Không có đơn hàng.</td></tr>`;
-                    return;
-                }
-                const colors = { 'Pending': 'bg-yellow-100 text-yellow-800', 'Confirmed': 'bg-blue-100 text-blue-800', 'Shipping': 'bg-indigo-100 text-indigo-800', 'Delivered': 'bg-green-100 text-green-800', 'Cancelled': 'bg-red-100 text-red-800' };
-                list.innerHTML = orders.map(o => `
-                    <tr class="hover:bg-gray-50 border-b border-gray-100">
-                        <td class="px-6 py-4 font-medium text-blue-600">#${o.id}</td>
-                        <td class="px-6 py-4"><div>${o.name}</div><div class="text-xs text-gray-400">${o.phone}</div></td>
-                        <td class="px-6 py-4 text-xs text-gray-500">${new Date(o.created_at).toLocaleDateString('vi')}</td>
-                        <td class="px-6 py-4 font-bold">${formatPrice(o.total_amount)}</td>
-                        <td class="px-6 py-4 text-xs uppercase font-bold text-gray-500">${o.payment_method}</td>
-                        <td class="px-6 py-4"><span class="px-2 py-1 rounded text-xs font-bold ${colors[o.status]||'bg-gray-100'}">${o.status}</span></td>
-                        <td class="px-6 py-4 text-right"><button onclick="viewOrder(${o.id})" class="text-blue-600 hover:underline text-xs font-bold">Chi tiết</button></td>
-                    </tr>`).join('');
-                document.getElementById('page-info').innerText = `Trang ${page}`;
-                document.getElementById('btn-prev').disabled = page<=1;
-                document.getElementById('btn-prev').onclick = ()=>loadOrders(page-1);
-                document.getElementById('btn-next').onclick = ()=>loadOrders(page+1);
-            } catch(e) { list.innerHTML='<tr><td colspan="7" class="text-center text-red-500">Lỗi tải dữ liệu</td></tr>'; }
-        };
-
+        // --- GIỮ NGUYÊN LOGIC VIEW ORDER ---
         window.viewOrder = async (id) => {
-            currentOrderId = id;
+            currentOrderId = id; currentReturnId = null; 
             try {
                 const o = await api.getOrderAdmin(id);
                 document.getElementById('modal-order-id').innerText = '#'+o.id;
-                document.getElementById('modal-info').innerHTML = `
-                    <p><b>Khách:</b> ${o.name} - ${o.phone}</p>
-                    <p><b>Đ/c:</b> ${o.address}</p>
-                    <p><b>PTTT:</b> ${o.payment_method}</p>
-                `;
+                let paymentLabel = o.payment_status === 'Paid' ? '<span class="text-green-600 font-bold">Đã thanh toán</span>' : (o.payment_status === 'Refunded' ? '<span class="text-purple-600 font-bold">Đã hoàn tiền</span>' : '<span class="text-red-500 font-bold">Chưa thanh toán</span>');
+                document.getElementById('modal-info').innerHTML = `<p class="mb-1"><b>Khách:</b> ${o.name} | ${o.phone}</p><p class="mb-1"><b>Đ/c:</b> ${o.address}</p><p><b>PTTT:</b> ${o.payment_method} ${paymentLabel}</p>`;
                 document.getElementById('modal-total').innerText = formatPrice(o.total_amount);
-                document.getElementById('edit-status').value = o.status;
-                document.getElementById('edit-payment-status').value = o.payment_status || 'Unpaid';
                 
-                document.getElementById('modal-items').innerHTML = (o.items||[]).map(i => `
-                    <div class="flex gap-3 text-sm border-b pb-2 last:border-0">
-                        <img src="${resolveUrl(i.variant_image||i.product_image||'')}" class="w-10 h-10 object-cover rounded border" onerror="this.src='https://via.placeholder.com/50'">
-                        <div class="flex-1">
-                            <div class="font-medium">${i.product_title}</div>
-                            ${i.selected_color ? `<div class="text-xs text-gray-500">Màu: ${i.selected_color}</div>` : ''}
-                            <div class="text-xs">x${i.quantity} <span class="font-bold text-blue-600">${formatPrice(i.price)}</span></div>
-                        </div>
-                        <div class="font-bold">${formatPrice(i.price*i.quantity)}</div>
-                    </div>
-                `).join('');
+                const returnBlock = document.getElementById('return-request-block');
+                const returnItemsContainer = document.getElementById('return-req-items');
+                const returnActions = document.getElementById('return-actions');
                 
-                document.getElementById('order-modal').classList.remove('hidden');
-                setTimeout(()=>document.getElementById('modal-panel').classList.remove('translate-x-full'), 10);
-            } catch(e) { showToast('Lỗi xem đơn','error'); }
+                if (o.return_request) {
+                    currentReturnId = o.return_request.id; returnBlock.classList.remove('hidden');
+                    document.getElementById('return-req-total').innerText = formatPrice(o.return_request.total_refund_amount);
+                    const returnItemsMap = o.return_items_map || {};
+                    let html = '';
+                    for (const key in returnItemsMap) {
+                        const item = returnItemsMap[key];
+                        const originalItem = o.items.find(i => i.product_id == item.product_id && String(i.product_variant_id || '') === String(item.product_variant_id || ''));
+                        const title = originalItem ? originalItem.product_title : `Sản phẩm #${item.product_id}`;
+                        const reasonText = item.reason === 'defective' ? 'Lỗi sản phẩm' : 'Đổi ý/Khác (-20%)';
+                        html += `<div class="flex justify-between items-start text-xs bg-white p-2 rounded border border-orange-200 shadow-sm"><div><div class="font-bold text-gray-800 line-clamp-1">${title}</div><div class="text-gray-500 mt-0.5">Lý do: <span class="font-medium text-orange-700">${reasonText}</span></div></div><div class="text-right flex-shrink-0 ml-2"><div class="font-bold text-orange-600 bg-orange-50 px-1.5 rounded">x${item.quantity}</div><div class="text-gray-400 mt-0.5 font-mono">${formatPrice(item.refund_amount)}</div></div></div>`;
+                    }
+                    returnItemsContainer.innerHTML = html;
+                    if (o.return_request.status === 'pending') { returnActions.classList.remove('hidden'); document.getElementById('return-req-status').innerText = 'Đang chờ xử lý'; document.getElementById('return-req-status').className = 'font-bold text-orange-700 uppercase'; } 
+                    else { returnActions.classList.add('hidden'); const statusText = o.return_request.status === 'approved' ? 'Đã duyệt & Hoàn tiền' : 'Đã từ chối'; const statusColor = o.return_request.status === 'approved' ? 'text-green-600' : 'text-red-500'; document.getElementById('return-req-status').innerText = statusText; document.getElementById('return-req-status').className = `font-bold uppercase ${statusColor}`; }
+                } else { returnBlock.classList.add('hidden'); }
+
+                const statusSelect = document.getElementById('edit-status'); statusSelect.innerHTML = ''; 
+                const currentStatus = o.status; const allowedNextSteps = ALLOWED_TRANSITIONS[currentStatus] || [];
+                statusSelect.innerHTML += `<option value="${currentStatus}" selected>${STATUS_TRANSLATIONS[currentStatus] || currentStatus} (Hiện tại)</option>`;
+                allowedNextSteps.forEach(statusKey => { statusSelect.innerHTML += `<option value="${statusKey}">➜ ${STATUS_TRANSLATIONS[statusKey]}</option>`; });
+
+                const paymentSelect = document.getElementById('edit-payment-status'); paymentSelect.innerHTML = '';
+                if (o.payment_status === 'Unpaid') { paymentSelect.disabled = false; paymentSelect.innerHTML = `<option value="Unpaid" selected>Chưa thanh toán</option><option value="Paid">➜ Xác nhận Đã thanh toán</option>`; } 
+                else { paymentSelect.disabled = true; paymentSelect.innerHTML = `<option value="${o.payment_status}" selected>${o.payment_status === 'Paid' ? 'Đã thanh toán' : o.payment_status} (Đã khóa)</option>`; }
+
+                document.getElementById('modal-items').innerHTML = (o.items||[]).map(i => `<div class="flex gap-4 text-sm border-b border-gray-100 pb-3 last:border-0 bg-gray-50 p-2 rounded-lg"><img src="${resolveUrl(i.variant_image||i.product_image||'')}" class="w-12 h-12 object-cover rounded border border-gray-200 bg-white"><div class="flex-1"><div class="font-bold text-gray-800 line-clamp-1">${i.product_title}</div><div class="text-xs text-gray-500 mt-1">Số lượng: <b class="text-gray-800">x${i.quantity}</b></div></div><div class="text-right"><div class="text-xs text-gray-400">Đơn giá</div><div class="font-bold text-blue-600">${formatPrice(i.price)}</div></div></div>`).join('');
+                document.getElementById('order-modal').classList.remove('hidden'); setTimeout(()=>document.getElementById('modal-panel').classList.remove('translate-x-full'), 10);
+            } catch(e) { console.error(e); showToast('Lỗi xem đơn hàng','error'); }
         };
 
-        window.updateOrderStatus = async () => {
-            const s = document.getElementById('edit-status').value;
+        window.updateOrderStatus = async (overrideStatus = null) => {
+            const s = overrideStatus || document.getElementById('edit-status').value;
             const p = document.getElementById('edit-payment-status').value;
-            try { await api.updateOrderAdmin(currentOrderId, {status:s, payment_status:p}); showToast('Đã cập nhật','success'); loadOrders(currentPage); closeModal(); }
-            catch(e) { showToast('Lỗi cập nhật','error'); }
+            try { await api.updateOrderAdmin(currentOrderId, {status:s, payment_status:p}); showToast('Cập nhật thành công','success'); loadOrders(currentPage); closeModal(); } catch(e) { showToast(e.message || 'Lỗi cập nhật','error'); }
         };
+
+        window.adminApproveReturn = async () => { if(!currentReturnId) return showToast('Không tìm thấy ID phiếu trả', 'error'); if(confirm("Xác nhận DUYỆT yêu cầu trả hàng? Hệ thống sẽ cập nhật kho và đổi trạng thái đơn.")) { try { await api.processReturnRequest(currentReturnId, 'approve'); showToast('Đã duyệt trả hàng thành công', 'success'); closeModal(); loadOrders(currentPage); } catch(e) { showToast(e.message, 'error'); } } };
+        window.adminRejectReturn = async () => { if(!currentReturnId) return showToast('Không tìm thấy ID phiếu trả', 'error'); const reason = prompt("Nhập lý do từ chối (Admin Note):", "Sản phẩm không đủ điều kiện"); if(reason !== null) { try { await api.processReturnRequest(currentReturnId, 'reject', reason); showToast('Đã từ chối trả hàng', 'success'); closeModal(); loadOrders(currentPage); } catch(e) { showToast(e.message, 'error'); } } };
         window.closeModal = () => { document.getElementById('modal-panel').classList.add('translate-x-full'); setTimeout(()=>document.getElementById('order-modal').classList.add('hidden'),300); };
+
+        window.loadOrders = async (page=1) => {
+            const q = document.getElementById('search-input').value; const status = document.getElementById('status-filter').value; const list = document.getElementById('orders-list');
+            try {
+                const res = await api.getOrdersAdmin({page, q, status});
+                const orders = res.data || res.items || [];
+                if(orders.length===0) { list.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-gray-500 italic">Không có đơn hàng nào.</td></tr>`; return; }
+                const colors = { 'Pending': 'bg-yellow-100 text-yellow-800', 'Confirmed': 'bg-blue-100 text-blue-800', 'Shipping': 'bg-indigo-100 text-indigo-800', 'Delivered': 'bg-green-100 text-green-800', 'Return Requested': 'bg-orange-100 text-orange-800', 'Cancelled': 'bg-red-100 text-red-800', 'Returned': 'bg-purple-100 text-purple-800' };
+                list.innerHTML = orders.map(o => `<tr class="hover:bg-blue-50/30 border-b border-gray-100 transition-colors"><td class="px-4 py-3 lg:px-6 lg:py-4 font-mono font-medium text-blue-600">#${o.id}</td><td class="px-4 py-3 lg:px-6 lg:py-4"><div class="font-bold text-gray-800 whitespace-normal min-w-[120px]">${o.name}</div><div class="text-xs text-gray-400 font-mono">${o.phone}</div></td><td class="hidden lg:table-cell px-4 py-3 lg:px-6 lg:py-4 text-xs text-gray-500">${new Date(o.created_at).toLocaleDateString('vi')}</td><td class="px-4 py-3 lg:px-6 lg:py-4 font-bold text-gray-800">${formatPrice(o.total_amount)}</td><td class="hidden md:table-cell px-4 py-3 lg:px-6 lg:py-4 text-xs uppercase font-bold text-gray-500">${o.payment_method}</td><td class="px-4 py-3 lg:px-6 lg:py-4"><span class="px-2.5 py-1 rounded text-[10px] lg:text-[11px] uppercase font-bold tracking-wide whitespace-nowrap ${colors[o.status]||'bg-gray-100'}">${STATUS_TRANSLATIONS[o.status] || o.status}</span></td><td class="px-4 py-3 lg:px-6 lg:py-4 text-right"><button onclick="viewOrder(${o.id})" class="bg-white border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-300 px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm whitespace-nowrap">Chi tiết</button></td></tr>`).join('');
+                document.getElementById('page-info').innerText = `Trang ${page}`;
+                document.getElementById('btn-prev').disabled = page<=1; document.getElementById('btn-prev').onclick = ()=>loadOrders(page-1);
+                document.getElementById('btn-next').onclick = ()=>loadOrders(page+1);
+            } catch(e) { list.innerHTML='<tr><td colspan="7" class="text-center text-red-500">Lỗi tải dữ liệu</td></tr>'; }
+        };
 
         loadOrders();
     </script>

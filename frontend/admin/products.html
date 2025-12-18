@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .modal-scroll::-webkit-scrollbar { width: 6px; }
+        .modal-scroll::-webkit-scrollbar { width: 4px; }
         .modal-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
         .modal-scroll::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
         
@@ -35,50 +35,76 @@
         
         .animate-fade-in { animation: fade-in 0.2s ease-out; }
         @keyframes fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        /* Custom horizontal scrollbar for tabs */
+        .tab-scroll::-webkit-scrollbar { height: 4px; }
+        .tab-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .tab-scroll::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
     </style>
 </head>
 <body class="bg-gray-50 font-sans antialiased">
 
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-800">Quản lý Sản phẩm</h1>
-            <p class="text-sm text-gray-500">Kho hàng và cấu hình chi tiết</p>
-        </div>
-        <button id="btn-add" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 flex items-center gap-2 shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5">
-            <i class="fa-solid fa-plus"></i> Thêm mới
-        </button>
-    </div>
-
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="p-4 border-b border-gray-200 bg-gray-50/50 flex gap-4">
-            <div class="relative flex-1 max-w-md">
-                <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                <input type="text" placeholder="Tìm tên sản phẩm..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+    <div class="p-4 lg:p-6 pb-20 lg:pb-6">
+        
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div>
+                <h1 class="text-xl lg:text-2xl font-bold text-gray-800">Quản lý Sản phẩm</h1>
+                <p class="text-sm text-gray-500">Kho hàng và cấu hình chi tiết</p>
             </div>
+            <button id="btn-add" class="w-full sm:w-auto bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5">
+                <i class="fa-solid fa-plus"></i> Thêm mới
+            </button>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm text-left">
-                <thead class="bg-gray-50 border-b border-gray-200 text-gray-500 font-semibold uppercase text-xs tracking-wider">
-                    <tr>
-                        <th class="px-6 py-4 w-24">Ảnh</th>
-                        <th class="px-6 py-4">Tên sản phẩm</th>
-                        <th class="px-6 py-4">Danh mục / Hãng</th>
-                        <th class="px-6 py-4 text-center">Tồn kho</th>
-                        <th class="px-6 py-4 text-center">Trạng thái</th> <th class="px-6 py-4">Giá bán</th>
-                        <th class="px-6 py-4 text-right">Hành động</th>
-                    </tr>
-                </thead>
-                <tbody id="product-list" class="divide-y divide-gray-100 bg-white">
-                    <tr><td colspan="7" class="py-8 text-center text-gray-500">Đang tải dữ liệu...</td></tr>
-                </tbody>
-            </table>
-        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            
+            <div class="p-4 border-b border-gray-200 bg-gray-50/50 grid grid-cols-1 sm:grid-cols-12 gap-3">
+                <div class="sm:col-span-5 relative">
+                    <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="filter-search" placeholder="Tìm tên sản phẩm..." 
+                           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white"
+                           oninput="window.debounceFilter()">
+                </div>
 
-        <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center bg-gray-50">
-            <button id="btn-prev" class="px-3 py-1.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition" disabled>Trước</button>
-            <span class="text-xs text-gray-500 font-medium bg-white px-3 py-1.5 rounded-lg border" id="page-info">Trang 1</span>
-            <button id="btn-next" class="px-3 py-1.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition" disabled>Sau</button>
+                <div class="sm:col-span-4">
+                    <select id="filter-category" onchange="window.handleFilterCategoryChange()" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white cursor-pointer">
+                        <option value="">-- Tất cả danh mục --</option>
+                    </select>
+                </div>
+
+                <div class="sm:col-span-3">
+                    <select id="filter-brand" onchange="window.applyFilters()" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white cursor-pointer">
+                        <option value="">-- Tất cả hãng --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left whitespace-nowrap sm:whitespace-normal">
+                    <thead class="bg-gray-50 border-b border-gray-200 text-gray-500 font-semibold uppercase text-xs tracking-wider">
+                        <tr>
+                            <th class="px-4 py-3 lg:px-6 lg:py-4 w-16 lg:w-24">Ảnh</th>
+                            <th class="px-4 py-3 lg:px-6 lg:py-4">Tên sản phẩm</th>
+                            <th class="hidden md:table-cell px-4 py-3 lg:px-6 lg:py-4">Danh mục / Hãng</th>
+                            <th class="hidden sm:table-cell px-4 py-3 lg:px-6 lg:py-4 text-center">Tồn kho</th>
+                            <th class="px-4 py-3 lg:px-6 lg:py-4 text-center">Trạng thái</th> 
+                            <th class="px-4 py-3 lg:px-6 lg:py-4">Giá bán</th>
+                            <th class="px-4 py-3 lg:px-6 lg:py-4 text-right">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-list" class="divide-y divide-gray-100 bg-white">
+                        <tr><td colspan="7" class="py-8 text-center text-gray-500">Đang tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="px-4 py-4 border-t border-gray-200 flex justify-between items-center bg-gray-50">
+                <button id="btn-prev" class="px-3 py-1.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition" disabled>Trước</button>
+                <span class="text-xs text-gray-500 font-medium bg-white px-3 py-1.5 rounded-lg border" id="page-info">Trang 1</span>
+                <button id="btn-next" class="px-3 py-1.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition" disabled>Sau</button>
+            </div>
         </div>
     </div>
 
@@ -87,20 +113,20 @@
         
         <div class="absolute right-0 top-0 h-full w-full md:w-[900px] bg-white shadow-2xl transform transition-transform duration-300 translate-x-full flex flex-col" id="modal-panel">
             
-            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-                <h3 class="text-lg font-bold text-gray-800" id="modal-title">Thông tin sản phẩm</h3>
+            <div class="px-4 py-3 lg:px-6 lg:py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                <h3 class="text-base lg:text-lg font-bold text-gray-800 truncate pr-2" id="modal-title">Thông tin sản phẩm</h3>
                 <button onclick="closeModal()" class="text-gray-400 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition">
                     <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
 
-            <div class="flex border-b border-gray-200 px-6 bg-white sticky top-0 z-10">
-                <button onclick="switchTab('general')" id="tab-btn-general" class="tab-active py-3 px-4 text-sm transition-all hover:bg-gray-50">Thông tin chung</button>
-                <button onclick="switchTab('specs')" id="tab-btn-specs" class="tab-inactive py-3 px-4 text-sm transition-all hover:bg-gray-50">Cấu hình chi tiết</button>
-                <button onclick="switchTab('variants')" id="tab-btn-variants" class="tab-inactive py-3 px-4 text-sm transition-all hover:bg-gray-50">Biến thể</button>
+            <div class="flex border-b border-gray-200 px-2 lg:px-6 bg-white sticky top-0 z-10 overflow-x-auto tab-scroll">
+                <button onclick="switchTab('general')" id="tab-btn-general" class="tab-active py-3 px-4 text-sm transition-all hover:bg-gray-50 whitespace-nowrap">Thông tin chung</button>
+                <button onclick="switchTab('specs')" id="tab-btn-specs" class="tab-inactive py-3 px-4 text-sm transition-all hover:bg-gray-50 whitespace-nowrap">Cấu hình chi tiết</button>
+                <button onclick="switchTab('variants')" id="tab-btn-variants" class="tab-inactive py-3 px-4 text-sm transition-all hover:bg-gray-50 whitespace-nowrap">Biến thể</button>
             </div>
 
-            <div class="flex-1 overflow-y-auto p-6 modal-scroll bg-white relative">
+            <div class="flex-1 overflow-y-auto p-4 lg:p-6 modal-scroll bg-white relative pb-20">
                 <form id="product-form" class="space-y-6">
                     <input type="hidden" id="p-id">
                     <input type="hidden" id="p-image-url-old">
@@ -110,8 +136,8 @@
                             
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Ảnh đại diện <span class="text-red-500">*</span></label>
-                                <div class="flex gap-4 items-start">
-                                    <div class="flex-1">
+                                <div class="flex flex-col sm:flex-row gap-4 items-start">
+                                    <div class="flex-1 w-full">
                                         <label id="upload-label" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-blue-50 hover:border-blue-400 transition group">
                                             <div class="flex flex-col items-center justify-center pt-5 pb-6">
                                                 <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2 group-hover:text-blue-500 transition"></i>
@@ -121,7 +147,7 @@
                                             <input id="p-image-file" type="file" class="hidden" accept="image/*" />
                                         </label>
                                     </div>
-                                    <div class="w-32 h-32 rounded-xl border border-gray-200 bg-white p-1 flex-shrink-0 flex items-center justify-center relative shadow-sm">
+                                    <div class="w-full sm:w-32 h-32 rounded-xl border border-gray-200 bg-white p-1 flex-shrink-0 flex items-center justify-center relative shadow-sm">
                                         <img id="preview-img" src="https://placehold.co/150?text=No+Img" class="w-full h-full object-contain rounded-lg">
                                     </div>
                                 </div>
@@ -129,31 +155,31 @@
 
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tên sản phẩm <span class="text-red-500">*</span></label>
-                                <input type="text" id="p-title" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-medium" required>
+                                <input type="text" id="p-title" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-medium text-sm" required>
                             </div>
 
-                            <div class="md:col-span-2 grid grid-cols-3 gap-4">
+                            <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div>
                                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Giá bán (VNĐ) <span class="text-red-500">*</span></label>
-                                    <input type="number" id="p-price" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-blue-600 font-bold" required>
+                                    <input type="number" id="p-price" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-blue-600 font-bold text-sm" required>
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Giá gốc (VNĐ)</label>
-                                    <input type="number" id="p-compare" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-500">
+                                    <input type="number" id="p-compare" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-500 text-sm">
                                 </div>
                                 <div class="relative">
                                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1 flex justify-between">
                                         Tồn kho <span class="text-red-500">*</span>
                                         <span id="stock-badge" class="hidden text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200">Auto</span>
                                     </label>
-                                    <input type="number" id="p-stock" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-bold" placeholder="0">
+                                    <input type="number" id="p-stock" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-bold text-sm" placeholder="0">
                                 </div>
                             </div>
 
                             <div class="md:col-span-2 bg-gray-50 p-4 rounded-lg border border-gray-200 flex items-center justify-between">
                                 <div>
                                     <h4 class="text-sm font-bold text-gray-800">Trạng thái kinh doanh</h4>
-                                    <p class="text-xs text-gray-500 mt-1">Gạt tắt để ẩn sản phẩm khỏi trang khách hàng.</p>
+                                    <p class="text-[10px] lg:text-xs text-gray-500 mt-1">Gạt tắt để ẩn sản phẩm khỏi trang khách hàng.</p>
                                 </div>
                                 <div class="relative inline-block w-12 h-6 align-middle select-none transition duration-200 ease-in">
                                     <input type="checkbox" name="is_active" id="p-is-active" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
@@ -161,16 +187,16 @@
                                 </div>
                             </div>
 
-                            <div class="p-4 bg-slate-50 rounded-lg border border-slate-200 md:col-span-2 grid grid-cols-2 gap-4">
+                            <div class="p-4 bg-slate-50 rounded-lg border border-slate-200 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Loại sản phẩm</label>
-                                    <select id="p-category" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white cursor-pointer hover:bg-gray-50 transition">
+                                    <select id="p-category" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white cursor-pointer hover:bg-gray-50 transition text-sm">
                                         <option value="">-- Đang tải --</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Hãng sản xuất</label>
-                                    <select id="p-brand" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white cursor-pointer" disabled>
+                                    <select id="p-brand" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white cursor-pointer text-sm" disabled>
                                         <option value="">-- Chọn hãng --</option>
                                     </select>
                                 </div>
@@ -201,7 +227,7 @@
 
                             <div id="shared-gallery-wrapper" class="md:col-span-2 hidden">
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Bộ sưu tập ảnh chung</label>
-                                <div id="shared-gallery-view" class="grid grid-cols-5 gap-2"></div>
+                                <div id="shared-gallery-view" class="grid grid-cols-4 sm:grid-cols-5 gap-2"></div>
                             </div>
                         </div>
                     </div>
@@ -225,15 +251,15 @@
                 </form>
             </div>
 
-            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-between items-center" id="modal-footer">
-                <p class="text-xs text-gray-500 italic" id="footer-hint">* Các trường có dấu sao là bắt buộc.</p>
-                <div class="flex gap-3">
-                    <button id="btn-goto-detail" class="hidden px-4 py-2 text-sm font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition items-center gap-2">
-                        <i class="fa-solid fa-external-link"></i> Sửa chi tiết / Quản lý ảnh
+            <div class="px-4 py-4 lg:px-6 border-t border-gray-200 bg-gray-50 flex flex-col sm:flex-row justify-between items-center gap-3" id="modal-footer">
+                <p class="text-xs text-gray-500 italic order-2 sm:order-1" id="footer-hint">* Các trường có dấu sao là bắt buộc.</p>
+                <div class="flex gap-3 w-full sm:w-auto order-1 sm:order-2">
+                    <button id="btn-goto-detail" class="hidden flex-1 sm:flex-none px-4 py-2 text-sm font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition items-center justify-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-external-link"></i> <span class="hidden sm:inline">Sửa chi tiết</span><span class="sm:hidden">Chi tiết</span>
                     </button>
-                    <button onclick="closeModal()" class="px-5 py-2 text-sm font-medium text-gray-700 hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-300 rounded-lg transition">Đóng</button>
-                    <button id="btn-save" onclick="saveProduct()" class="px-6 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md transition flex items-center gap-2">
-                        <i class="fa-solid fa-floppy-disk"></i> Lưu dữ liệu
+                    <button onclick="closeModal()" class="flex-1 sm:flex-none px-5 py-2 text-sm font-medium text-gray-700 hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-300 rounded-lg transition">Đóng</button>
+                    <button id="btn-save" onclick="saveProduct()" class="flex-1 sm:flex-none px-6 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> Lưu
                     </button>
                 </div>
             </div>
@@ -247,27 +273,36 @@
         import { api } from '../assets/js/api.js';
         import { showToast } from '../assets/js/ui/toast.js';
 
+        // BIẾN TOÀN CỤC CHO BỘ LỌC
+        let currentFilters = {
+            keyword: '',
+            category: '',
+            brand: '',
+            page: 1
+        };
+        let debounceTimer;
+
+        // BIẾN TOÀN CỤC CHO MODAL
+        let currentSpecsData = {}; 
+        let filesToUpload = []; 
+        let allCategories = [];
+
         (async () => {
             await renderAdminLayout('products');
-
-            let currentSpecsData = {}; 
-            let filesToUpload = []; 
-            let currentPage = 1;
+            
+            // ================== INIT ==================
+            await loadCategoriesToSelects();
+            loadProducts();
 
             document.getElementById('btn-add').addEventListener('click', () => window.openModal('add'));
 
             const fileInput = document.getElementById('p-image-file');
-            const previewImg = document.getElementById('preview-img');
-            if (fileInput) {
-                fileInput.addEventListener('change', function (e) {
-                    const file = e.target.files[0];
-                    if (file) previewImg.src = URL.createObjectURL(file);
-                });
-            }
+            if (fileInput) fileInput.addEventListener('change', (e) => {
+                if(e.target.files[0]) document.getElementById('preview-img').src = URL.createObjectURL(e.target.files[0]);
+            });
 
             const galleryInput = document.getElementById('p-gallery-files');
-            const galleryPreview = document.getElementById('gallery-upload-preview');
-            if (galleryInput && galleryPreview) {
+            if (galleryInput) {
                 galleryInput.addEventListener('change', (e) => {
                     const newFiles = Array.from(e.target.files);
                     filesToUpload = [...filesToUpload, ...newFiles];
@@ -276,124 +311,173 @@
                 });
             }
 
-            window.renderGalleryPreview = () => {
-                const addBtn = galleryPreview.querySelector('label');
-                galleryPreview.innerHTML = '';
-                galleryPreview.appendChild(addBtn);
-
-                filesToUpload.forEach((file, index) => {
-                    const url = URL.createObjectURL(file);
-                    const div = document.createElement('div');
-                    div.className = 'relative aspect-square border rounded-lg overflow-hidden group bg-white shadow-sm';
-                    div.innerHTML = `
-                        <img src="${url}" class="w-full h-full object-cover">
-                        <button type="button" onclick="removeFileFromQueue(${index})" 
-                            class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-90 hover:bg-red-600 transition shadow-md">
-                            <i class="fa-solid fa-xmark text-xs"></i>
-                        </button>
-                    `;
-                    galleryPreview.appendChild(div);
-                });
-            }
-
-            window.removeFileFromQueue = (index) => {
-                filesToUpload.splice(index, 1);
-                renderGalleryPreview();
-            };
-
             document.getElementById('p-category').addEventListener('change', function () {
-                handleCategoryChange(this.value);
+                handleModalCategoryChange(this.value);
             });
 
-            window.switchTab = (tabName) => {
-                ['general', 'specs', 'variants'].forEach(t => {
-                    document.getElementById(`tab-content-${t}`).classList.add('hidden');
-                    document.getElementById(`tab-btn-${t}`).className = 'tab-inactive py-3 px-4 text-sm transition-all hover:bg-gray-50';
-                });
-                document.getElementById(`tab-content-${tabName}`).classList.remove('hidden');
-                document.getElementById(`tab-btn-${tabName}`).className = 'tab-active py-3 px-4 text-sm transition-all hover:bg-gray-50';
+
+            // ================== LOGIC BỘ LỌC (SEARCH/FILTER) ==================
+
+            window.debounceFilter = () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    window.applyFilters();
+                }, 500); // Đợi 0.5s sau khi ngừng gõ
             };
 
-            async function loadCategoriesForSelect() {
-                const catSelect = document.getElementById('p-category');
+            window.handleFilterCategoryChange = async () => {
+                const catSlug = document.getElementById('filter-category').value;
+                await loadBrandsToSelect(catSlug, 'filter-brand');
+                window.applyFilters();
+            };
+
+            window.applyFilters = (page = 1) => {
+                currentFilters.keyword = document.getElementById('filter-search').value.trim();
+                currentFilters.category = document.getElementById('filter-category').value;
+                currentFilters.brand = document.getElementById('filter-brand').value;
+                currentFilters.page = page;
+                loadProducts();
+            };
+
+            async function loadProducts() {
+                const listContainer = document.getElementById('product-list');
+                // Hiệu ứng loading để biết đang tìm kiếm
+                listContainer.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-gray-400"><i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Đang tìm kiếm...</td></tr>`;
+
+                try {
+                    const res = await api.getProducts({
+                        page: currentFilters.page,
+                        q: currentFilters.keyword,        // <--- ĐÃ SỬA: Đổi 'keyword' thành 'q' để khớp với Backend
+                        category: currentFilters.category,
+                        brand: currentFilters.brand,
+                        limit: 10
+                    });
+
+                    const products = res.data || [];
+                    const totalPages = res.last_page || 1;
+
+                    if (products.length === 0) {
+                        listContainer.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-gray-500 italic">Không tìm thấy sản phẩm nào phù hợp.</td></tr>`;
+                        updatePagination(0, 0);
+                        return;
+                    }
+
+                    const html = products.map(p => {
+                        const isActive = (p.is_active != 0);
+                        const statusBadge = isActive 
+                            ? `<span class="bg-green-100 text-green-700 border border-green-200 px-2 py-1 rounded text-[10px] lg:text-xs font-bold uppercase tracking-wide whitespace-nowrap">Đang bán</span>`
+                            : `<span class="bg-red-100 text-red-700 border border-red-200 px-2 py-1 rounded text-[10px] lg:text-xs font-bold uppercase tracking-wide whitespace-nowrap">Ngừng KD</span>`;
+
+                        const imgUrl = p.image && !p.image.includes('placehold') ? `../${p.image}` : 'https://placehold.co/64?text=No+Img';
+
+                        return `
+                        <tr class="hover:bg-blue-50/50 transition border-b border-gray-100 last:border-0 group ${!isActive ? 'bg-gray-50 opacity-70' : ''}">
+                            <td class="px-4 py-3 lg:px-6 lg:py-4 w-16 lg:w-24">
+                                <div class="w-12 h-12 lg:w-16 lg:h-16 rounded-lg border bg-white p-1 overflow-hidden">
+                                    <img src="${imgUrl}" class="w-full h-full object-contain group-hover:scale-110 transition" onerror="this.src='https://placehold.co/64?text=No+Img'">
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 lg:px-6 lg:py-4">
+                                <p class="font-semibold text-gray-800 line-clamp-2 text-sm lg:text-base whitespace-normal min-w-[150px]">${p.title}</p>
+                            </td>
+                            <td class="hidden md:table-cell px-4 py-3 lg:px-6 lg:py-4 text-sm lg:text-base">
+                                <span class="block font-bold text-gray-700">${p.category || '--'}</span>
+                                <span class="text-xs text-gray-500">${p.brand || ''}</span>
+                            </td>
+                            <td class="hidden sm:table-cell px-4 py-3 lg:px-6 lg:py-4 text-center text-sm lg:text-base font-mono">${p.stock_quantity}</td>
+                            <td class="px-4 py-3 lg:px-6 lg:py-4 text-center">${statusBadge}</td> 
+                            <td class="px-4 py-3 lg:px-6 lg:py-4 text-sm lg:text-base font-bold text-blue-600 whitespace-nowrap">${formatPrice(p.price)}</td>
+                            <td class="px-4 py-3 lg:px-6 lg:py-4 text-right">
+                                <div class="flex justify-end gap-2 opacity-80 group-hover:opacity-100 transition">
+                                    <button onclick="window.viewProduct(${p.id})" class="w-8 h-8 rounded bg-white border hover:border-blue-300 hover:text-blue-600 transition flex items-center justify-center shadow-sm"><i class="fa-solid fa-eye"></i></button>
+                                    
+                                    <button onclick="window.location.href='product-detail.html?id=${p.id}'" class="w-8 h-8 rounded bg-white border hover:bg-blue-50 hover:text-blue-600 transition flex items-center justify-center shadow-sm">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+
+                                    <button onclick="window.deleteProduct(${p.id})" class="w-8 h-8 rounded bg-white border hover:bg-red-50 hover:text-red-500 transition flex items-center justify-center shadow-sm"><i class="fa-solid fa-trash-can"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `}).join('');
+                    
+                    listContainer.innerHTML = html;
+                    updatePagination(currentFilters.page, totalPages);
+
+                } catch (e) {
+                    console.error(e);
+                    listContainer.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-red-500">Lỗi kết nối server!</td></tr>`;
+                }
+            }
+
+            function updatePagination(current, total) {
+                const btnPrev = document.getElementById('btn-prev');
+                const btnNext = document.getElementById('btn-next');
+                const pageInfo = document.getElementById('page-info');
+
+                pageInfo.innerText = `Trang ${current} / ${total}`;
+                btnPrev.disabled = current <= 1;
+                btnNext.disabled = current >= total;
+                btnPrev.onclick = () => window.applyFilters(current - 1);
+                btnNext.onclick = () => window.applyFilters(current + 1);
+            }
+
+            // ================== HÀM HỖ TRỢ DATA (LOAD CAT/BRAND) ==================
+
+            async function loadCategoriesToSelects() {
+                const filterSelect = document.getElementById('filter-category');
+                const modalSelect = document.getElementById('p-category');
                 try {
                     const res = await api.getCategories();
                     const cats = res.data || [];
                     window.allCategories = cats;
-                    catSelect.innerHTML = '<option value="">-- Chọn loại --</option>';
-                    cats.forEach(c => catSelect.innerHTML += `<option value="${c.slug}">${c.name}</option>`);
-                } catch (e) { console.error(e); }
+
+                    let htmlFilter = '<option value="">-- Tất cả danh mục --</option>';
+                    cats.forEach(c => htmlFilter += `<option value="${c.slug}">${c.name}</option>`);
+                    filterSelect.innerHTML = htmlFilter;
+
+                    let htmlModal = '<option value="">-- Chọn loại --</option>';
+                    cats.forEach(c => htmlModal += `<option value="${c.slug}">${c.name}</option>`);
+                    modalSelect.innerHTML = htmlModal;
+                } catch (e) { console.error("Lỗi load danh mục:", e); }
             }
 
-            async function handleCategoryChange(categorySlug, selectedBrand = '', existingSpecs = null) {
-                await updateBrandSelect(categorySlug, selectedBrand);
-                const categoryData = window.allCategories?.find(c => c.slug === categorySlug);
-                let template = [];
-                if (categoryData && categoryData.specs_template) {
-                    try {
-                        template = typeof categoryData.specs_template === 'string'
-                            ? JSON.parse(categoryData.specs_template)
-                            : categoryData.specs_template;
-                    } catch (e) { }
-                }
-                renderSpecsFormFromTemplate(template, existingSpecs || currentSpecsData);
-            }
-
-            function renderSpecsFormFromTemplate(template, data) {
-                const container = document.getElementById('specs-form-container');
-                const warning = document.getElementById('specs-warning');
-                container.innerHTML = '';
-
-                if (!template || template.length === 0) {
-                    container.classList.add('hidden');
-                    warning.classList.remove('hidden');
-                    document.getElementById('specs-status-text').textContent = "Danh mục này chưa được cấu hình thông số kỹ thuật.";
-                    return;
-                }
-                container.classList.remove('hidden');
-                warning.classList.add('hidden');
-
-                template.forEach(group => {
-                    let fieldsHtml = '';
-                    group.fields.forEach(f => {
-                        const val = data[f.k] || '';
-                        fieldsHtml += `
-                            <div>
-                                <label class="block text-[11px] font-bold text-gray-500 mb-1 uppercase tracking-wide">${f.l}</label>
-                                <input type="text" name="spec_${f.k}" value="${val}"
-                                    class="w-full px-3 py-2 border border-gray-200 rounded focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-gray-50 focus:bg-white transition-colors placeholder-gray-300 shadow-sm"
-                                    oninput="currentSpecsData['${f.k}'] = this.value">
-                            </div>`;
-                    });
-                    container.innerHTML += `
-                        <div class="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
-                            <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
-                                <span class="w-1.5 h-4 bg-blue-600 rounded-full"></span>${group.group}
-                            </h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">${fieldsHtml}</div>
-                        </div>`;
-                });
-            }
-
-            async function updateBrandSelect(category, selectedBrand = '') {
-                const brandSelect = document.getElementById('p-brand');
-                brandSelect.innerHTML = '<option value="">Đang tải...</option>';
-                brandSelect.disabled = true;
+            async function loadBrandsToSelect(categorySlug, selectId) {
+                const select = document.getElementById(selectId);
+                select.innerHTML = '<option value="">Đang tải...</option>';
+                select.disabled = true;
                 try {
-                    const res = await api.getBrands(category);
+                    const param = categorySlug || 'all'; 
+                    const res = await api.getBrands(param);
                     const brands = res.data || [];
-                    brandSelect.innerHTML = '<option value="">-- Chọn hãng --</option>';
+                    
+                    const defaultOption = selectId === 'filter-brand' ? '-- Tất cả hãng --' : '-- Chọn hãng --';
+                    select.innerHTML = `<option value="">${defaultOption}</option>`;
+                    
                     if (brands.length > 0) {
-                        brandSelect.disabled = false;
                         brands.forEach(b => {
                             const bName = typeof b === 'object' ? b.name : b;
-                            brandSelect.innerHTML += `<option value="${bName}" ${bName === selectedBrand ? 'selected' : ''}>${bName}</option>`;
+                            select.innerHTML += `<option value="${bName}">${bName}</option>`;
                         });
+                        select.disabled = false;
                     } else {
-                        brandSelect.innerHTML = '<option value="">Không có hãng nào</option>';
+                        select.innerHTML = '<option value="">Không có hãng</option>';
                     }
-                } catch (e) { console.error(e); }
+                } catch (e) { 
+                    select.innerHTML = '<option value="">Lỗi tải</option>';
+                }
             }
+
+            // ================== LOGIC MODAL & FORM ==================
+
+            window.switchTab = (tabName) => {
+                ['general', 'specs', 'variants'].forEach(t => {
+                    document.getElementById(`tab-content-${t}`).classList.add('hidden');
+                    document.getElementById(`tab-btn-${t}`).className = 'tab-inactive py-3 px-4 text-sm transition-all hover:bg-gray-50 whitespace-nowrap';
+                });
+                document.getElementById(`tab-content-${tabName}`).classList.remove('hidden');
+                document.getElementById(`tab-btn-${tabName}`).className = 'tab-active py-3 px-4 text-sm transition-all hover:bg-gray-50 whitespace-nowrap';
+            };
 
             function setFormState(isReadOnly) {
                 const form = document.getElementById('product-form');
@@ -407,12 +491,7 @@
 
                 inputs.forEach(input => {
                     if (input.id === 'p-gallery-files') return;
-                    // Bỏ qua checkbox Toggle trạng thái khi readonly (để nhìn thấy nó check hay không)
-                    if (input.type === 'checkbox') {
-                         input.disabled = isReadOnly; 
-                         return;
-                    }
-
+                    if (input.type === 'checkbox') { input.disabled = isReadOnly; return; }
                     if (isReadOnly) {
                         input.setAttribute('readonly', true);
                         input.classList.add('read-only-input');
@@ -445,92 +524,126 @@
                 }
             }
 
-            window.openModal = async (mode, data = null) => {
+            async function handleModalCategoryChange(categorySlug, selectedBrand = '', existingSpecs = null) {
+                await loadBrandsToSelect(categorySlug, 'p-brand');
+                const categoryData = window.allCategories?.find(c => c.slug === categorySlug);
+                let template = [];
+                if (categoryData && categoryData.specs_template) {
+                    try { template = typeof categoryData.specs_template === 'string' ? JSON.parse(categoryData.specs_template) : categoryData.specs_template; } catch (e) { }
+                }
+                renderSpecsFormFromTemplate(template, existingSpecs || currentSpecsData);
+                if(selectedBrand) document.getElementById('p-brand').value = selectedBrand;
+            }
+
+            function renderSpecsFormFromTemplate(template, data) {
+                 const container = document.getElementById('specs-form-container');
+                 const warning = document.getElementById('specs-warning');
+                 container.innerHTML = '';
+                 if (!template || template.length === 0) {
+                     container.classList.add('hidden'); warning.classList.remove('hidden'); return;
+                 }
+                 container.classList.remove('hidden'); warning.classList.add('hidden');
+                 template.forEach(group => {
+                     let fieldsHtml = '';
+                     group.fields.forEach(f => {
+                         const val = data[f.k] || '';
+                         fieldsHtml += `<div><label class="block text-[11px] font-bold text-gray-500 mb-1 uppercase tracking-wide">${f.l}</label><input type="text" name="spec_${f.k}" value="${val}" class="w-full px-3 py-2 border border-gray-200 rounded outline-none text-sm bg-gray-50 focus:bg-white" oninput="currentSpecsData['${f.k}'] = this.value"></div>`;
+                     });
+                     container.innerHTML += `<div class="border border-gray-200 rounded-lg p-4 bg-white shadow-sm"><h4 class="font-bold text-gray-800 mb-4 border-b pb-2">${group.group}</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">${fieldsHtml}</div></div>`;
+                 });
+            }
+
+            // ================== MODAL ACTIONS ==================
+
+            window.openModal = async (mode, dataInput = null) => {
                 const modal = document.getElementById('product-modal');
                 const panel = document.getElementById('modal-panel');
                 const title = document.getElementById('modal-title');
-                const tabVariants = document.getElementById('tab-btn-variants');
-                const stockInput = document.getElementById('p-stock');
-                const stockBadge = document.getElementById('stock-badge');
                 
-                // Toggle status
-                const activeCheck = document.getElementById('p-is-active');
-
                 modal.classList.remove('hidden');
                 setTimeout(() => panel.classList.remove('translate-x-full'), 10);
-
                 document.getElementById('product-form').reset();
                 document.getElementById('preview-img').src = 'https://placehold.co/150?text=No+Img';
-                document.getElementById('p-image-url-old').value = '';
                 document.getElementById('shared-gallery-view').innerHTML = '';
+                
                 switchTab('general');
                 currentSpecsData = {};
-                
                 filesToUpload = [];
                 renderGalleryPreview();
 
-                stockInput.classList.remove('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
-                stockInput.classList.add('bg-white', 'text-gray-800');
-                stockInput.removeAttribute('readonly');
-                stockBadge.classList.add('hidden');
-
                 if (mode === 'add') {
                     title.innerText = 'Thêm sản phẩm mới';
-                    setFormState(false);
                     document.getElementById('p-id').value = '';
-                    document.getElementById('p-stock').value = '0';
-                    activeCheck.checked = true; // Mặc định bật khi thêm mới
+                    setFormState(false);
                     document.getElementById('specs-form-container').classList.add('hidden');
                     document.getElementById('specs-warning').classList.remove('hidden');
-                    tabVariants.classList.add('hidden');
+                    document.getElementById('p-brand').innerHTML = '<option value="">-- Chọn hãng --</option>';
+                    document.getElementById('p-brand').disabled = true;
+                    document.getElementById('p-is-active').checked = true;
                 } else {
-                    title.innerText = 'Chi tiết sản phẩm (Chỉ xem)';
-                    tabVariants.classList.remove('hidden');
+                    let data = dataInput;
+                    if (dataInput && dataInput.id && !dataInput.title) {
+                        data = await api.getProduct(dataInput.id);
+                    }
+
+                    title.innerText = 'Chi tiết sản phẩm';
+                    setFormState(true);
                     document.getElementById('btn-goto-detail').onclick = () => window.location.href = `product-detail.html?id=${data.id}`;
 
                     document.getElementById('p-id').value = data.id;
                     document.getElementById('p-title').value = data.title;
                     document.getElementById('p-price').value = data.price;
-                    document.getElementById('p-stock').value = data.stock_quantity || 0;
-                    document.getElementById('p-compare').value = data.compare_at || '';
-                    document.getElementById('p-desc').value = data.description || '';
-                    document.getElementById('p-category').value = data.category || '';
-                    
-                    // Set Toggle Status
-                    activeCheck.checked = (data.is_active != 0); 
-
-                    const imgUrl = data.image ? (data.image.startsWith('http') ? data.image : `../${data.image}`) : 'https://placehold.co/150?text=No+Img';
-                    document.getElementById('preview-img').src = imgUrl;
+                    document.getElementById('p-stock').value = data.stock_quantity;
+                    document.getElementById('p-compare').value = data.compare_at;
+                    document.getElementById('p-desc').value = data.description;
+                    document.getElementById('p-category').value = data.category;
+                    document.getElementById('p-is-active').checked = (data.is_active != 0);
                     document.getElementById('p-image-url-old').value = data.image || '';
+                    document.getElementById('preview-img').src = data.image ? `../${data.image}` : 'https://placehold.co/150?text=No+Img';
 
                     if (data.shared_gallery && data.shared_gallery.length > 0) {
-                        const galleryHtml = data.shared_gallery.map(url => `
-                            <div class="aspect-square border rounded overflow-hidden">
-                                <img src="../${url}" class="w-full h-full object-cover">
-                            </div>
-                        `).join('');
+                        const galleryHtml = data.shared_gallery.map(url => `<div class="aspect-square border rounded overflow-hidden"><img src="../${url}" class="w-full h-full object-cover"></div>`).join('');
                         document.getElementById('shared-gallery-view').innerHTML = galleryHtml;
                     } else {
                         document.getElementById('shared-gallery-view').innerHTML = '<span class="text-xs text-gray-400 italic col-span-5">Không có ảnh chung.</span>';
                     }
 
                     let specsData = {};
-                    try { specsData = typeof data.specs === 'string' ? JSON.parse(data.specs) : (data.specs || {}); } catch (e) { }
+                    try { specsData = typeof data.specs === 'string' ? JSON.parse(data.specs) : (data.specs || {}); } catch (e) {}
                     currentSpecsData = specsData;
-                    await handleCategoryChange(data.category, data.brand, specsData);
+                    await handleModalCategoryChange(data.category, data.brand, specsData);
+                    
                     await loadVariantsReadOnly(data.id);
-                    setFormState(true);
-
-                    if (stockInput.hasAttribute('readonly') && stockBadge.classList.contains('hidden') === false) {
-                        stockInput.classList.add('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
-                    }
                 }
             };
-
+            
             window.closeModal = () => {
                 document.getElementById('modal-panel').classList.add('translate-x-full');
                 setTimeout(() => document.getElementById('product-modal').classList.add('hidden'), 300);
             };
+
+            async function loadVariantsReadOnly(productId) {
+                const container = document.getElementById('variants-view-container');
+                container.innerHTML = '<p class="text-center text-gray-500">Đang tải biến thể...</p>';
+                try {
+                    const res = await api.getProductVariants(productId);
+                    const variants = res.data || [];
+                    if (variants.length === 0) {
+                        container.innerHTML = '<p class="text-center text-gray-400 italic">Chưa có biến thể.</p>'; return;
+                    }
+                    const groups = {};
+                    variants.forEach(v => { const c = (v.color || 'Mặc định').trim(); if (!groups[c]) groups[c] = []; groups[c].push(v); });
+                    let html = '';
+                    Object.entries(groups).forEach(([color, vars]) => {
+                        let imgs = [];
+                        vars.forEach(v => { if(v.image && !imgs.includes(v.image)) imgs.push(v.image); });
+                        html += `<div class="border rounded-lg bg-white mb-4 overflow-hidden"><div class="bg-gray-50 px-4 py-2 border-b flex items-center gap-2 font-bold text-gray-700 text-sm uppercase"><span class="w-3 h-3 rounded-full bg-blue-500"></span> Màu: ${color}</div><div class="grid grid-cols-4 divide-x"><div class="p-3 bg-white grid grid-cols-2 gap-2 content-start">${imgs.length ? imgs.map(i => `<img src="../${i}" class="aspect-square object-cover rounded border">`).join('') : '<span class="text-xs text-gray-400 col-span-2 text-center">No Img</span>'}</div><div class="col-span-3"><div class="p-3 text-sm text-gray-600">Có <b>${vars.length}</b> phân loại hàng. Tổng tồn kho: <b>${vars.reduce((sum,v)=>sum+(v.stock_quantity||0),0)}</b></div></div></div></div>`;
+                    });
+                    container.innerHTML = html;
+                } catch (e) { container.innerHTML = '<p class="text-red-500 text-center">Lỗi tải</p>'; }
+            }
+
+            // ================== CRUD ACTIONS ==================
 
             window.saveProduct = async () => {
                 const id = document.getElementById('p-id').value;
@@ -549,7 +662,6 @@
                     description: document.getElementById('p-desc').value,
                     specs: currentSpecsData,
                     image: document.getElementById('p-image-url-old').value,
-                    // Lấy trạng thái từ Toggle
                     is_active: document.getElementById('p-is-active').checked ? 1 : 0
                 };
 
@@ -563,23 +675,21 @@
                 try {
                     let productId = id;
                     let isNew = false;
-
                     if (!id) {
                         const res = await api.createProduct(data);
-                        productId = res.id;
-                        isNew = true;
+                        productId = res.id; isNew = true;
                     } else {
-                        // Gọi update nếu là edit
                         await api.updateProduct(productId, data);
                     }
 
+                    // Upload main image
                     const file = document.getElementById('p-image-file').files[0];
                     if (file) {
                         const formData = new FormData();
                         formData.append('image', file);
                         await api.uploadProductImage(productId, formData);
                     }
-
+                    // Upload gallery
                     if (filesToUpload.length > 0) {
                         for (const galleryFile of filesToUpload) {
                             const fd = new FormData();
@@ -589,89 +699,24 @@
                     }
 
                     if (isNew) {
-                        if (confirm('Sản phẩm đã tạo thành công! Bạn có muốn chuyển sang trang chi tiết để thêm Biến thể (Màu sắc/Cấu hình) không?')) {
+                        if (confirm('Sản phẩm đã tạo thành công! Chuyển sang trang chi tiết để thêm Biến thể?')) {
                             window.location.href = `product-detail.html?id=${productId}`;
                         } else {
                             window.closeModal();
-                            loadProducts(currentPage);
+                            window.applyFilters(currentFilters.page);
                             showToast('Tạo sản phẩm thành công', 'success');
                         }
                     } else {
+                        // Không bao giờ vào đây vì Edit đã chuyển trang, nhưng giữ lại cho trường hợp mở rộng
                         window.closeModal();
-                        loadProducts(currentPage);
+                        window.applyFilters(currentFilters.page);
                         showToast('Cập nhật thành công', 'success');
                     }
-
                 } catch (e) {
                     showToast(e.message || 'Có lỗi xảy ra', 'error');
-                    console.error(e);
                 } finally {
-                    btnSave.innerHTML = originalText;
-                    btnSave.disabled = false;
+                    btnSave.innerHTML = originalText; btnSave.disabled = false;
                 }
-            };
-
-            async function loadVariantsReadOnly(productId) {
-                const container = document.getElementById('variants-view-container');
-                container.innerHTML = '<p class="text-center text-gray-500">Đang tải biến thể...</p>';
-                try {
-                    const res = await api.request(`/products/${productId}/variants`);
-                    const variants = res.data || [];
-                    const stockInput = document.getElementById('p-stock');
-                    const stockBadge = document.getElementById('stock-badge');
-                    
-                    if (variants.length > 0) {
-                        stockInput.setAttribute('readonly', true);
-                        stockInput.classList.add('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
-                        stockBadge.classList.remove('hidden');
-                    }
-
-                    if (variants.length === 0) {
-                        container.innerHTML = '<p class="text-center text-gray-400 italic">Chưa có biến thể.</p>';
-                        return;
-                    }
-                    
-                    const groups = {};
-                    variants.forEach(v => {
-                        const c = (v.attributes?.color || v.color || 'Mặc định').trim();
-                        if (!groups[c]) groups[c] = [];
-                        groups[c].push(v);
-                    });
-                    
-                    let html = '';
-                    Object.entries(groups).forEach(([color, vars]) => {
-                        let imgs = [];
-                        vars.forEach(v => {
-                            if (v.gallery && v.gallery.length) v.gallery.forEach(i => !imgs.includes(i) && imgs.push(i));
-                            else if (v.image && !imgs.includes(v.image)) imgs.push(v.image);
-                        });
-                        
-                        html += `
-                        <div class="border rounded-lg bg-white mb-4 overflow-hidden">
-                            <div class="bg-gray-50 px-4 py-2 border-b flex items-center gap-2 font-bold text-gray-700 text-sm uppercase">
-                                <span class="w-3 h-3 rounded-full bg-blue-500"></span> Màu: ${color}
-                            </div>
-                            <div class="grid grid-cols-4 divide-x">
-                                <div class="p-3 bg-white grid grid-cols-2 gap-2 content-start">
-                                    ${imgs.length ? imgs.map(i => `<img src="../${i}" class="aspect-square object-cover rounded border">`).join('') : '<span class="text-xs text-gray-400 col-span-2 text-center">No Img</span>'}
-                                </div>
-                                <div class="col-span-3">
-                                    <div class="p-3 text-sm text-gray-600">
-                                        Có <b>${vars.length}</b> phân loại hàng. Tổng tồn kho: <b>${vars.reduce((sum,v)=>sum+(v.stock_quantity||0),0)}</b>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>`;
-                    });
-                    container.innerHTML = html;
-                } catch (e) {
-                    container.innerHTML = '<p class="text-red-500 text-center">Lỗi tải</p>';
-                }
-            }
-
-            window.viewProduct = async (id) => {
-                try { window.openModal('view', await api.getProduct(id)); }
-                catch (e) { console.error(e); }
             };
 
             window.deleteProduct = async (id) => {
@@ -679,62 +724,36 @@
                 try {
                     await api.deleteProduct(id);
                     showToast('Đã xóa', 'success');
-                    loadProducts(currentPage);
-                } catch (e) {
-                    showToast('Lỗi xóa', 'error');
-                }
+                    window.applyFilters(currentFilters.page);
+                } catch (e) { showToast('Lỗi xóa', 'error'); }
             };
 
-            async function loadProducts(page = 1) {
-                currentPage = page;
-                try {
-                    // Thêm param status: 'all' để Admin lấy cả sản phẩm ẩn
-                    const res = await api.getProducts({ page: currentPage, status: 'all' });
-                    const html = (res.data || []).map(p => {
-                        // Xử lý badge trạng thái
-                        const isActive = (p.is_active != 0);
-                        const statusBadge = isActive 
-                            ? `<span class="bg-green-100 text-green-700 border border-green-200 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide">Đang bán</span>`
-                            : `<span class="bg-red-100 text-red-700 border border-red-200 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide">Ngừng KD</span>`;
+            window.viewProduct = async (id) => {
+                try { window.openModal('view', {id: id}); }
+                catch (e) { console.error(e); }
+            };
 
-                        return `
-                        <tr class="hover:bg-blue-50/50 transition border-b border-gray-100 last:border-0 group ${!isActive ? 'bg-gray-50 opacity-70' : ''}">
-                            <td class="px-6 py-4 w-24">
-                                <div class="w-16 h-16 rounded-lg border bg-white p-1 overflow-hidden">
-                                    <img src="../${p.image}" class="w-full h-full object-contain group-hover:scale-110 transition" onerror="this.src='https://placehold.co/64?text=No+Img'">
-                                </div>
-                            </td>
-                            <td class="px-6 py-4"><p class="font-semibold text-gray-800 line-clamp-2">${p.title}</p></td>
-                            <td class="px-6 py-4">${p.category || '--'}</td>
-                            <td class="px-6 py-4 text-center">${p.stock_quantity}</td>
-                            <td class="px-6 py-4 text-center">${statusBadge}</td> <td class="px-6 py-4">${formatPrice(p.price)}</td>
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex justify-end gap-2 opacity-80 group-hover:opacity-100">
-                                    <button onclick="window.viewProduct(${p.id})" class="w-9 h-9 rounded bg-white border hover:border-blue-300 hover:text-blue-600 transition flex items-center justify-center">
-                                        <i class="fa-solid fa-eye"></i>
-                                    </button>
-                                    
-                                    <button onclick="window.location.href='product-detail.html?id=${p.id}'" class="w-9 h-9 rounded bg-white border hover:bg-blue-50 hover:text-blue-600 transition flex items-center justify-center">
-                                        <i class="fa-solid fa-pen-to-square"></i>
-                                    </button>
-
-                                    <button onclick="window.deleteProduct(${p.id})" class="w-9 h-9 rounded bg-white border hover:bg-red-50 hover:text-red-500 transition flex items-center justify-center">
-                                        <i class="fa-solid fa-trash-can"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `}).join('');
-                    document.getElementById('product-list').innerHTML = html;
-                } catch (e) {
-                    console.error(e);
-                    document.getElementById('product-list').innerHTML = `<tr><td colspan="7" class="text-center py-8 text-red-500">Lỗi tải dữ liệu!</td></tr>`;
-                }
+            // Helpers Gallery Upload
+            window.renderGalleryPreview = () => {
+                const preview = document.getElementById('gallery-upload-preview');
+                const addBtn = preview.querySelector('label');
+                preview.innerHTML = ''; preview.appendChild(addBtn);
+                filesToUpload.forEach((file, index) => {
+                    const url = URL.createObjectURL(file);
+                    const div = document.createElement('div');
+                    div.className = 'relative aspect-square border rounded-lg overflow-hidden group bg-white shadow-sm';
+                    div.innerHTML = `<img src="${url}" class="w-full h-full object-cover"><button type="button" onclick="window.removeFileFromQueue(${index})" class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-90 hover:bg-red-600 transition shadow-md"><i class="fa-solid fa-xmark text-xs"></i></button>`;
+                    preview.appendChild(div);
+                });
             }
+            window.removeFileFromQueue = (index) => {
+                filesToUpload.splice(index, 1);
+                renderGalleryPreview();
+            };
 
-            await loadCategoriesForSelect();
-            loadProducts();
         })();
     </script>
+</body>
+</html>
 </body>
 </html>

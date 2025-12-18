@@ -98,7 +98,7 @@ class AuthController extends Controller
             return $this->error('Sai email hoặc mật khẩu', 401);
         }
 
-        // 👇 [FIX QUAN TRỌNG] Kiểm tra xem tài khoản có bị khóa không
+        // Kiểm tra xem tài khoản có bị khóa không
         if (isset($user['is_locked']) && $user['is_locked'] == 1) {
             return $this->error('Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Admin.', 403);
         }
@@ -151,7 +151,7 @@ class AuthController extends Controller
             $user = User::findById($userId);
         }
 
-        // 👇 [FIX QUAN TRỌNG] Kiểm tra xem tài khoản có bị khóa không (Ngay cả khi login Google)
+        // Kiểm tra xem tài khoản có bị khóa không
         if (isset($user['is_locked']) && $user['is_locked'] == 1) {
             return $this->error('Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Admin.', 403);
         }
@@ -176,18 +176,73 @@ class AuthController extends Controller
         $user = User::findById($userId);
         if (!$user) return $this->error('Không tìm thấy user', 404);
 
-        // Optional: Check locked ở đây nếu muốn user đang login mà bị block thì đá ra ngay
         if (isset($user['is_locked']) && $user['is_locked'] == 1) {
             return $this->error('Tài khoản đã bị khóa', 403);
         }
 
+        // [CẬP NHẬT] Trả về thêm Gender và Birthday
         $this->json([
             'id' => $user['id'],
             'name' => $user['name'],
             'email' => $user['email'],
             'role' => $user['role'],
+            'gender' => $user['gender'] ?? 'other',     // Mới
+            'birthday' => $user['birthday'] ?? null,    // Mới
             'created_at' => $user['created_at'],
         ]);
+    }
+
+    // [MỚI] Hàm cập nhật thông tin cá nhân (Tên, Giới tính, Ngày sinh)
+    public function updateProfile()
+    {
+        $userId = AuthMiddleware::userIdOrFail($this->request, $this->response);
+        $data = $this->request->body;
+
+        $name = $data['name'] ?? '';
+        $gender = $data['gender'] ?? 'other';
+        $birthday = $data['birthday'] ?? null;
+
+        // 1. Validate Tên
+        if (empty($name)) {
+            return $this->error('Tên không được để trống', 422);
+        }
+
+        // 2. Validate Giới tính (Chỉ nhận male, female, other)
+        if (!in_array($gender, ['male', 'female', 'other'])) {
+            $gender = 'other';
+        }
+
+        // 3. Validate Ngày sinh (> 16 tuổi)
+        if ($birthday) {
+            try {
+                $bdayObj = new \DateTime($birthday);
+                $now = new \DateTime();
+                
+                // Tính khoảng cách tuổi (năm trọn vẹn)
+                $age = $now->diff($bdayObj)->y;
+
+                if ($age < 16) {
+                    return $this->error('Bạn phải trên 16 tuổi mới được cập nhật thông tin này.', 400);
+                }
+            } catch (\Exception $e) {
+                return $this->error('Định dạng ngày sinh không hợp lệ', 422);
+            }
+        } else {
+            return $this->error('Vui lòng chọn ngày sinh', 422);
+        }
+
+        // 4. Gọi Model cập nhật
+        $success = User::updateProfile($userId, [
+            'name' => $name,
+            'gender' => $gender,
+            'birthday' => $birthday
+        ]);
+
+        if ($success) {
+            $this->json(['success' => true, 'message' => 'Cập nhật hồ sơ thành công']);
+        } else {
+            $this->error('Lỗi khi cập nhật hồ sơ', 500);
+        }
     }
 
     public function forgotPassword()
@@ -199,10 +254,7 @@ class AuthController extends Controller
 
         $user = User::findByEmail($b['email']);
         
-        // Nếu user bị khóa thì cũng không cho reset pass (Optional)
         if ($user && isset($user['is_locked']) && $user['is_locked'] == 1) {
-             // Để bảo mật, có thể vẫn báo thành công ảo, hoặc báo lỗi tùy bạn.
-             // Ở đây tôi chọn báo lỗi rõ ràng.
              return $this->error('Tài khoản đã bị khóa, không thể khôi phục mật khẩu.', 403);
         }
 

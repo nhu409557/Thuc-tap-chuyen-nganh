@@ -2,108 +2,233 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>Danh mục sản phẩm</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Danh mục sản phẩm - TechHub</title>
+  
   <link rel="stylesheet" href="assets/css/reset.css" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="assets/css/app.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-gray-50">
+  <link rel="stylesheet" href="assets/css/app.css" />
 
-  <div id="site-header"></div>
+  <style>
+    /* ... (Giữ nguyên CSS cũ) ... */
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    .range-slider { position: relative; width: 100%; height: 4px; background: #e5e7eb; border-radius: 5px; margin: 25px 0 5px 0; }
+    .range-selected { height: 100%; left: 0%; right: 0%; position: absolute; border-radius: 5px; background-color: #ffffff; }
+    .range-input { position: relative; }
+    .range-input input { position: absolute; width: 100%; height: 5px; top: -9px; background: none; pointer-events: none; -webkit-appearance: none; appearance: none; z-index: 10; }
+    .range-input input::-webkit-slider-thumb { height: 20px; width: 20px; border-radius: 50%; background: #ffffff; pointer-events: auto; -webkit-appearance: none; box-shadow: 0 2px 6px rgba(0,0,0,0.2); cursor: pointer; border: 2px solid #2563eb; margin-top: -8px; transition: transform 0.1s; }
+    .range-input input::-webkit-slider-thumb:active { transform: scale(1.1); background: #eff6ff; }
+
+    #sidebar-content { transition: transform 0.3s ease-in-out; }
+    .sidebar-open #sidebar-content { transform: translateX(0); }
+    .sidebar-open #sidebar-overlay { display: block; }
+    .sticky-filter-btn { position: sticky; top: 70px; z-index: 30; }
+</style>
+</head>
+<body class="bg-gray-50 flex flex-col min-h-screen font-sans text-gray-800">
+
+  <div id="site-header" class="sticky top-0 z-50 bg-white shadow-sm"></div>
 
   <div class="bg-white border-b border-gray-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-      <div class="flex items-center gap-2 text-sm">
-        <a class="text-blue-600 hover:underline" href="index.html">Trang chủ</a>
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><path d="m9 18 6-6-6-6"></path></svg>
-        <span class="text-gray-700 font-medium">Danh mục</span>
-      </div>
+      <nav class="flex items-center gap-2 text-sm text-gray-500">
+        <a class="hover:text-blue-600 transition flex items-center gap-1" href="index.html">
+          <i class="fa-solid fa-house text-xs"></i> Trang chủ
+        </a>
+        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+        <span class="text-gray-900 font-medium">Danh mục</span>
+      </nav>
     </div>
   </div>
 
-  <section class="bg-gradient-to-r from-blue-50 to-blue-100 border-b border-gray-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 id="category-title" class="text-3xl font-bold mb-2 text-gray-800">Đang tải...</h1>
-      <p class="text-gray-600">Khám phá bộ sưu tập sản phẩm chính hãng của chúng tôi.</p>
+  <section class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white relative overflow-hidden shadow-sm">
+    <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 relative z-10">
+      <h1 id="category-title" class="text-2xl md:text-4xl font-bold mb-2 tracking-tight">
+        <i class="fa-solid fa-spinner fa-spin mr-2"></i>Đang tải...
+      </h1>
+      <p class="text-blue-100 text-sm md:text-base max-w-2xl">
+        Khám phá các sản phẩm công nghệ chính hãng với mức giá ưu đãi và chất lượng hàng đầu.
+      </p>
     </div>
   </section>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 flex-grow w-full relative">
     
-    <div class="md:hidden mb-4">
-        <button id="mobile-filter-toggle" class="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 py-2.5 rounded-lg font-semibold shadow-sm active:bg-gray-50 transition">
-            <i class="fa-solid fa-filter text-blue-600"></i>
-            Lọc sản phẩm
+    <div class="md:hidden mb-6 sticky-filter-btn">
+        <button id="mobile-filter-toggle" class="w-full flex items-center justify-center gap-2 bg-white/95 backdrop-blur-md border border-gray-200 text-blue-700 py-3 rounded-xl font-bold text-sm shadow-lg hover:shadow-xl active:scale-95 transition-all">
+            <i class="fa-solid fa-sliders"></i>
+            Bộ lọc & Sắp xếp
         </button>
     </div>
 
-    <div class="grid md:grid-cols-4 gap-8">
+    <div class="grid md:grid-cols-4 gap-6 lg:gap-8">
       
-      <aside id="filter-sidebar" class="hidden md:block md:col-span-1">
+      <aside id="filter-sidebar" class="hidden md:block md:col-span-1 z-40">
         
-        <div class="md:hidden flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
-            <span class="font-bold text-lg">Bộ lọc</span>
-            <button id="close-filter-btn" class="text-gray-500 p-2 bg-gray-100 rounded-full hover:bg-gray-200"><i class="fa-solid fa-xmark"></i></button>
-        </div>
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 hidden z-40 backdrop-blur-sm" onclick="closeMobileFilter()"></div>
 
-        <div class="bg-white rounded-xl border border-gray-200 p-5 h-fit sticky top-24 shadow-sm">
-          <h3 class="text-lg font-bold mb-4 flex items-center gap-2 text-gray-800">
-            <i class="fa-solid fa-filter text-blue-600 text-sm"></i> Bộ lọc
-          </h3>
+        <div id="sidebar-content" class="bg-white md:bg-transparent md:static 
+             fixed inset-y-0 left-0 w-[85%] max-w-[320px] z-50 transform -translate-x-full md:translate-x-0 
+             flex flex-col h-full md:h-auto overflow-hidden shadow-2xl md:shadow-none rounded-r-2xl md:rounded-none">
           
-          <div class="mb-6 pb-6 border-b border-gray-100">
-            <label for="sort-by" class="block text-sm font-semibold mb-2 text-gray-700">Sắp xếp</label>
-            <select id="sort-by" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-              <option value="">Mặc định</option>
-              <option value="price_asc">Giá: Thấp đến Cao</option>
-              <option value="price_desc">Giá: Cao đến Thấp</option>
-              <option value="newest">Mới nhất</option>
-            </select>
-          </div>
-          
-          <div class="mb-6 pb-6 border-b border-gray-100">
-            <label class="block text-sm font-semibold mb-3 text-gray-700">Khoảng giá</label>
-            <div class="flex gap-2 mb-3">
-              <input type="number" id="min-price" placeholder="Từ" class="w-full p-2 border border-gray-300 rounded text-sm focus:border-blue-500 outline-none" />
-              <span class="text-gray-400 flex items-center">-</span>
-              <input type="number" id="max-price" placeholder="Đến" class="w-full p-2 border border-gray-300 rounded text-sm focus:border-blue-500 outline-none" />
-            </div>
-            <button id="filter-price-btn" class="w-full text-sm bg-blue-50 text-blue-700 font-semibold py-2 rounded hover:bg-blue-100 transition">Áp dụng</button>
-          </div>
-          
-          <div class="mb-6 pb-6 border-b border-gray-100">
-            <label class="block text-sm font-semibold mb-3 text-gray-700">Màu sắc</label>
-            <div class="space-y-2 max-h-40 overflow-y-auto custom-scrollbar text-sm" id="color-filters">
-                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="color-filter" value="Đen" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"> Đen (Black)</label>
-                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="color-filter" value="Trắng" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"> Trắng (White)</label>
-                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="color-filter" value="Xanh" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"> Xanh (Blue)</label>
-                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="color-filter" value="Vàng" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"> Vàng (Gold)</label>
-                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="color-filter" value="Bạc" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"> Bạc (Silver)</label>
-                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="color-filter" value="Xám" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"> Xám (Grey)</label>
-                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="color-filter" value="Titan" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"> Titan</label>
-            </div>
+          <div class="md:hidden flex justify-between items-center px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+            <span class="font-bold text-lg flex items-center gap-2">
+                <i class="fa-solid fa-filter"></i> Bộ lọc
+            </span>
+            <button onclick="closeMobileFilter()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
           </div>
 
-          <div>
-            <label class="block text-sm font-semibold mb-3 text-gray-700">Thương hiệu</label>
-            <div id="brand-filters" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
-                <p class="text-sm text-gray-400 italic">Đang tải hãng...</p>
-            </div>
+          <div class="flex-1 overflow-y-auto p-5 md:p-0 space-y-5 custom-scrollbar bg-gray-50 md:bg-transparent md:sticky md:top-24">
+              
+              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <label for="sort-by" class="block text-sm font-bold mb-3 text-gray-800 uppercase tracking-wider">
+                  <i class="fa-solid fa-arrow-down-short-wide text-blue-500 mr-1"></i> Sắp xếp
+                </label>
+                <div class="relative">
+                    <select id="sort-by" class="w-full p-2.5 pl-3 pr-10 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none appearance-none bg-gray-50 cursor-pointer hover:border-blue-400 transition font-medium text-gray-700">
+                        <option value="newest">✨ Mới nhất</option>
+                        <option value="price_asc">💰 Giá tăng dần</option>
+                        <option value="price_desc">💎 Giá giảm dần</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500">
+                        <i class="fa-solid fa-chevron-down text-xs"></i>
+                    </div>
+                </div>
+              </div>
+              
+              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <label class="block text-sm font-bold mb-4 text-gray-800 uppercase tracking-wider">
+                  <i class="fa-solid fa-tag text-blue-500 mr-1"></i> Khoảng giá
+                </label>
+                <div class="flex items-center gap-2 mb-4">
+                  <input type="number" id="min-price" class="w-full p-2 border border-gray-200 bg-gray-50 rounded-lg text-sm text-center focus:border-blue-500 outline-none font-semibold placeholder-gray-400" placeholder="0" />
+                  <span class="text-gray-400">-</span>
+                  <input type="number" id="max-price" class="w-full p-2 border border-gray-200 bg-gray-50 rounded-lg text-sm text-center focus:border-blue-500 outline-none font-semibold placeholder-gray-400" placeholder="Max" />
+                </div>
+                
+                <div class="px-1 mb-6">
+                    <div class="range-slider">
+                        <div class="range-selected" id="range-selected"></div>
+                    </div>
+                    <div class="range-input">
+                        <input type="range" class="min-range w-full" id="slider-min" min="0" max="100000000" value="0" step="500000">
+                        <input type="range" class="max-range w-full" id="slider-max" min="0" max="100000000" value="100000000" step="500000">
+                    </div>
+                </div>
+
+                <button id="filter-price-btn" class="w-full text-sm bg-blue-50 text-blue-700 font-bold py-2.5 rounded-lg hover:bg-blue-100 transition border border-blue-100 shadow-sm active:scale-95">
+                    Áp dụng
+                </button>
+              </div>
+
+              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <label class="block text-sm font-bold mb-3 text-gray-800 uppercase tracking-wider">
+                  <i class="fa-solid fa-copyright text-blue-500 mr-1"></i> Thương hiệu
+                </label>
+                <div id="brand-filters" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-1">
+                    <p class="text-xs text-gray-400 italic text-center py-4">Đang tải...</p>
+                </div>
+              </div>
+              
+              <div class="hidden md:block text-center">
+                  <button onclick="window.resetPageFilter()" class="text-sm text-gray-500 hover:text-red-500 underline transition">
+                      <i class="fa-solid fa-rotate-right mr-1"></i> Xóa bộ lọc
+                  </button>
+              </div>
+          </div>
+          
+          <div class="md:hidden p-4 border-t border-gray-200 bg-white sticky bottom-0 z-10 flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+              <button onclick="window.resetPageFilter()" class="px-4 py-3 border border-gray-300 rounded-xl text-gray-600 font-bold hover:bg-gray-50">
+                  Xóa
+              </button>
+              <button id="btn-apply-mobile" class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition">
+                  Xem kết quả
+              </button>
           </div>
 
         </div>
       </aside>
       
       <div class="md:col-span-3">
-        <div id="category-products" class="grid grid-cols-2 md:grid-cols-3 gap-6">
+        <div id="category-products" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5 lg:gap-6">
+             </div>
+        
+        <div class="mt-8 text-center">
+            <button id="btn-load-more" class="hidden px-6 py-3 bg-white border border-blue-600 text-blue-600 font-bold rounded-full hover:bg-blue-50 transition-all shadow-sm active:scale-95 group">
+                Xem thêm 20 sản phẩm <i class="fa-solid fa-chevron-down ml-2 transition-transform group-hover:translate-y-1"></i>
+            </button>
+        </div>
+
+        <div id="empty-state" class="hidden flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm text-center mt-4">
+            <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-4">
+                <i class="fa-solid fa-magnifying-glass text-3xl text-blue-400"></i>
             </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Không tìm thấy sản phẩm</h3>
+            <p class="text-gray-500 mb-6 max-w-xs mx-auto">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm của bạn.</p>
+            <button onclick="window.resetPageFilter()" class="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition active:scale-95">
+                <i class="fa-solid fa-rotate-right mr-2"></i> Xóa bộ lọc & Tải lại
+            </button>
+        </div>
       </div>
 
     </div>
   </main>
 
   <div id="site-footer"></div>
+
+  <script>
+    const toggleBtn = document.getElementById('mobile-filter-toggle');
+    const sidebar = document.getElementById('filter-sidebar');
+    const applyBtnMobile = document.getElementById('btn-apply-mobile');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    
+    function openMobileFilter() {
+        sidebar.classList.remove('active');
+        sidebar.classList.remove('hidden');
+        setTimeout(() => {
+            document.body.classList.add('sidebar-open');
+        }, 10);
+        document.body.style.overflow = 'hidden'; 
+    }
+
+    function closeMobileFilter() {
+        document.body.classList.remove('sidebar-open');
+        setTimeout(() => {
+            sidebar.classList.add('hidden');
+            document.body.style.overflow = '';
+        }, 300);
+    }
+
+    if (toggleBtn) toggleBtn.addEventListener('click', openMobileFilter);
+
+    if (applyBtnMobile) {
+        applyBtnMobile.addEventListener('click', () => {
+            const filterPriceBtn = document.getElementById('filter-price-btn');
+            if (filterPriceBtn) filterPriceBtn.click();
+            closeMobileFilter();
+        });
+    }
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 768) {
+            document.body.classList.remove('sidebar-open');
+            document.body.style.overflow = '';
+            sidebar.classList.remove('hidden'); 
+        } else {
+            if (!document.body.classList.contains('sidebar-open')) {
+                sidebar.classList.add('hidden');
+            }
+        }
+    });
+  </script>
 
   <script type="module" src="assets/js/main.js"></script>
   <script type="module" src="assets/js/products.js"></script>

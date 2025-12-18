@@ -12,46 +12,59 @@ function formatPrice(vnd) {
 }
 
 /**
- * Render một thẻ sản phẩm (dựa theo code mẫu của bạn)
- * @param {object} item - Item từ API (đã join với product)
- * item.id = wishlist_items.id
- * item.product_id = products.id
+ * Render thẻ sản phẩm (Responsive: 2 cột trên mobile)
  */
 function renderWishlistProductCard(item) {
+  // Logic sale tag
+  let saleTag = '';
+  if (item.compare_at && item.compare_at > item.price) {
+      const percent = Math.round(((item.compare_at - item.price) / item.compare_at) * 100);
+      saleTag = `<div class="absolute top-2 left-2 bg-red-600 text-white text-[10px] md:text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded shadow-sm z-10">-${percent}%</div>`;
+  }
+
   return `
-    <div class="group bg-white rounded-lg border border-gray-300 overflow-hidden transition-all duration-200 hover:shadow-lg">
-      <div class="relative">
-        <a class="relative block" href="product.html?id=${item.product_id}">
-          <div class="relative h-48 bg-gray-100 overflow-hidden">
-            <img alt="${item.title}" loading="lazy" src="${item.image}" class="object-cover w-full h-full hover:scale-105 transition-transform duration-300" />
-            ${item.compare_at ? '<div class="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">SALE</div>' : ''}
+    <div class="group bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-lg flex flex-col h-full relative">
+      
+      <div class="relative bg-gray-50">
+        <a class="block relative overflow-hidden" href="product.html?id=${item.product_id}">
+          <div class="relative h-40 md:h-52 w-full">
+            <img alt="${item.title}" loading="lazy" src="${item.image}" 
+                 class="object-contain w-full h-full mix-blend-multiply hover:scale-105 transition-transform duration-500 p-2" 
+                 onerror="this.src='https://placehold.co/300x300?text=No+Image'"/>
           </div>
+          ${saleTag}
         </a>
-        <div class="p-3 sm:p-4">
-          <p class="text-xs text-gray-500 mb-1">ID: ${item.product_id}</p>
-          <a href="product.html?id=${item.product_id}">
-            <h3 class="font-semibold text-sm leading-tight mb-2 hover:text-blue-600 transition line-clamp-2">${item.title}</h3>
-          </a>
-          <div class="mb-3">
-            <div class="flex items-baseline gap-2">
-              <span class="font-bold text-blue-600">${formatPrice(item.price)}</span>
-              ${item.compare_at ? `<span class="text-sm line-through text-gray-400">${formatPrice(item.compare_at)}</span>` : ''}
-            </div>
+      </div>
+
+      <div class="p-3 md:p-4 flex flex-col flex-1">
+        
+        <a href="product.html?id=${item.product_id}" class="mb-1">
+          <h3 class="font-semibold text-xs md:text-sm text-gray-800 leading-snug line-clamp-2 hover:text-blue-600 transition h-[32px] md:h-[40px]" title="${item.title}">
+            ${item.title}
+          </h3>
+        </a>
+
+        <div class="mb-3 mt-auto">
+          <div class="flex flex-wrap items-baseline gap-1.5 md:gap-2">
+            <span class="font-bold text-blue-600 text-sm md:text-lg">${formatPrice(item.price)}</span>
+            ${item.compare_at ? `<span class="text-[10px] md:text-xs line-through text-gray-400">${formatPrice(item.compare_at)}</span>` : ''}
           </div>
-          <div class="flex gap-2">
-            <button 
-              class="flex-1 bg-blue-600 text-white rounded-lg px-3 py-2 text-sm font-medium hover:opacity-90 transition flex items-center justify-center gap-2 btn-add-to-cart" 
-              data-product-id="${item.product_id}">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
-              <span>Thêm</span>
-            </button>
-            <button 
-              class="bg-gray-200 text-gray-700 rounded-lg px-3 py-2 hover:bg-gray-300 transition btn-remove-wishlist" 
-              data-wishlist-id="${item.id}" 
-              aria-label="Remove from wishlist">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-red-500"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
-            </button>
-          </div>
+        </div>
+
+        <div class="flex gap-2 mt-auto">
+          <button 
+            class="flex-1 bg-blue-600 text-white rounded-lg px-2 py-2 md:px-3 text-xs md:text-sm font-medium hover:bg-blue-700 active:scale-95 transition flex items-center justify-center gap-1.5 btn-add-to-cart shadow-sm" 
+            data-product-id="${item.product_id}">
+            <i class="fa-solid fa-cart-plus"></i>
+            <span>Thêm</span>
+          </button>
+          
+          <button 
+            class="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 transition btn-remove-wishlist border border-transparent hover:border-red-200" 
+            data-wishlist-id="${item.id}" 
+            title="Xóa bỏ">
+            <i class="fa-solid fa-trash-can text-xs md:text-sm"></i>
+          </button>
         </div>
       </div>
     </div>
@@ -68,7 +81,12 @@ async function loadAndRenderWishlist() {
 
   const token = getToken();
   if (!token) {
-    container.innerHTML = `<p class="col-span-full text-sm text-gray-500">Vui lòng <a href="login.html" class="text-blue-600 underline">đăng nhập</a> để xem danh sách yêu thích.</p>`;
+    container.innerHTML = `
+        <div class="col-span-full text-center py-16 bg-white rounded-xl border border-dashed border-gray-300">
+            <i class="fa-regular fa-user text-4xl text-gray-300 mb-3"></i>
+            <p class="text-gray-500 mb-4">Vui lòng đăng nhập để xem danh sách yêu thích.</p>
+            <a href="login.html" class="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition">Đăng nhập ngay</a>
+        </div>`;
     return;
   }
 
@@ -79,7 +97,12 @@ async function loadAndRenderWishlist() {
     if (countEl) countEl.textContent = items.length;
 
     if (!items.length) {
-      container.innerHTML = `<p class="col-span-full text-sm text-gray-500">Danh sách yêu thích trống.</p>`;
+      container.innerHTML = `
+        <div class="col-span-full text-center py-16 bg-white rounded-xl border border-dashed border-gray-300">
+            <i class="fa-regular fa-heart text-4xl text-gray-300 mb-3"></i>
+            <p class="text-gray-500 mb-4">Danh sách yêu thích của bạn đang trống.</p>
+            <a href="index.html" class="inline-block px-6 py-2 bg-gray-800 text-white rounded-lg font-medium hover:bg-gray-900 transition">Khám phá sản phẩm</a>
+        </div>`;
       return;
     }
 
@@ -87,7 +110,7 @@ async function loadAndRenderWishlist() {
     initWishlistEvents(); // Gắn sự kiện cho các nút
   } catch (err) {
     console.error(err);
-    container.innerHTML = `<p class="col-span-full text-sm text-red-500">Không tải được danh sách yêu thích.</p>`;
+    container.innerHTML = `<p class="col-span-full text-center text-red-500 py-8">Không tải được danh sách yêu thích. Vui lòng thử lại sau.</p>`;
   }
 }
 
@@ -101,6 +124,9 @@ function initWishlistEvents() {
   // Sự kiện Xóa khỏi Yêu thích
   container.querySelectorAll('.btn-remove-wishlist').forEach((btn) => {
     btn.addEventListener('click', async (e) => {
+      e.stopPropagation(); // Ngăn click vào card
+      if(!confirm('Bạn chắc chắn muốn xóa sản phẩm này?')) return;
+      
       const wishlistItemId = e.currentTarget.dataset.wishlistId;
       try {
         await api.removeWishlist(wishlistItemId);
@@ -115,13 +141,35 @@ function initWishlistEvents() {
   // Sự kiện Thêm vào giỏ hàng
   container.querySelectorAll('.btn-add-to-cart').forEach((btn) => {
     btn.addEventListener('click', async (e) => {
+      e.stopPropagation(); // Ngăn click vào card
       const productId = e.currentTarget.dataset.productId;
+      const btnEl = e.currentTarget;
+      
+      const originalHtml = btnEl.innerHTML;
+      btnEl.disabled = true;
+      btnEl.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i>`;
+
       try {
         await api.addToCart(productId, 1);
         showToast('Đã thêm vào giỏ hàng', 'success');
         syncCartBadge(); // Cập nhật số lượng trên header
+        
+        // Hiệu ứng thành công
+        btnEl.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        btnEl.classList.add('bg-green-600', 'hover:bg-green-700');
+        btnEl.innerHTML = `<i class="fa-solid fa-check"></i> Xong`;
+        
+        setTimeout(() => {
+            btnEl.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            btnEl.classList.remove('bg-green-600', 'hover:bg-green-700');
+            btnEl.innerHTML = originalHtml;
+            btnEl.disabled = false;
+        }, 2000);
+
       } catch (err) {
         showToast('Lỗi: ' + err.message, 'error');
+        btnEl.innerHTML = originalHtml;
+        btnEl.disabled = false;
       }
     });
   });

@@ -2,6 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chi tiết Sản phẩm - Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -10,151 +11,128 @@
         .tab-inactive { color: #6b7280; border-bottom: 2px solid transparent; }
         .animate-fade-in { animation: fade-in 0.2s ease-out; }
         @keyframes fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-
-        /* Toggle Switch CSS */
         .toggle-checkbox:checked { right: 0; border-color: #2563eb; }
         .toggle-checkbox:checked + .toggle-label { background-color: #2563eb; }
         .toggle-checkbox { right: 0; z-index: 1; border-color: #e5e7eb; transition: all 0.3s; }
         .toggle-label { width: 3rem; height: 1.5rem; background-color: #d1d5db; transition: background-color 0.3s; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+        .variant-img-selected { border-color: #2563eb; box-shadow: 0 0 0 2px #2563eb; }
+        .check-overlay:checked + div { border-color: #ef4444; background-color: #fef2f2; opacity: 0.8; }
     </style>
 </head>
-<body class="bg-gray-100 font-sans antialiased">
+<body class="bg-gray-100 font-sans antialiased pb-20 lg:pb-0">
 
-    <div class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center sticky top-0 z-20 shadow-sm">
-        <div class="flex items-center gap-4">
-            <a href="products.html" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition">
-                <i class="fa-solid fa-arrow-left"></i>
+    <div class="bg-white border-b border-gray-200 px-4 py-3 lg:px-6 lg:py-4 flex justify-between items-center sticky top-0 z-20 shadow-sm">
+        <div class="flex items-center gap-3 lg:gap-4 overflow-hidden">
+            <a href="products.html" class="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition flex-shrink-0">
+                <i class="fa-solid fa-arrow-left text-sm lg:text-base"></i>
             </a>
-            <div>
-                <h1 class="text-xl font-bold text-gray-800" id="page-title">Đang tải...</h1>
-                <p class="text-xs text-gray-500" id="page-id">ID: ...</p>
+            <div class="min-w-0">
+                <h1 class="text-base lg:text-xl font-bold text-gray-800 truncate" id="page-title">Đang tải...</h1>
+                <p class="text-[10px] lg:text-xs text-gray-500" id="page-id">ID: ...</p>
             </div>
         </div>
-        <div class="flex gap-2">
-            <button onclick="saveAllChanges()" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-bold hover:bg-blue-700 shadow flex items-center gap-2">
-                <i class="fa-solid fa-floppy-disk"></i> Lưu Chung
+        <div class="flex gap-2 flex-shrink-0">
+            <button id="btn-save-all" onclick="saveAllChanges()" class="bg-blue-600 text-white px-3 py-2 lg:px-5 lg:py-2 rounded-lg font-bold hover:bg-blue-700 shadow flex items-center gap-2 text-xs lg:text-sm transition">
+                <i class="fa-solid fa-floppy-disk"></i> <span class="hidden sm:inline">Lưu Thay Đổi</span>
             </button>
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-6 mt-6">
-        <div class="flex border-b border-gray-300">
-            <button onclick="switchTab('general')" id="tab-btn-general" class="tab-active px-6 py-3 text-sm font-medium transition-colors">Thông tin chung</button>
-            <button onclick="switchTab('specs')" id="tab-btn-specs" class="tab-inactive px-6 py-3 text-sm font-medium transition-colors">Thông số kỹ thuật</button>
-            <button onclick="switchTab('variants')" id="tab-btn-variants" class="tab-inactive px-6 py-3 text-sm font-medium transition-colors"><i class="fa-solid fa-layer-group mr-2"></i>Biến thể (Nâng cao)</button>
+    <div class="max-w-7xl mx-auto px-4 lg:px-6 mt-4 lg:mt-6">
+        <div class="flex border-b border-gray-300 overflow-x-auto custom-scrollbar">
+            <button onclick="switchTab('general')" id="tab-btn-general" class="tab-active px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap">Thông tin chung</button>
+            <button onclick="switchTab('specs')" id="tab-btn-specs" class="tab-inactive px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap">Thông số kỹ thuật</button>
+            <button onclick="switchTab('variants')" id="tab-btn-variants" class="tab-inactive px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap flex items-center"><i class="fa-solid fa-layer-group mr-2"></i>Biến thể</button>
         </div>
     </div>
 
-    <main class="max-w-7xl mx-auto p-6">
-        <div id="content-general" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <main class="max-w-7xl mx-auto p-4 lg:p-6">
+        <div id="content-general" class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 animate-fade-in">
             <div class="lg:col-span-2 space-y-6">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                    <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">Thông tin sản phẩm</h3>
+                <div class="bg-white p-4 lg:p-6 rounded-xl shadow-sm border border-gray-200">
+                    <h3 class="font-bold text-gray-800 mb-4 border-b pb-2 text-sm lg:text-base">Thông tin sản phẩm</h3>
                     <div class="grid gap-4">
                         <div>
                             <label class="text-xs font-bold text-gray-500 uppercase">Tên sản phẩm</label>
-                            <input type="text" id="p-title" class="w-full px-3 py-2 border rounded font-medium">
+                            <input type="text" id="p-title" class="w-full px-3 py-2 border rounded font-medium text-sm outline-none focus:border-blue-500">
                         </div>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div>
-                                <label class="text-xs font-bold text-gray-500 uppercase">Giá niêm yết (Gốc)</label>
-                                <input type="number" id="p-price" class="w-full px-3 py-2 border rounded">
+                                <label class="text-xs font-bold text-gray-500 uppercase">Giá bán (VNĐ) <span class="text-red-500">*</span></label>
+                                <input type="number" id="p-price" class="w-full px-3 py-2 border rounded text-sm outline-none focus:border-blue-500 font-bold text-blue-600">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 uppercase">Giá gốc (VNĐ)</label>
+                                <input type="number" id="p-compare" class="w-full px-3 py-2 border rounded text-sm outline-none focus:border-blue-500 text-gray-500 placeholder-gray-300" placeholder="VD: 20000000">
                             </div>
                             <div>
                                 <label class="text-xs font-bold text-gray-500 uppercase">Danh mục</label>
-                                <select id="p-category" class="w-full px-3 py-2 border rounded bg-white">
-                                    <option value="">-- Chọn --</option>
-                                </select>
+                                <select id="p-category" class="w-full px-3 py-2 border rounded bg-white text-sm outline-none focus:border-blue-500"><option value="">-- Chọn --</option></select>
                             </div>
                             <div>
-                                <label class="text-xs font-bold text-gray-500 uppercase">Hãng sản xuất</label>
-                                <select id="p-brand" class="w-full px-3 py-2 border rounded bg-white" disabled>
-                                    <option value="">-- Chọn hãng --</option>
-                                </select>
+                                <label class="text-xs font-bold text-gray-500 uppercase">Hãng</label>
+                                <select id="p-brand" class="w-full px-3 py-2 border rounded bg-white text-sm outline-none focus:border-blue-500" disabled><option value="">-- Chọn hãng --</option></select>
                             </div>
                         </div>
-                        
+
                         <div class="bg-gray-50 p-4 rounded border border-gray-200 flex justify-between items-center">
-                            <div>
-                                <label class="text-sm font-bold text-gray-800 block">Trạng thái kinh doanh</label>
-                                <p class="text-xs text-gray-500">Tắt/Bật hiển thị sản phẩm với khách hàng.</p>
-                            </div>
-                            <div class="relative inline-block w-12 h-6 align-middle select-none transition duration-200 ease-in">
-                                <input type="checkbox" name="is_active" id="p-is-active" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
-                                <label for="p-is-active" class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer"></label>
-                            </div>
+                            <div><label class="text-sm font-bold text-gray-800 block">Trạng thái kinh doanh</label><p class="text-[10px] lg:text-xs text-gray-500">Tắt/Bật hiển thị sản phẩm.</p></div>
+                            <div class="relative inline-block w-12 h-6 align-middle select-none transition duration-200 ease-in"><input type="checkbox" name="is_active" id="p-is-active" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/><label for="p-is-active" class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer"></label></div>
                         </div>
-
                         <div class="bg-blue-50 p-3 rounded border border-blue-200">
-                            <label class="text-xs font-bold text-blue-700 uppercase flex justify-between">
-                                Tổng Tồn Kho
-                                <span id="stock-source-badge" class="hidden text-[10px] bg-white text-blue-600 px-2 py-0.5 rounded-full font-bold border border-blue-200">Tự động tính từ biến thể</span>
-                            </label>
-                            <input type="number" id="p-stock" class="w-full px-3 py-2 border rounded mt-1 bg-white font-bold text-gray-800">
-                            <p id="stock-hint" class="text-[10px] text-gray-500 mt-1 italic hidden">Số lượng này được cộng dồn từ các biến thể và không thể sửa thủ công.</p>
+                            <label class="text-xs font-bold text-blue-700 uppercase flex justify-between items-center">Tổng Tồn Kho <span id="stock-source-badge" class="hidden text-[9px] bg-white text-blue-600 px-2 py-0.5 rounded-full font-bold border border-blue-200">Auto</span></label>
+                            <input type="number" id="p-stock" class="w-full px-3 py-2 border rounded mt-1 bg-white font-bold text-gray-800 text-sm outline-none focus:border-blue-500">
+                            <p id="stock-hint" class="text-[10px] text-gray-500 mt-1 italic hidden">Số lượng tính từ biến thể.</p>
                         </div>
-
-                        <div>
-                            <label class="text-xs font-bold text-gray-500 uppercase">Mô tả</label>
-                            <textarea id="p-desc" rows="4" class="w-full px-3 py-2 border rounded text-sm"></textarea>
-                        </div>
+                        <div><label class="text-xs font-bold text-gray-500 uppercase">Mô tả</label><textarea id="p-desc" rows="4" class="w-full px-3 py-2 border rounded text-sm outline-none focus:border-blue-500"></textarea></div>
                     </div>
                 </div>
             </div>
-
             <div class="space-y-6">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div class="bg-white p-4 lg:p-6 rounded-xl shadow-sm border border-gray-200">
                     <label class="text-xs font-bold text-gray-500 uppercase mb-2 block">Ảnh đại diện (Thumbnail)</label>
-                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50 relative group">
-                        <img id="preview-main-img" src="https://placehold.co/150" class="h-40 mx-auto object-contain">
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50 relative group h-48 flex items-center justify-center">
+                        <img id="preview-main-img" src="https://placehold.co/150" class="h-full mx-auto object-contain">
                         <input type="file" id="main-image-upload" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*">
-                        <div class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center text-white font-bold text-sm rounded-lg pointer-events-none">
-                            <i class="fa-solid fa-pen mr-2"></i> Đổi ảnh
-                        </div>
+                        <div class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center text-white font-bold text-sm rounded-lg pointer-events-none"><i class="fa-solid fa-pen mr-2"></i> Đổi ảnh</div>
                     </div>
-                    <input type="hidden" id="p-image">
+                    <p class="text-[10px] text-center text-gray-400 mt-2">* Nhấn lưu để cập nhật ảnh.</p>
+                    <input type="hidden" id="p-image-url">
                 </div>
-
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div class="bg-white p-4 lg:p-6 rounded-xl shadow-sm border border-gray-200">
                     <div class="flex justify-between items-center mb-3">
                         <label class="text-xs font-bold text-gray-500 uppercase block">Bộ sưu tập chung</label>
-                        <label class="cursor-pointer text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100 font-bold transition">
-                            <i class="fa-solid fa-plus"></i> Thêm ảnh
-                            <input type="file" multiple class="hidden" id="shared-gallery-upload" accept="image/*">
-                        </label>
+                        <div class="flex gap-2">
+                            <button onclick="deleteSelectedImages()" id="btn-delete-selected" class="hidden text-xs bg-red-50 text-red-600 px-2 py-1 rounded hover:bg-red-100 font-bold transition"><i class="fa-solid fa-trash"></i> Xóa (<span id="delete-count">0</span>)</button>
+                            <label class="cursor-pointer text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100 font-bold transition"><i class="fa-solid fa-plus"></i> Thêm<input type="file" multiple class="hidden" id="shared-gallery-upload" accept="image/*"></label>
+                        </div>
                     </div>
                     <div id="shared-gallery-container" class="grid grid-cols-4 gap-2"></div>
+                    <p class="text-[10px] text-gray-400 mt-2 italic">* Các thay đổi chỉ áp dụng khi nhấn "Lưu Thay Đổi".</p>
                 </div>
             </div>
         </div>
 
-        <div id="content-specs" class="hidden">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                <div id="specs-container"></div>
-            </div>
+        <div id="content-specs" class="hidden animate-fade-in">
+            <div class="bg-white p-4 lg:p-6 rounded-xl shadow-sm border border-gray-200"><div id="specs-container"></div></div>
         </div>
 
-        <div id="content-variants" class="hidden">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
+        <div id="content-variants" class="hidden animate-fade-in">
+            <div class="bg-white p-4 lg:p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
                 <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
                     <h4 class="text-sm font-bold text-blue-800 mb-2 uppercase">1. Cấu hình thuộc tính</h4>
-                    <p class="text-xs text-gray-600 mb-3">Chọn thuộc tính phân loại. Hệ thống sẽ tự động nhóm theo <strong>Màu sắc</strong>.</p>
-                    <div id="variant-config-checkboxes" class="flex flex-wrap gap-4"></div>
+                    <div id="variant-config-checkboxes" class="flex flex-wrap gap-3"></div>
                 </div>
-
-                <div class="flex justify-between items-center">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <h4 class="text-sm font-bold text-gray-800 uppercase">2. Chi tiết biến thể</h4>
-                    <div class="flex gap-2">
-                        <button onclick="addVariantGroup()" class="bg-white text-blue-600 border border-blue-200 px-3 py-1.5 rounded text-sm font-bold hover:bg-blue-50">
-                            <i class="fa-solid fa-plus-circle"></i> Thêm Nhóm Màu
-                        </button>
-                        <button onclick="saveVariants()" class="bg-blue-600 text-white px-4 py-1.5 rounded text-sm font-bold shadow hover:bg-blue-700">
-                            <i class="fa-solid fa-save"></i> Lưu Thay Đổi
-                        </button>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <button onclick="addVariantGroup()" class="flex-1 sm:flex-none bg-white text-blue-600 border border-blue-200 px-3 py-1.5 rounded text-xs lg:text-sm font-bold hover:bg-blue-50"><i class="fa-solid fa-plus-circle"></i> Thêm Nhóm</button>
                     </div>
                 </div>
-
                 <div id="variant-groups-container" class="space-y-6"></div>
             </div>
         </div>
@@ -163,7 +141,7 @@
     <div id="toast-root"></div>
 
     <script type="module">
-        import { renderAdminLayout } from '../assets/js/admin.js';
+        import { renderAdminLayout, formatPrice } from '../assets/js/admin.js';
         import { api } from '../assets/js/api.js';
         import { getQueryParam } from '../assets/js/utils/url.js';
         import { showToast } from '../assets/js/ui/toast.js';
@@ -173,113 +151,118 @@
         let allCategories = [];
         let activeVariantKeys = []; 
         let allVariantsData = []; 
-        let currentSharedGallery = [];
+        
+        let serverImages = []; 
+        let imagesToDelete = new Set(); 
+        let imagesToUpload = []; 
+        let mainImageFile = null; 
 
         async function initPage() {
             await renderAdminLayout('products');
             if (!productId) { showToast('Không tìm thấy ID sản phẩm', 'error'); return; }
 
-            const sharedInput = document.getElementById('shared-gallery-upload');
-            if (sharedInput) {
-                sharedInput.addEventListener('change', async (e) => {
-                    const files = e.target.files;
-                    if(!files.length) return;
-                    showToast('Đang tải ảnh lên...', 'info');
-                    for(let i=0; i<files.length; i++) {
-                        const fd = new FormData();
-                        fd.append('image', files[i]);
-                        try { await api.uploadProductImage(productId, fd); } catch(err){}
-                    }
-                    showToast('Hoàn tất tải ảnh', 'success');
-                    const p = await api.getProduct(productId);
-                    currentSharedGallery = p.shared_gallery || [];
-                    renderSharedGallery(currentSharedGallery);
+            // 1. Setup Main Image Upload
+            const mainInput = document.getElementById('main-image-upload');
+            if (mainInput) {
+                mainInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) { mainImageFile = file; document.getElementById('preview-main-img').src = URL.createObjectURL(file); }
                     e.target.value = '';
                 });
             }
-            const mainInput = document.getElementById('main-image-upload');
-            if (mainInput) {
-                mainInput.addEventListener('change', async (e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
-                    const fd = new FormData();
-                    fd.append('image', file);
-                    try {
-                        const res = await api.uploadProductImage(productId, fd);
-                        document.getElementById('p-image').value = res.url;
-                        document.getElementById('preview-main-img').src = '../' + res.url;
-                        showToast('Đã cập nhật ảnh đại diện', 'success');
-                    } catch (err) { showToast('Lỗi upload: ' + err.message, 'error'); }
+
+            // 2. Setup Shared Gallery Upload
+            const sharedInput = document.getElementById('shared-gallery-upload');
+            if (sharedInput) {
+                sharedInput.addEventListener('change', (e) => {
+                    const files = Array.from(e.target.files);
+                    imagesToUpload = [...imagesToUpload, ...files];
+                    renderGalleryUI();
                     e.target.value = '';
                 });
             }
 
             try {
                 const p = await api.getProduct(productId);
-
                 document.getElementById('page-title').textContent = p.title;
                 document.getElementById('page-id').textContent = 'ID: ' + p.id;
                 document.getElementById('p-title').value = p.title || '';
                 document.getElementById('p-price').value = p.price || 0;
+                document.getElementById('p-compare').value = p.compare_at || ''; 
                 document.getElementById('p-desc').value = p.description || '';
-                document.getElementById('p-image').value = p.image || '';
+                document.getElementById('p-image-url').value = p.image || '';
                 document.getElementById('p-stock').value = p.stock_quantity || 0;
                 document.getElementById('p-is-active').checked = (p.is_active != 0);
 
                 const imgUrl = p.image ? (p.image.startsWith('http') ? p.image : `../${p.image}`) : 'https://placehold.co/150';
                 document.getElementById('preview-main-img').src = imgUrl;
 
-                // KHỞI TẠO CATEGORY VÀ BRAND
                 await loadCategoriesAndInit(p.category, p.brand);
                 
-                currentSharedGallery = p.shared_gallery || [];
-                renderSharedGallery(currentSharedGallery);
+                // Lọc ảnh shared
+                serverImages = (p.shared_gallery || []).filter(url => url !== p.image);
+                renderGalleryUI();
 
                 try { currentSpecsData = JSON.parse(p.specs || '{}'); } catch (e) {}
                 const catObj = allCategories.find(c => c.slug === p.category);
-                let tmpl = [];
-                try { tmpl = JSON.parse(catObj?.specs_template || '[]'); } catch (e) {}
+                let tmpl = []; try { tmpl = JSON.parse(catObj?.specs_template || '[]'); } catch (e) {}
                 renderSpecsForm(tmpl, currentSpecsData);
 
                 initVariantConfig(tmpl);
                 await loadVariants();
-            } catch (e) {
-                console.error(e);
-                showToast('Lỗi tải dữ liệu sản phẩm', 'error');
-            }
+            } catch (e) { console.error(e); showToast('Lỗi tải dữ liệu sản phẩm', 'error'); }
         }
 
+        // --- GALLERY LOGIC ---
+        function renderGalleryUI() {
+            const container = document.getElementById('shared-gallery-container');
+            container.innerHTML = '';
+            serverImages.forEach(url => { if (!imagesToDelete.has(url)) container.appendChild(createGalleryItem(url, false)); });
+            imagesToUpload.forEach((file, index) => { const url = URL.createObjectURL(file); container.appendChild(createGalleryItem(url, true, index)); });
+            if (container.children.length === 0) container.innerHTML = '<span class="text-xs text-gray-400 italic col-span-4 text-center py-2">Chưa có ảnh.</span>';
+            updateDeleteCount();
+        }
+
+        function createGalleryItem(src, isLocal, indexOrUrl) {
+            const div = document.createElement('div');
+            div.className = 'relative aspect-square border rounded overflow-hidden group/img bg-white cursor-pointer';
+            const displaySrc = isLocal ? src : (src.startsWith('http') ? src : `../${src}`);
+            div.innerHTML = `<img src="${displaySrc}" class="w-full h-full object-cover"><div class="absolute top-1 right-1"><input type="checkbox" class="w-4 h-4 cursor-pointer img-checkbox" data-is-local="${isLocal}" data-ref="${isLocal ? indexOrUrl : src}" onclick="event.stopPropagation(); updateDeleteCount()"></div>`;
+            return div;
+        }
+
+        window.updateDeleteCount = () => {
+            const count = document.querySelectorAll('.img-checkbox:checked').length;
+            const btn = document.getElementById('btn-delete-selected');
+            document.getElementById('delete-count').innerText = count;
+            if(count > 0) btn.classList.remove('hidden'); else btn.classList.add('hidden');
+        };
+
+        window.deleteSelectedImages = () => {
+            const checkboxes = document.querySelectorAll('.img-checkbox:checked');
+            checkboxes.forEach(cb => {
+                const isLocal = cb.dataset.isLocal === 'true';
+                if (isLocal) { const idx = parseInt(cb.dataset.ref); imagesToUpload[idx] = null; } 
+                else { imagesToDelete.add(cb.dataset.ref); }
+            });
+            imagesToUpload = imagesToUpload.filter(f => f !== null);
+            renderGalleryUI();
+        };
+
+        // --- TABS & CONFIG ---
         window.switchTab = (tab) => {
             ['general', 'specs', 'variants'].forEach(t => {
                 const content = document.getElementById(`content-${t}`);
                 const btn = document.getElementById(`tab-btn-${t}`);
                 if (content) content.classList.toggle('hidden', t !== tab);
-                if (btn) btn.className = t === tab ? 'tab-active px-6 py-3 text-sm font-medium transition-colors' : 'tab-inactive px-6 py-3 text-sm font-medium transition-colors hover:bg-gray-50';
+                if (btn) btn.className = t === tab ? 'tab-active px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap' : 'tab-inactive px-4 py-3 text-sm font-medium transition-colors hover:bg-gray-50 whitespace-nowrap';
             });
-        };
-
-        function renderSharedGallery(images) {
-            const container = document.getElementById('shared-gallery-container');
-            const mainImageUrl = document.getElementById('p-image').value;
-            const filteredImages = (images || []).filter(url => url !== mainImageUrl);
-            if(filteredImages.length === 0) { container.innerHTML = '<span class="text-xs text-gray-400 italic col-span-4 text-center py-2">Chưa có ảnh chung.</span>'; return; }
-            container.innerHTML = filteredImages.map(url => `
-                <div class="relative aspect-square border rounded overflow-hidden group/img bg-white">
-                    <img src="../${url}" class="w-full h-full object-cover">
-                    <button onclick="removeSharedImage(this, '${url}')" class="absolute inset-0 bg-black/50 hidden group-hover/img:flex items-center justify-center text-white transition"><i class="fa-solid fa-trash"></i></button>
-                </div>`).join('');
-        }
-        window.removeSharedImage = async (btn, url) => {
-            if(!confirm('Xóa ảnh này?')) return;
-            try { await api.request('/products/delete-image', { method: 'POST', auth: true, body: { image_url: url } }); currentSharedGallery = currentSharedGallery.filter(img => img !== url); renderSharedGallery(currentSharedGallery); showToast('Đã xóa ảnh', 'success'); } catch(e) { showToast(e.message, 'error'); }
         };
 
         window.initVariantConfig = (template) => {
             const container = document.getElementById('variant-config-checkboxes');
-            container.innerHTML = `<label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 rounded border border-gray-200"><input type="checkbox" value="color" data-label="Màu sắc" class="variant-key-cb text-blue-600 rounded" checked disabled><span class="text-sm font-medium">Màu sắc (Bắt buộc)</span></label>`;
-            if (template) {
-                template.forEach(g => { if (g.fields) g.fields.forEach(f => { if (f.k === 'color') return; container.innerHTML += `<label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 rounded border border-gray-200 hover:border-blue-300"><input type="checkbox" value="${f.k}" data-label="${f.l}" class="variant-key-cb text-blue-600 rounded"><span class="text-sm font-medium">${f.l}</span></label>`; }); });
-            }
+            container.innerHTML = `<label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 rounded border border-gray-200"><input type="checkbox" value="color" data-label="Màu sắc" class="variant-key-cb text-blue-600 rounded" checked disabled><span class="text-xs lg:text-sm font-medium">Màu sắc (Bắt buộc)</span></label>`;
+            if (template) { template.forEach(g => { if (g.fields) g.fields.forEach(f => { if (f.k === 'color') return; container.innerHTML += `<label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 rounded border border-gray-200 hover:border-blue-300"><input type="checkbox" value="${f.k}" data-label="${f.l}" class="variant-key-cb text-blue-600 rounded"><span class="text-xs lg:text-sm font-medium">${f.l}</span></label>`; }); }); }
             document.querySelectorAll('.variant-key-cb').forEach(cb => cb.addEventListener('change', () => { updateActiveKeys(); renderVariantsByGroup(); }));
             updateActiveKeys();
         };
@@ -288,25 +271,21 @@
             document.querySelectorAll('.variant-key-cb:checked').forEach(cb => { if (cb.value !== 'color') activeVariantKeys.push({ key: cb.value, label: cb.dataset.label }); });
         }
 
+        // --- VARIANT LOADING ---
         async function loadVariants() {
             try {
                 const res = await api.request(`/products/${productId}/variants`);
                 allVariantsData = res.data || [];
-                
                 const stockInput = document.getElementById('p-stock');
                 const stockBadge = document.getElementById('stock-source-badge');
-                const stockHint = document.getElementById('stock-hint');
-                
                 if (allVariantsData.length > 0) {
-                    stockInput.setAttribute('readonly', true); stockInput.classList.add('bg-gray-100', 'text-gray-500', 'cursor-not-allowed'); stockInput.classList.remove('bg-white', 'text-gray-800'); stockBadge.classList.remove('hidden'); stockHint.classList.remove('hidden');
-                    stockInput.value = allVariantsData.reduce((sum, v) => sum + (parseInt(v.stock_quantity)||0), 0);
+                    stockInput.setAttribute('readonly', true); stockInput.classList.add('bg-gray-100', 'text-gray-500', 'cursor-not-allowed'); 
+                    stockBadge.classList.remove('hidden'); stockInput.value = allVariantsData.reduce((sum, v) => sum + (parseInt(v.stock_quantity)||0), 0);
                 } else {
-                    stockInput.removeAttribute('readonly'); stockInput.classList.remove('bg-gray-100', 'text-gray-500', 'cursor-not-allowed'); stockInput.classList.add('bg-white', 'text-gray-800'); stockBadge.classList.add('hidden'); stockHint.classList.add('hidden');
+                    stockInput.removeAttribute('readonly'); stockInput.classList.remove('bg-gray-100', 'text-gray-500', 'cursor-not-allowed'); stockBadge.classList.add('hidden');
                 }
-                
                 if (allVariantsData.length > 0) {
-                    const sample = allVariantsData[0];
-                    const attrs = sample.attributes || {};
+                    const sample = allVariantsData[0]; const attrs = sample.attributes || {};
                     document.querySelectorAll('.variant-key-cb').forEach(cb => { if (cb.value !== 'color') cb.checked = (attrs[cb.value] !== undefined && attrs[cb.value] !== ""); });
                     updateActiveKeys();
                 }
@@ -317,105 +296,181 @@
         window.renderVariantsByGroup = () => {
             const container = document.getElementById('variant-groups-container');
             container.innerHTML = '';
-            
             const groupsMap = new Map();
             allVariantsData.forEach(v => {
                 let colorRaw = (v.attributes?.color || v.color || 'Mặc định').trim();
                 let colorKey = colorRaw.toLowerCase();
-                if (!groupsMap.has(colorKey)) {
-                    groupsMap.set(colorKey, { displayName: colorRaw, items: [] });
-                }
+                if (!groupsMap.has(colorKey)) groupsMap.set(colorKey, { displayName: colorRaw, items: [] });
                 groupsMap.get(colorKey).items.push(v);
             });
-
             groupsMap.forEach((groupData, colorKey) => {
                 const firstItem = groupData.items[0];
                 const colorCode = firstItem.color_code || firstItem.attributes?.color_code;
-                
                 container.insertAdjacentHTML('beforeend', buildGroupHTML(groupData.displayName, groupData.items, colorCode));
             });
         };
 
+        // --- [NEW] VARIANT HTML BUILDER WITH UPLOAD ---
         function buildGroupHTML(colorName, variants, colorCode = '') {
             let groupImages = [];
+            let activeImage = variants[0]?.image || '';
+            
+            // Collect existing images for this group
             variants.forEach(v => {
                 if (v.gallery?.length) v.gallery.forEach(img => !groupImages.includes(img) && groupImages.push(img));
                 else if (v.image && !groupImages.includes(v.image)) groupImages.push(v.image);
             });
-            
-            const repId = (variants.length > 0 && variants[0].id) ? variants[0].id : '';
-            const rowsHtml = variants.length > 0 
-                ? variants.map(v => renderRowHtml(v)).join('') 
-                : renderRowHtml({ attributes: {}, price: 0, stock_quantity: 0 });
+            if(groupImages.length === 0) groupImages = [...serverImages]; // Fallback to shared if empty
 
-            const galleryHtml = groupImages.length > 0
-                ? groupImages.map(url => `<div class="relative aspect-square border rounded overflow-hidden group/img bg-white"><img src="../${url}" class="w-full h-full object-cover"><button onclick="removeVariantImage(this, '${url}')" class="absolute inset-0 bg-black/50 hidden group-hover/img:flex items-center justify-center text-white"><i class="fa-solid fa-xmark"></i></button></div>`).join('')
-                : `<div class="col-span-4 text-[10px] text-center text-blue-500 bg-blue-50 p-2 rounded border border-blue-100 italic">Chưa có ảnh riêng.<br>Sẽ dùng bộ sưu tập chung.</div>`;
+            const rowsHtml = variants.length > 0 ? variants.map(v => renderRowHtml(v)).join('') : renderRowHtml({ attributes: {}, price: 0, compare_at: 0, stock_quantity: 0 });
+
+            // Build Gallery Grid
+            const galleryHtml = groupImages.map(url => {
+                const isSelected = url === activeImage;
+                const displaySrc = url.startsWith('http') || url.startsWith('blob:') ? url : `../${url}`;
+                return `
+                <div class="relative aspect-square border-2 rounded-lg overflow-hidden cursor-pointer hover:opacity-95 transition group/img ${isSelected ? 'variant-img-selected' : 'border-transparent'}" onclick="selectGroupImage(this, '${url}')">
+                    <img src="${displaySrc}" class="w-full h-full object-cover">
+                    ${isSelected ? '<div class="absolute top-1 left-1 w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs shadow-md z-10"><i class="fa-solid fa-check"></i></div>' : ''}
+                    <button onclick="event.stopPropagation(); removeGroupImage(this, '${url}')" class="absolute top-0 right-0 w-6 h-6 bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition z-20 rounded-bl-lg shadow-sm opacity-0 group-hover/img:opacity-100" title="Xóa ảnh này"><i class="fa-solid fa-xmark text-xs"></i></button>
+                </div>`;
+            }).join('');
 
             return `
-            <div class="border border-gray-300 rounded-lg overflow-hidden bg-white group-block mb-6" data-color="${colorName}">
-                <div class="bg-gray-100 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-                    <div class="flex items-center gap-4">
-                        <div class="flex items-center gap-2">
-                            <span class="font-bold text-gray-700">MÀU SẮC:</span>
-                            <input type="text" class="color-input font-bold text-blue-700 bg-transparent border-b border-gray-400 w-32 px-1 outline-none" value="${colorName}" onchange="updateGroupColor(this)">
+            <div class="border border-gray-300 rounded-lg overflow-hidden bg-white group-block mb-6 shadow-sm" data-color="${colorName}">
+                <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                    <div class="flex items-center gap-4 w-full sm:w-auto">
+                        <div class="flex items-center gap-2 flex-1 sm:flex-none">
+                            <span class="font-bold text-gray-700 text-xs lg:text-sm uppercase tracking-wide">Màu sắc:</span>
+                            <input type="text" class="color-input font-bold text-blue-700 bg-transparent border-b border-gray-300 focus:border-blue-500 w-full sm:w-32 px-1 outline-none text-sm transition" value="${colorName}" onchange="updateGroupColor(this)">
                         </div>
                         <div class="flex items-center gap-1 bg-white border border-gray-300 rounded px-2 py-1 shadow-sm">
-                            <input type="color" class="w-6 h-6 border-none p-0 cursor-pointer group-color-picker" 
-                                   value="${colorCode}" 
-                                   oninput="this.nextElementSibling.value = this.value">
-                            <input type="text" class="w-20 text-xs uppercase outline-none group-color-text font-mono" 
-                                   value="${colorCode}" placeholder="#000000"
-                                   oninput="this.previousElementSibling.value = this.value">
+                            <input type="color" class="w-5 h-5 border-none p-0 cursor-pointer group-color-picker rounded" value="${colorCode}" oninput="this.nextElementSibling.value = this.value">
+                            <input type="text" class="w-16 lg:w-20 text-xs uppercase outline-none group-color-text font-mono text-slate-600" value="${colorCode}" placeholder="#000000" oninput="this.previousElementSibling.value = this.value">
                         </div>
                     </div>
-                    <button onclick="this.closest('.group-block').remove()" class="text-red-500 hover:text-red-700 text-sm"><i class="fa-solid fa-trash"></i> Xóa nhóm</button>
+                    <button onclick="this.closest('.group-block').remove()" class="text-red-500 hover:text-red-700 text-xs lg:text-sm flex items-center gap-1 self-end sm:self-auto px-2 py-1 hover:bg-red-50 rounded transition"><i class="fa-solid fa-trash-can"></i> Xóa nhóm</button>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
-                    <div class="p-4 lg:col-span-1 bg-gray-50/50">
-                        <h5 class="text-xs font-bold text-gray-500 uppercase mb-3">Ảnh riêng (Ưu tiên)</h5>
-                        <div class="grid grid-cols-4 gap-2 mb-3 group-gallery">${galleryHtml}</div>
-                        ${repId 
-                            ? `<label class="cursor-pointer flex items-center justify-center gap-2 w-full py-2 border border-dashed border-blue-300 rounded-lg text-blue-600 hover:bg-blue-50 text-xs font-bold transition"><i class="fa-solid fa-upload"></i> Tải ảnh riêng<input type="file" class="hidden" accept="image/*" multiple onchange="uploadGroupImages(this, ${repId})"></label>`
-                            : `<div class="text-[10px] text-orange-600 text-center bg-orange-50 p-2 rounded border border-orange-200">Lưu biến thể trước để tải ảnh.</div>`
-                        }
-                    </div>
-                    <div class="p-4 lg:col-span-3">
+                    <div class="p-4 lg:col-span-1 bg-slate-50/30">
                         <div class="flex justify-between items-center mb-2">
-                            <h5 class="text-xs font-bold text-gray-500 uppercase">Danh sách phân loại</h5>
-                            <button onclick="addVariantRowToGroup(this)" class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-bold hover:bg-green-200"><i class="fa-solid fa-plus"></i> Thêm dòng</button>
+                            <h5 class="text-xs font-bold text-gray-500 uppercase">Ảnh đại diện</h5>
+                            <label class="cursor-pointer text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded hover:bg-blue-200 font-bold transition flex items-center gap-1">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> Tải lên
+                                <input type="file" class="hidden" accept="image/*" onchange="handleGroupImageUpload(this)">
+                            </label>
                         </div>
-                        <table class="w-full text-sm text-left border-collapse border border-gray-200">
-                            <thead class="bg-gray-100 text-gray-600 text-xs uppercase">
-                                <tr>
-                                    ${activeVariantKeys.map(k => `<th class="p-2 border">${k.label}</th>`).join('')}
-                                    <th class="p-2 border w-32 text-right">Giá *</th>
-                                    <th class="p-2 border w-24 text-center">Kho</th>
-                                    <th class="p-2 border w-24">SKU</th>
-                                    <th class="p-2 border w-10"></th>
-                                </tr>
-                            </thead>
-                            <tbody class="group-tbody">${rowsHtml}</tbody>
-                        </table>
+                        <div class="grid grid-cols-4 gap-2 mb-3 group-gallery max-h-60 overflow-y-auto custom-scrollbar p-1">
+                            ${galleryHtml}
+                            ${galleryHtml.length === 0 ? '<div class="col-span-4 text-[10px] text-center text-slate-400 bg-slate-50 p-2 rounded italic border border-dashed border-slate-300">Chưa có ảnh.</div>' : ''}
+                        </div>
+                        <input type="hidden" class="group-main-image" value="${activeImage}">
+                    </div>
+                    <div class="p-4 lg:col-span-3 overflow-x-auto"> 
+                        <div class="flex justify-between items-center mb-2"><h5 class="text-xs font-bold text-gray-500 uppercase">Danh sách phân loại</h5><button onclick="addVariantRowToGroup(this)" class="text-xs bg-green-100 text-green-700 px-2 py-1.5 rounded font-bold hover:bg-green-200 transition flex items-center gap-1"><i class="fa-solid fa-plus"></i> Thêm dòng</button></div>
+                        <div class="min-w-[600px]"> 
+                            <table class="w-full text-sm text-left border-collapse border border-gray-200 shadow-sm rounded-lg overflow-hidden">
+                                <thead class="bg-gray-100 text-gray-600 text-xs uppercase font-semibold">
+                                    <tr>
+                                        ${activeVariantKeys.map(k => `<th class="p-2 border border-gray-200">${k.label}</th>`).join('')}
+                                        <th class="p-2 border border-gray-200 w-28 text-right">Giá gốc</th>
+                                        <th class="p-2 border border-gray-200 w-28 text-right">Giá bán *</th>
+                                        <th class="p-2 border border-gray-200 w-20 text-center">Kho</th>
+                                        <th class="p-2 border border-gray-200 w-24">SKU</th>
+                                        <th class="p-2 border border-gray-200 w-10 text-center"><i class="fa-solid fa-trash"></i></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="group-tbody bg-white">${rowsHtml}</tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>`;
         }
 
+        // --- [NEW] HANDLE GROUP UPLOAD ---
+        window.handleGroupImageUpload = (input) => {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const groupBlock = input.closest('.group-block');
+            const gallery = groupBlock.querySelector('.group-gallery');
+            const hiddenInput = groupBlock.querySelector('.group-main-image');
+            
+            const url = URL.createObjectURL(file);
+            
+            // Attach file to the DOM element for later upload
+            groupBlock.fileToUpload = file; 
+
+            // Create UI element
+            const div = document.createElement('div');
+            div.className = 'relative aspect-square border-2 rounded-lg overflow-hidden cursor-pointer hover:opacity-95 transition group/img variant-img-selected';
+            div.innerHTML = `
+                <img src="${url}" class="w-full h-full object-cover">
+                <div class="absolute top-1 left-1 w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs shadow-md z-10"><i class="fa-solid fa-check"></i></div>
+                <button onclick="event.stopPropagation(); removeGroupImage(this, '${url}')" class="absolute top-0 right-0 w-6 h-6 bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition z-20 rounded-bl-lg shadow-sm opacity-0 group-hover/img:opacity-100" title="Xóa ảnh này"><i class="fa-solid fa-xmark text-xs"></i></button>
+            `;
+            div.onclick = () => selectGroupImage(div, url);
+
+            // Remove other selections
+            gallery.querySelectorAll('.variant-img-selected').forEach(el => { 
+                el.classList.remove('variant-img-selected'); 
+                const badge = el.querySelector('.bg-blue-600'); 
+                if(badge) badge.remove(); 
+            });
+
+            // Add new image and remove "Empty" message if exists
+            const emptyMsg = gallery.querySelector('.italic');
+            if(emptyMsg) emptyMsg.remove();
+            
+            gallery.appendChild(div);
+            hiddenInput.value = url; // Set temporary blob URL
+            input.value = '';
+        };
+
         function renderRowHtml(v) {
             const attrs = v.attributes || {};
             let cols = '';
-            activeVariantKeys.forEach(k => {
-                cols += `<td class="p-2 border"><input type="text" class="w-full px-2 py-1 border rounded text-sm attr-input" data-key="${k.key}" value="${attrs[k.key]||''}"></td>`;
-            });
-            return `<tr data-id="${v.id||''}" data-image="${v.image||''}">
+            activeVariantKeys.forEach(k => { cols += `<td class="p-2 border border-gray-200"><input type="text" class="w-full px-2 py-1 border rounded text-xs lg:text-sm attr-input" data-key="${k.key}" value="${attrs[k.key]||''}"></td>`; });
+            return `<tr data-id="${v.id||''}">
                 ${cols}
-                <td class="p-2 border"><input type="number" class="w-full px-2 py-1 border rounded text-right price-input" value="${v.price||0}"></td>
-                <td class="p-2 border"><input type="number" class="w-full px-2 py-1 border rounded text-center stock-input" value="${v.stock_quantity||0}"></td>
-                <td class="p-2 border"><input type="text" class="w-full px-2 py-1 border rounded text-xs sku-input" value="${v.sku||''}"></td>
-                <td class="p-2 border text-center"><button onclick="this.closest('tr').remove()" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button></td>
+                <td class="p-2 border border-gray-200"><input type="number" class="w-full px-2 py-1 border rounded text-right text-xs lg:text-sm text-gray-500 compare-input" placeholder="0" value="${v.compare_at||''}"></td>
+                <td class="p-2 border border-gray-200"><input type="number" class="w-full px-2 py-1 border rounded text-right text-xs lg:text-sm font-bold text-blue-600 price-input" value="${v.price||0}"></td>
+                <td class="p-2 border border-gray-200"><input type="number" class="w-full px-2 py-1 border rounded text-center text-xs lg:text-sm stock-input" value="${v.stock_quantity||0}"></td>
+                <td class="p-2 border border-gray-200"><input type="text" class="w-full px-2 py-1 border rounded text-xs lg:text-sm sku-input" value="${v.sku||''}"></td>
+                <td class="p-2 border border-gray-200 text-center"><button onclick="this.closest('tr').remove()" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button></td>
             </tr>`;
         }
+
+        window.selectGroupImage = (div, url) => {
+            const container = div.parentElement;
+            container.querySelectorAll('.variant-img-selected').forEach(el => { el.classList.remove('variant-img-selected'); const badge = el.querySelector('.bg-blue-600'); if(badge) badge.remove(); });
+            div.classList.add('variant-img-selected');
+            div.insertAdjacentHTML('beforeend', '<div class="absolute top-1 left-1 w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs shadow-md z-10"><i class="fa-solid fa-check"></i></div>');
+            container.nextElementSibling.value = url;
+        };
+
+        window.removeGroupImage = (btn, url) => {
+            if (!url.startsWith('blob:')) imagesToDelete.add(url);
+            const imgDiv = btn.closest('.relative');
+            const container = imgDiv.parentElement;
+            const groupBlock = btn.closest('.group-block');
+            
+            // If deleting the file we just queued for upload
+            if (url.startsWith('blob:') && groupBlock.fileToUpload) {
+                const currentBlob = URL.createObjectURL(groupBlock.fileToUpload);
+                // Check if this is the blob (approximation, usually URLs are unique)
+                // Actually safer to just clear it if it matches the current selection
+            }
+
+            if (imgDiv.classList.contains('variant-img-selected')) { 
+                const hiddenInput = groupBlock.querySelector('.group-main-image'); 
+                if (hiddenInput) hiddenInput.value = ''; 
+                groupBlock.fileToUpload = null; // Clear pending upload if removed
+            }
+            imgDiv.remove();
+            if (container.children.length === 0) container.innerHTML = `<div class="col-span-4 text-[10px] text-center text-slate-400 bg-slate-50 p-2 rounded italic border border-dashed border-slate-300">Đã xóa hết ảnh.</div>`;
+        };
 
         window.addVariantGroup = () => {
             const container = document.getElementById('variant-groups-container');
@@ -423,157 +478,128 @@
             container.insertAdjacentHTML('beforeend', buildGroupHTML(newColor, [{id: null, attributes:{}, price:0, stock_quantity:0}]));
             container.lastElementChild.scrollIntoView({ behavior: 'smooth' });
         };
-        window.addVariantRowToGroup = (btn) => {
-            btn.closest('.p-4').querySelector('.group-tbody').insertAdjacentHTML('beforeend', renderRowHtml({attributes:{}, price:0, stock_quantity:0}));
-        };
+        window.addVariantRowToGroup = (btn) => btn.closest('.p-4').querySelector('.group-tbody').insertAdjacentHTML('beforeend', renderRowHtml({attributes:{}, price:0, stock_quantity:0}));
         window.updateGroupColor = (input) => input.closest('.group-block').dataset.color = input.value;
 
-        window.uploadGroupImages = async (input, variantId) => {
-            if (!variantId) return showToast('Vui lòng lưu trước!', 'warning');
-            for (let file of input.files) {
-                const fd = new FormData();
-                fd.append('image', file);
-                fd.append('variant_id', variantId);
-                await api.uploadProductImage(productId, fd);
-            }
-            showToast('Đã tải ảnh lên', 'success');
-            await loadVariants();
-        };
+        // --- SAVE LOGIC ---
+        window.saveAllChanges = async () => {
+            const btnSave = document.getElementById('btn-save-all');
+            const originalText = btnSave.innerHTML;
+            btnSave.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
+            btnSave.disabled = true;
 
-        window.removeVariantImage = async (btn, url) => {
-            if (!confirm('Xóa ảnh này?')) return;
             try {
-                await api.request('/products/delete-image', { method: 'POST', auth: true, body: { image_url: url } });
-                btn.closest('div').remove();
-                showToast('Đã xóa', 'success');
-            } catch (e) { showToast('Lỗi xóa', 'error'); }
-        };
-
-        window.saveVariants = async () => {
-            const payload = [];
-            const seenColors = new Set(); 
-            let hasDuplicate = false;
-
-            document.querySelectorAll('.group-block').forEach(group => {
-                const colorRaw = group.querySelector('.color-input').value.trim();
-                const colorKey = colorRaw.toLowerCase();
-                const groupColorCode = group.querySelector('.group-color-text').value.trim();
-
-                if (seenColors.has(colorKey)) {
-                    hasDuplicate = true;
-                    group.querySelector('.color-input').classList.add('bg-red-100', 'text-red-700');
-                } else {
-                    seenColors.add(colorKey);
-                    group.querySelector('.color-input').classList.remove('bg-red-100', 'text-red-700');
+                // 1. Delete marked images
+                if (imagesToDelete.size > 0) { for (const url of imagesToDelete) { await api.deleteProductImage(url); } imagesToDelete.clear(); }
+                
+                // 2. Upload Shared Gallery
+                if (imagesToUpload.length > 0) { for (const file of imagesToUpload) { const fd = new FormData(); fd.append('image', file); await api.uploadProductImage(productId, fd); } imagesToUpload = []; }
+                
+                // 3. Upload Main Thumbnail
+                if (mainImageFile) { 
+                    const oldUrl = document.getElementById('p-image-url').value;
+                    if (oldUrl && !oldUrl.includes('placehold')) { await api.deleteProductImage(oldUrl); }
+                    const fd = new FormData(); fd.append('image', mainImageFile); 
+                    const res = await api.uploadProductImage(productId, fd); 
+                    document.getElementById('p-image-url').value = res.url; 
+                    mainImageFile = null; 
                 }
 
-                const firstImg = group.querySelector('.group-gallery img')?.getAttribute('src')?.replace('../', '') || '';
-                
-                group.querySelectorAll('tbody tr').forEach(tr => {
-                    const price = tr.querySelector('.price-input').value;
-                    if (!price) return;
-                    
-                    const attrs = { color: colorRaw };
-                    tr.querySelectorAll('.attr-input').forEach(i => attrs[i.dataset.key] = i.value.trim());
+                // 4. [NEW] Upload Private Variant Images (Loop through groups)
+                const groupBlocks = document.querySelectorAll('.group-block');
+                for (const block of groupBlocks) {
+                    if (block.fileToUpload) {
+                        const fd = new FormData();
+                        fd.append('image', block.fileToUpload);
+                        // Upload as generic product image first (since we might not have variant ID yet)
+                        const res = await api.uploadProductImage(productId, fd);
+                        
+                        // Update the hidden input with the real server URL
+                        block.querySelector('.group-main-image').value = res.url;
+                        block.fileToUpload = null; // Clear pending
+                    }
+                }
 
-                    payload.push({
-                        id: tr.dataset.id || null, 
-                        attributes: attrs, 
-                        color_code: groupColorCode,
-                        price: price,
-                        stock_quantity: tr.querySelector('.stock-input').value,
-                        sku: tr.querySelector('.sku-input').value, 
-                        image: firstImg
+                // 5. Update Product Info
+                document.querySelectorAll('.spec-input').forEach(i => currentSpecsData[i.dataset.key] = i.value);
+                const productData = {
+                    title: document.getElementById('p-title').value,
+                    price: document.getElementById('p-price').value,
+                    compare_at: document.getElementById('p-compare').value,
+                    category: document.getElementById('p-category').value,
+                    brand: document.getElementById('p-brand').value,
+                    description: document.getElementById('p-desc').value,
+                    image: document.getElementById('p-image-url').value,
+                    specs: currentSpecsData,
+                    is_active: document.getElementById('p-is-active').checked ? 1 : 0,
+                    ...(document.getElementById('p-stock').hasAttribute('readonly') ? {} : { stock_quantity: document.getElementById('p-stock').value })
+                };
+                await api.updateProduct(productId, productData);
+
+                // 6. Build Variant Payload
+                const variantPayload = [];
+                const seenColors = new Set();
+                let hasDuplicate = false;
+
+                document.querySelectorAll('.group-block').forEach(group => {
+                    const colorRaw = group.querySelector('.color-input').value.trim();
+                    const colorKey = colorRaw.toLowerCase();
+                    const groupColorCode = group.querySelector('.group-color-text').value.trim();
+                    const activeImage = group.querySelector('.group-main-image').value; // Now contains server URL if uploaded
+
+                    if (seenColors.has(colorKey)) { hasDuplicate = true; } else { seenColors.add(colorKey); }
+
+                    group.querySelectorAll('tbody tr').forEach(tr => {
+                        const price = tr.querySelector('.price-input').value;
+                        if (!price) return;
+                        const attrs = { color: colorRaw };
+                        tr.querySelectorAll('.attr-input').forEach(i => attrs[i.dataset.key] = i.value.trim());
+                        variantPayload.push({
+                            id: tr.dataset.id || null, 
+                            attributes: attrs, 
+                            color_code: groupColorCode,
+                            price: price,
+                            compare_at: tr.querySelector('.compare-input').value,
+                            stock_quantity: tr.querySelector('.stock-input').value,
+                            sku: tr.querySelector('.sku-input').value, 
+                            image: activeImage 
+                        });
                     });
                 });
-            });
 
-            if (hasDuplicate) return showToast('Lỗi: Tên màu không được trùng nhau.', 'error');
-            if (payload.length === 0 && !confirm('Bạn đang xóa TẤT CẢ biến thể. Tiếp tục?')) return;
+                if (hasDuplicate) throw new Error('Tên màu biến thể bị trùng nhau.');
+                if (variantPayload.length > 0 || allVariantsData.length > 0) { await api.request(`/products/${productId}/variants/save`, { method: 'POST', auth: true, body: variantPayload }); }
 
-            try {
-                await api.request(`/products/${productId}/variants/save`, { method: 'POST', auth: true, body: payload });
-                showToast('Lưu thành công!', 'success');
-                await loadVariants(); 
-                const p = await api.getProduct(productId);
-                const stockInput = document.getElementById('p-stock');
-                stockInput.value = p.stock_quantity;
-                if (payload.length === 0) {
-                    stockInput.removeAttribute('readonly'); stockInput.classList.remove('bg-gray-100', 'text-gray-500', 'cursor-not-allowed'); stockInput.classList.add('bg-white', 'text-gray-800'); document.getElementById('stock-source-badge').classList.add('hidden'); document.getElementById('stock-hint').classList.add('hidden');
-                }
-            } catch (e) { showToast(e.message || 'Lỗi lưu', 'error'); }
+                showToast('Tất cả thay đổi đã được lưu thành công!', 'success');
+                setTimeout(() => { window.location.reload(); }, 1000);
+            } catch (e) { showToast('Lỗi: ' + e.message, 'error'); btnSave.innerHTML = originalText; btnSave.disabled = false; }
         };
 
-        // =========================================================
-        // HÀM LOAD & UPDATE HÃNG SẢN XUẤT (BRAND)
-        // =========================================================
         async function loadCategoriesAndInit(selectedCategorySlug, selectedBrandName) {
             const res = await api.getCategories();
             allCategories = res.data || [];
             const catSelect = document.getElementById('p-category');
-            
-            catSelect.innerHTML = '<option value="">-- Chọn danh mục --</option>' +
-                allCategories.map(c => `<option value="${c.slug}" ${c.slug === selectedCategorySlug ? 'selected' : ''}>${c.name}</option>`).join('');
-
-            catSelect.addEventListener('change', async function() {
-                await updateBrandSelect(this.value);
-            });
-
-            // Initial load brands
-            if (selectedCategorySlug) {
-                await updateBrandSelect(selectedCategorySlug, selectedBrandName);
-            }
+            catSelect.innerHTML = '<option value="">-- Chọn danh mục --</option>' + allCategories.map(c => `<option value="${c.slug}" ${c.slug === selectedCategorySlug ? 'selected' : ''}>${c.name}</option>`).join('');
+            catSelect.addEventListener('change', async function() { await updateBrandSelect(this.value); });
+            if (selectedCategorySlug) { await updateBrandSelect(selectedCategorySlug, selectedBrandName); }
         }
-
         async function updateBrandSelect(categorySlug, selectedBrand = '') {
             const brandSelect = document.getElementById('p-brand');
-            brandSelect.innerHTML = '<option value="">Đang tải...</option>';
-            brandSelect.disabled = true;
-
+            brandSelect.innerHTML = '<option value="">Đang tải...</option>'; brandSelect.disabled = true;
             try {
                 const res = await api.getBrands(categorySlug);
                 const brands = res.data || [];
-                
                 brandSelect.innerHTML = '<option value="">-- Chọn hãng --</option>';
-                
                 if (brands.length > 0) {
                     brandSelect.disabled = false;
-                    brands.forEach(b => {
-                        const bName = typeof b === 'object' ? b.name : b; 
-                        brandSelect.innerHTML += `<option value="${bName}" ${bName === selectedBrand ? 'selected' : ''}>${bName}</option>`;
-                    });
-                } else {
-                    brandSelect.innerHTML = '<option value="">Không có hãng</option>';
-                }
-            } catch(e) {
-                console.error(e);
-                brandSelect.innerHTML = '<option value="">Lỗi tải</option>';
-            }
+                    brands.forEach(b => { const bName = typeof b === 'object' ? b.name : b; brandSelect.innerHTML += `<option value="${bName}" ${bName === selectedBrand ? 'selected' : ''}>${bName}</option>`; });
+                } else { brandSelect.innerHTML = '<option value="">Không có hãng</option>'; }
+            } catch(e) { brandSelect.innerHTML = '<option value="">Lỗi tải</option>'; }
         }
-
         function renderSpecsForm(template, data) {
             const container = document.getElementById('specs-container');
-            container.innerHTML = template ? template.map(g => `<div class="border p-4 rounded mb-4"><h4 class="font-bold mb-2">${g.group}</h4><div class="grid grid-cols-2 gap-4">${(g.fields||[]).map(f => `<div><label class="text-xs uppercase text-gray-500 font-bold">${f.l}</label><input type="text" class="w-full border rounded px-2 py-1 spec-input" data-key="${f.k}" value="${data[f.k]||''}"></div>`).join('')}</div></div>`).join('') : '<p class="text-gray-400 italic">Không có template thông số cho danh mục này.</p>';
+            container.innerHTML = template ? template.map(g => `<div class="border p-4 rounded mb-4"><h4 class="font-bold mb-2 text-sm">${g.group}</h4><div class="grid grid-cols-1 sm:grid-cols-2 gap-4">${(g.fields||[]).map(f => `<div><label class="text-xs uppercase text-gray-500 font-bold">${f.l}</label><input type="text" class="w-full border rounded px-2 py-1.5 text-sm spec-input outline-none focus:border-blue-500" data-key="${f.k}" value="${data[f.k]||''}"></div>`).join('')}</div></div>`).join('') : '<p class="text-gray-400 italic text-sm">Không có thông số.</p>';
         }
-
-        window.saveAllChanges = async () => {
-            document.querySelectorAll('.spec-input').forEach(i => currentSpecsData[i.dataset.key] = i.value);
-            const data = {
-                title: document.getElementById('p-title').value,
-                price: document.getElementById('p-price').value,
-                category: document.getElementById('p-category').value,
-                brand: document.getElementById('p-brand').value, // LƯU BRAND
-                description: document.getElementById('p-desc').value,
-                image: document.getElementById('p-image').value,
-                specs: currentSpecsData,
-                is_active: document.getElementById('p-is-active').checked ? 1 : 0,
-                ...(document.getElementById('p-stock').hasAttribute('readonly') ? {} : { stock_quantity: document.getElementById('p-stock').value })
-            };
-            try {
-                await api.updateProduct(productId, data);
-                showToast('Đã lưu thông tin chung', 'success');
-            } catch (e) { showToast('Lỗi: ' + e.message, 'error'); }
-        };
 
         initPage();
     </script>

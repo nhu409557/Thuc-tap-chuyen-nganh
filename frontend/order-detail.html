@@ -2,73 +2,89 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>Chi tiết đơn hàng</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi tiết đơn hàng - TechHub</title>
   <link rel="stylesheet" href="assets/css/reset.css" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="assets/css/app.css" />
+  <style>
+    /* Custom scrollbar cho danh sách trả hàng */
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 font-sans text-gray-900">
 
   <div id="site-header"></div>
 
-  <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+  <main class="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 min-h-[80vh]">
     
-    <div class="flex items-center gap-2 text-sm text-gray-500 mb-6">
+    <div class="flex flex-wrap items-center gap-2 text-sm text-gray-500 mb-4 md:mb-6">
       <a href="/" class="hover:text-blue-600">Trang chủ</a>
-      <span>/</span>
+      <i class="fa-solid fa-chevron-right text-xs"></i>
       <a href="account.html" class="hover:text-blue-600">Tài khoản</a>
-      <span>/</span>
-      <span class="text-gray-900 font-medium">Chi tiết đơn hàng</span>
+      <i class="fa-solid fa-chevron-right text-xs"></i>
+      <a href="account.html?tab=orders" class="hover:text-blue-600">Lịch sử</a>
+      <i class="fa-solid fa-chevron-right text-xs"></i>
+      <span class="text-gray-900 font-medium truncate max-w-[150px] sm:max-w-none">Chi tiết đơn hàng</span>
     </div>
 
-    <div id="loading-state" class="text-center py-10">
-      <p class="text-gray-500">Đang tải thông tin đơn hàng...</p>
+    <div id="loading-state" class="text-center py-20">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+      <p class="text-gray-500 mt-2">Đang tải thông tin đơn hàng...</p>
     </div>
 
-    <div id="order-detail-content" class="hidden space-y-6">
+    <div id="order-detail-content" class="hidden space-y-4 md:space-y-6">
       
-      <div class="bg-white rounded-lg border border-gray-200 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
-        <div>
-          <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
-            Đơn hàng <span id="order-code">#...</span>
-          </h1>
-          <p class="text-sm text-gray-500 mt-1">Ngày đặt: <span id="order-date">...</span></p>
-        </div>
-        <div class="flex flex-col items-end">
-           <span id="order-status-badge" class="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-             Loading...
-           </span>
-           <p id="payment-status" class="text-xs text-gray-500 mt-2 italic"></p>
+      <div class="bg-white rounded-xl border border-gray-200 p-4 md:p-6 shadow-sm">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="w-full md:w-auto">
+                <h1 class="text-xl md:text-2xl font-bold text-gray-800 flex flex-wrap items-center gap-2 md:gap-3">
+                    Đơn hàng <span id="order-code" class="font-mono text-blue-600 break-all">#...</span>
+                </h1>
+                <p class="text-xs md:text-sm text-gray-500 mt-1">Ngày đặt: <span id="order-date">...</span></p>
+            </div>
+            <div class="flex flex-col items-start md:items-end w-full md:w-auto border-t md:border-t-0 border-gray-100 pt-3 md:pt-0 mt-1 md:mt-0">
+                <span id="order-status-badge" class="px-3 py-1 rounded-full text-sm font-bold bg-gray-100 text-gray-800 border border-gray-200">
+                    Loading...
+                </span>
+                <p id="payment-status" class="text-xs text-gray-500 mt-2 italic font-medium w-full text-left md:text-right"></p>
+                
+                <div id="order-actions-container" class="mt-3 w-full md:w-auto flex flex-wrap gap-2 justify-start md:justify-end"></div>
+            </div>
         </div>
       </div>
 
-      <div class="grid md:grid-cols-3 gap-6">
-        
-        <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+        <div class="bg-white rounded-xl border border-gray-200 p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow">
+          <h3 class="font-bold text-gray-800 mb-3 md:mb-4 flex items-center gap-2 border-b pb-2 text-sm md:text-base">
+            <i class="fa-solid fa-location-dot text-blue-500"></i>
             Địa chỉ nhận hàng
           </h3>
           <div class="text-sm text-gray-600 space-y-2">
-            <p class="font-medium text-gray-900" id="customer-name">...</p>
-            <p id="customer-phone">...</p>
-            <p id="customer-address" class="leading-relaxed">...</p>
+            <p class="font-bold text-gray-900 text-base" id="customer-name">...</p>
+            <p id="customer-phone" class="font-mono text-gray-500">...</p>
+            <p id="customer-address" class="leading-relaxed text-xs md:text-sm">...</p>
           </div>
         </div>
 
-        <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+        <div class="bg-white rounded-xl border border-gray-200 p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow">
+          <h3 class="font-bold text-gray-800 mb-3 md:mb-4 flex items-center gap-2 border-b pb-2 text-sm md:text-base">
+            <i class="fa-regular fa-credit-card text-blue-500"></i>
             Thanh toán
           </h3>
           <div class="text-sm text-gray-600 space-y-2">
-            <p>Phương thức: <span id="payment-method" class="font-medium text-gray-900">...</span></p>
+            <p>Phương thức:</p>
+            <p id="payment-method" class="font-medium text-gray-900 bg-gray-50 px-2 py-1 rounded inline-block break-words max-w-full">...</p>
           </div>
         </div>
 
-        <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+        <div class="bg-white rounded-xl border border-gray-200 p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow">
+          <h3 class="font-bold text-gray-800 mb-3 md:mb-4 flex items-center gap-2 border-b pb-2 text-sm md:text-base">
+            <i class="fa-solid fa-truck-fast text-blue-500"></i>
             Vận chuyển
           </h3>
           <div class="text-sm text-gray-600 space-y-2">
@@ -78,28 +94,29 @@
         </div>
       </div>
 
-      <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <h3 class="font-semibold text-gray-900">Sản phẩm đã đặt</h3>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-4 md:px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+          <h3 class="font-bold text-gray-800 text-sm md:text-base">Sản phẩm</h3>
+          <span class="text-[10px] md:text-xs text-gray-500 bg-white px-2 py-1 rounded border">Đã kiểm tra</span>
         </div>
-        <div class="overflow-x-auto">
+        <div class="w-full">
           <table class="w-full text-sm text-left">
-            <thead class="text-gray-500 bg-gray-50 border-b border-gray-100">
+            <thead class="hidden md:table-header-group text-gray-500 bg-gray-50/50 border-b border-gray-100 uppercase text-xs tracking-wider">
               <tr>
-                <th class="px-6 py-3 font-medium">Sản phẩm</th>
-                <th class="px-6 py-3 font-medium text-center">Số lượng</th>
-                <th class="px-6 py-3 font-medium text-right">Đơn giá</th>
-                <th class="px-6 py-3 font-medium text-right">Tổng</th>
+                <th class="px-6 py-3 font-semibold">Sản phẩm</th>
+                <th class="px-6 py-3 font-semibold text-center">Số lượng</th>
+                <th class="px-6 py-3 font-semibold text-right">Đơn giá</th>
+                <th class="px-6 py-3 font-semibold text-right">Tổng</th>
               </tr>
             </thead>
             <tbody id="order-items-list" class="divide-y divide-gray-100">
-              </tbody>
+                </tbody>
           </table>
         </div>
       </div>
 
       <div class="flex justify-end">
-        <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6 w-full md:w-1/3">
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6 w-full md:w-1/3">
           <div class="space-y-3 text-sm text-gray-600 border-b border-gray-100 pb-4">
             <div class="flex justify-between">
               <span>Tổng tiền hàng:</span>
@@ -107,7 +124,7 @@
             </div>
             
             <div id="summary-discount-row" class="flex justify-between text-green-600 hidden">
-              <span>Giảm giá <span id="summary-coupon-code" class="font-bold text-xs bg-green-100 px-1 rounded ml-1"></span>:</span>
+              <span>Giảm giá <span id="summary-coupon-code" class="font-bold text-[10px] bg-green-100 px-1.5 py-0.5 rounded ml-1 border border-green-200 uppercase"></span>:</span>
               <span id="summary-discount-amount" class="font-medium">-0đ</span>
             </div>
             <div class="flex justify-between">
@@ -116,15 +133,15 @@
             </div>
           </div>
           <div class="flex justify-between items-center pt-4">
-            <span class="font-bold text-gray-900 text-lg">Tổng thanh toán:</span>
-            <span id="summary-total" class="font-bold text-red-600 text-xl">...</span>
+            <span class="font-bold text-gray-900 text-base md:text-lg">Tổng thanh toán:</span>
+            <span id="summary-total" class="font-bold text-red-600 text-lg md:text-xl">...</span>
           </div>
         </div>
       </div>
       
-      <div class="text-center pb-10">
-         <a href="orders.html" class="inline-flex items-center gap-2 text-blue-600 font-medium hover:underline">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+      <div class="text-center pb-10 pt-4">
+         <a href="orders.html" class="inline-flex items-center gap-2 text-gray-500 hover:text-blue-600 transition font-medium">
+            <i class="fa-solid fa-arrow-left"></i>
             Quay lại danh sách đơn hàng
          </a>
       </div>
@@ -132,46 +149,82 @@
     </div>
   </main>
 
-  <div id="review-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 px-4">
-    <div class="bg-white rounded-lg p-6 w-full max-w-md shadow-xl relative animate-fade-in">
-      <button id="close-review-modal" class="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-2xl">&times;</button>
+  <div id="review-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-[60] px-4 backdrop-blur-sm transition-opacity">
+    <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl relative animate-fade-in transform scale-100 mx-4">
+      <button onclick="document.getElementById('review-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-xl transition"><i class="fa-solid fa-xmark"></i></button>
       
       <h3 class="text-xl font-bold mb-2 text-center text-gray-800">Đánh giá sản phẩm</h3>
-      <p id="review-product-name" class="text-sm text-blue-600 mb-6 text-center font-medium line-clamp-1">...</p>
+      <p id="review-product-name" class="text-sm text-blue-600 mb-6 text-center font-medium line-clamp-1 bg-blue-50 py-1 px-2 rounded-lg mx-auto w-fit max-w-full">...</p>
   
       <form id="review-form" class="space-y-5">
         <input type="hidden" id="review-order-id">
         <input type="hidden" id="review-product-id">
   
         <div class="text-center">
-          <label class="block text-sm font-medium text-gray-700 mb-2">Mức độ hài lòng</label>
+          <label class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Mức độ hài lòng</label>
           <div class="flex gap-2 justify-center text-3xl">
               <div class="rating-stars flex flex-row-reverse gap-1">
                   <input type="radio" id="star5" name="rating" value="5" class="hidden peer/5" checked />
-                  <label for="star5" class="cursor-pointer text-gray-300 peer-checked/5:text-yellow-400 hover:text-yellow-400 peer-hover/5:text-yellow-400">★</label>
+                  <label for="star5" class="cursor-pointer text-gray-300 peer-checked/5:text-yellow-400 hover:text-yellow-400 peer-hover/5:text-yellow-400 transition-colors"><i class="fa-solid fa-star"></i></label>
                   
                   <input type="radio" id="star4" name="rating" value="4" class="hidden peer/4" />
-                  <label for="star4" class="cursor-pointer text-gray-300 peer-checked/4:text-yellow-400 hover:text-yellow-400 peer-hover/4:text-yellow-400 peer-checked/5:text-yellow-400">★</label>
+                  <label for="star4" class="cursor-pointer text-gray-300 peer-checked/4:text-yellow-400 hover:text-yellow-400 peer-hover/4:text-yellow-400 peer-checked/5:text-yellow-400 transition-colors"><i class="fa-solid fa-star"></i></label>
                   
                   <input type="radio" id="star3" name="rating" value="3" class="hidden peer/3" />
-                  <label for="star3" class="cursor-pointer text-gray-300 peer-checked/3:text-yellow-400 hover:text-yellow-400 peer-hover/3:text-yellow-400 peer-checked/4:text-yellow-400 peer-checked/5:text-yellow-400">★</label>
+                  <label for="star3" class="cursor-pointer text-gray-300 peer-checked/3:text-yellow-400 hover:text-yellow-400 peer-hover/3:text-yellow-400 peer-checked/4:text-yellow-400 peer-checked/5:text-yellow-400 transition-colors"><i class="fa-solid fa-star"></i></label>
                   
                   <input type="radio" id="star2" name="rating" value="2" class="hidden peer/2" />
-                  <label for="star2" class="cursor-pointer text-gray-300 peer-checked/2:text-yellow-400 hover:text-yellow-400 peer-hover/2:text-yellow-400 peer-checked/3:text-yellow-400 peer-checked/4:text-yellow-400 peer-checked/5:text-yellow-400">★</label>
+                  <label for="star2" class="cursor-pointer text-gray-300 peer-checked/2:text-yellow-400 hover:text-yellow-400 peer-hover/2:text-yellow-400 peer-checked/3:text-yellow-400 peer-checked/4:text-yellow-400 peer-checked/5:text-yellow-400 transition-colors"><i class="fa-solid fa-star"></i></label>
                   
                   <input type="radio" id="star1" name="rating" value="1" class="hidden peer/1" />
-                  <label for="star1" class="cursor-pointer text-gray-300 peer-checked/1:text-yellow-400 hover:text-yellow-400 peer-hover/1:text-yellow-400 peer-checked/2:text-yellow-400 peer-checked/3:text-yellow-400 peer-checked/4:text-yellow-400 peer-checked/5:text-yellow-400">★</label>
+                  <label for="star1" class="cursor-pointer text-gray-300 peer-checked/1:text-yellow-400 hover:text-yellow-400 peer-hover/1:text-yellow-400 peer-checked/2:text-yellow-400 peer-checked/3:text-yellow-400 peer-checked/4:text-yellow-400 peer-checked/5:text-yellow-400 transition-colors"><i class="fa-solid fa-star"></i></label>
               </div>
           </div>
         </div>
   
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Nhận xét của bạn</label>
-          <textarea id="review-comment" rows="3" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm" placeholder="Hãy chia sẻ cảm nhận của bạn về sản phẩm này..."></textarea>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Nhận xét của bạn</label>
+          <textarea id="review-comment" rows="3" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none text-sm transition" placeholder="Sản phẩm dùng tốt không? Đóng gói thế nào?"></textarea>
         </div>
   
-        <button type="submit" class="w-full bg-blue-600 text-white py-2.5 rounded-lg font-bold hover:bg-blue-700 transition shadow-md">Gửi đánh giá</button>
+        <button type="submit" class="w-full bg-blue-600 text-white py-2.5 rounded-lg font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-500/30">Gửi đánh giá</button>
       </form>
+    </div>
+  </div>
+
+  <div id="return-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-[60] p-4 backdrop-blur-sm">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden animate-fade-in flex flex-col max-h-[90vh]">
+        
+        <div class="bg-gray-50 px-4 md:px-6 py-4 border-b border-gray-200 flex justify-between items-center flex-shrink-0">
+            <div>
+                <h3 class="text-base md:text-lg font-bold text-gray-800">Chọn sản phẩm trả</h3>
+                <p class="text-xs text-gray-500 mt-0.5">Vui lòng chọn số lượng và lý do</p>
+            </div>
+            <button onclick="document.getElementById('return-modal').classList.add('hidden')" class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        
+        <form id="return-form" class="flex flex-col flex-1 overflow-hidden">
+            <input type="hidden" id="return-order-id">
+            
+            <div class="overflow-y-auto p-4 md:p-6 space-y-4 flex-1 custom-scrollbar bg-slate-50" id="return-items-container">
+                </div>
+
+            <div class="bg-white px-4 md:px-6 py-4 border-t border-gray-200 flex-shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                <div class="flex justify-between items-center mb-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                    <div class="text-sm text-blue-800">
+                        <i class="fa-solid fa-circle-info mr-1"></i>
+                        Hoàn tiền dự kiến:
+                    </div>
+                    <span id="estimated-refund-total" class="text-lg md:text-xl font-bold text-blue-700">0đ</span>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="document.getElementById('return-modal').classList.add('hidden')" class="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg font-semibold transition border border-transparent hover:border-gray-200">Hủy bỏ</button>
+                    <button type="submit" class="px-5 py-2 text-sm bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/30 transition flex items-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> Gửi yêu cầu
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
   </div>
 

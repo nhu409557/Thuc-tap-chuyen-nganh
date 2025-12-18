@@ -10,22 +10,26 @@
     <style> 
         body { font-family: 'Inter', sans-serif; } 
         .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
     </style>
 </head>
 <body class="bg-slate-50">
 
-    <div class="p-6">
-        <div class="flex justify-between items-center mb-6">
+    <div class="p-4 lg:p-6 pb-20 lg:pb-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div>
-                <h1 class="text-2xl font-bold text-slate-800">Quản lý Đánh giá</h1>
+                <h1 class="text-xl lg:text-2xl font-bold text-slate-800">Quản lý Đánh giá</h1>
                 <p class="text-sm text-slate-500 mt-1">Xem và phản hồi ý kiến khách hàng</p>
             </div>
         </div>
 
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-            <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div class="flex gap-2">
-                    <select id="filter-rating" aria-label="Lọc theo số sao" class="bg-white border border-slate-300 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-3 py-2">
+            <div class="px-4 py-4 lg:px-6 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <select id="filter-rating" aria-label="Lọc theo số sao" class="flex-1 sm:flex-none bg-white border border-slate-300 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-3 py-2 outline-none">
                         <option value="">Tất cả sao</option>
                         <option value="5">5 Sao</option>
                         <option value="4">4 Sao</option>
@@ -34,15 +38,15 @@
                         <option value="1">1 Sao</option>
                     </select>
                     
-                    <select id="filter-status" aria-label="Lọc theo trạng thái" class="bg-white border border-slate-300 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-3 py-2">
+                    <select id="filter-status" aria-label="Lọc theo trạng thái" class="flex-1 sm:flex-none bg-white border border-slate-300 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-3 py-2 outline-none">
                         <option value="">Trạng thái</option>
                         <option value="hidden">Đang ẩn</option>
                         <option value="visible">Đang hiện</option>
                     </select>
                 </div>
 
-                <div class="relative">
-                    <input type="text" id="search-input" aria-label="Tìm kiếm đánh giá" placeholder="Tìm theo tên sản phẩm..." class="bg-white border border-slate-300 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-64 pl-10 p-2">
+                <div class="relative w-full sm:w-64">
+                    <input type="text" id="search-input" aria-label="Tìm kiếm đánh giá" placeholder="Tìm theo tên sản phẩm..." class="bg-white border border-slate-300 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2 outline-none">
                     <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                         <i class="fa-solid fa-search text-slate-400"></i>
                     </div>
@@ -50,15 +54,15 @@
             </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left">
+                <table class="w-full text-sm text-left whitespace-nowrap sm:whitespace-normal">
                     <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-xs tracking-wider border-b border-slate-200">
                         <tr>
-                            <th class="px-6 py-4 w-12">ID</th>
-                            <th class="px-6 py-4 w-1/4">Sản phẩm</th>
-                            <th class="px-6 py-4">Khách hàng</th>
-                            <th class="px-6 py-4 w-1/3">Đánh giá & Phản hồi</th>
-                            <th class="px-6 py-4 text-center">Trạng thái</th>
-                            <th class="px-6 py-4 text-center w-32">Hành động</th>
+                            <th class="hidden sm:table-cell px-4 py-3 lg:px-6 lg:py-4 w-12">ID</th>
+                            <th class="px-4 py-3 lg:px-6 lg:py-4 lg:w-1/4">Sản phẩm</th>
+                            <th class="hidden md:table-cell px-4 py-3 lg:px-6 lg:py-4">Khách hàng</th>
+                            <th class="px-4 py-3 lg:px-6 lg:py-4 w-full md:w-1/3">Đánh giá & Phản hồi</th>
+                            <th class="px-4 py-3 lg:px-6 lg:py-4 text-center">Trạng thái</th>
+                            <th class="px-4 py-3 lg:px-6 lg:py-4 text-center lg:w-32">Hành động</th>
                         </tr>
                     </thead>
                     <tbody id="reviews-list-body" class="divide-y divide-slate-100 text-slate-600">
@@ -66,16 +70,16 @@
                 </table>
             </div>
             
-            <div class="px-6 py-4 border-t border-slate-200 bg-slate-50/50 flex items-center justify-between">
-                <span class="text-sm text-slate-500">
+            <div class="px-4 py-4 lg:px-6 border-t border-slate-200 bg-slate-50/50 flex items-center justify-between">
+                <span class="text-xs lg:text-sm text-slate-500">
                     Trang <span id="page-current" class="font-bold text-slate-800">1</span> 
                     / <span id="page-total">1</span>
                 </span>
                 <div class="flex gap-2">
-                    <button type="button" id="btn-prev" class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium border border-slate-300 rounded-lg hover:bg-white hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-white shadow-sm">
+                    <button type="button" id="btn-prev" class="flex items-center gap-1 px-3 py-1.5 text-xs lg:text-sm font-medium border border-slate-300 rounded-lg hover:bg-white hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-white shadow-sm">
                         Trước
                     </button>
-                    <button type="button" id="btn-next" class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium border border-slate-300 rounded-lg hover:bg-white hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-white shadow-sm">
+                    <button type="button" id="btn-next" class="flex items-center gap-1 px-3 py-1.5 text-xs lg:text-sm font-medium border border-slate-300 rounded-lg hover:bg-white hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-white shadow-sm">
                         Sau
                     </button>
                 </div>
@@ -83,24 +87,23 @@
         </div>
     </div>
 
-    <div id="reply-modal" class="fixed inset-0 z-50 hidden bg-black/50 flex items-center justify-center backdrop-blur-sm">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 animate-fade-in mx-4">
+    <div id="reply-modal" class="fixed inset-0 z-50 hidden bg-black/60 flex items-center justify-center backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-xl shadow-2xl w-[95%] sm:w-full max-w-lg p-4 lg:p-6 animate-fade-in">
             <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
                 <h3 class="text-lg font-bold text-slate-800">Trả lời đánh giá #<span id="reply-review-id"></span></h3>
-                <button type="button" onclick="window.closeReplyModal()" class="text-slate-400 hover:text-red-500" aria-label="Đóng"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <button type="button" onclick="window.closeReplyModal()" class="text-slate-400 hover:text-red-500 p-1" aria-label="Đóng"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
-            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 mb-4 text-sm text-slate-600 italic">
+            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 mb-4 text-xs lg:text-sm text-slate-600 italic max-h-32 overflow-y-auto custom-scrollbar">
                 "<span id="reply-user-comment">...</span>"
             </div>
 
             <form id="reply-form" class="space-y-4">
                 <div>
                     <label for="reply-content" class="block text-xs font-bold text-slate-500 uppercase mb-1">Câu trả lời của Admin</label>
-                    
                     <textarea id="reply-content" name="reply_content" rows="4" class="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition text-sm" placeholder="Nhập câu trả lời..." required></textarea>
                 </div>
-                <div class="flex justify-end gap-3 pt-2">
+                <div class="flex justify-end gap-3 pt-2 border-t border-slate-100 mt-2">
                     <button type="button" onclick="window.closeReplyModal()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition">Hủy</button>
                     <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-md">Gửi trả lời</button>
                 </div>
@@ -113,7 +116,7 @@
     <script type="module">
         import { renderAdminLayout } from '../assets/js/admin.js';
         import { api } from '../assets/js/api.js';
-        import { showToast } from '../assets/js/utils/common.js';
+        import { showToast } from '../assets/js/ui/toast.js';
 
         // 1. Render Layout (Sidebar, Header) trước khi chạy logic trang
         await renderAdminLayout('reviews');
@@ -149,7 +152,7 @@
         };
 
         window.handleDelete = async (id) => {
-            if (!confirm('Bạn có chắc chắn muốn xóa đánh giá này? Người dùng sẽ không thể viết lại đánh giá cho đơn hàng này nữa.')) return;
+            if (!confirm('Bạn có chắc chắn muốn xóa đánh giá này?')) return;
             try {
                 await api.adminDeleteReview(id);
                 showToast('Đã xóa đánh giá', 'success');
@@ -170,15 +173,8 @@
                 const id = parseInt(idText);
                 const reply = document.getElementById('reply-content').value;
 
-                if (!id || isNaN(id)) {
-                    showToast('Lỗi: ID đánh giá không hợp lệ', 'error');
-                    return;
-                }
-
-                if (!reply.trim()) {
-                    showToast('Vui lòng nhập nội dung trả lời', 'error');
-                    return;
-                }
+                if (!id || isNaN(id)) return showToast('Lỗi: ID đánh giá không hợp lệ', 'error');
+                if (!reply.trim()) return showToast('Vui lòng nhập nội dung trả lời', 'error');
 
                 // Hiệu ứng nút đang gửi
                 const btnSubmit = replyForm.querySelector('button[type="submit"]');
@@ -199,8 +195,6 @@
                     btnSubmit.textContent = originalText;
                 }
             });
-        } else {
-            console.error("Không tìm thấy form reply-form");
         }
 
         // ===== 4. LẮNG NGHE SỰ KIỆN LỌC & TÌM KIẾM (Sau layout render) =====
@@ -273,10 +267,10 @@
                 // Badge trạng thái
                 const isHidden = r.is_hidden == 1;
                 const statusBadge = isHidden 
-                    ? `<span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded border border-gray-200">Đang ẩn</span>`
-                    : `<span class="bg-green-100 text-green-600 text-xs px-2 py-0.5 rounded border border-green-200">Hiển thị</span>`;
+                    ? `<span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded border border-gray-200 whitespace-nowrap">Đang ẩn</span>`
+                    : `<span class="bg-green-100 text-green-600 text-[10px] px-2 py-0.5 rounded border border-green-200 whitespace-nowrap">Hiển thị</span>`;
 
-                // Badge trả lời (Cũ) -> Giờ thay bằng hiển thị nội dung bên dưới
+                // Badge trả lời
                 const replyContent = r.admin_reply 
                     ? `
                     <div class="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100 relative group animate-fade-in">
@@ -286,61 +280,59 @@
                         <p class="text-xs text-slate-700 mt-1 leading-relaxed">
                             ${r.admin_reply}
                         </p>
-                        <div class="mt-1 text-[10px] text-slate-400 text-right italic">
-                            ${r.replied_at ? 'Đã trả lời lúc: ' + new Date(r.replied_at).toLocaleDateString('vi-VN') : 'Vừa xong'}
-                        </div>
                     </div>
                     ` 
                     : `<div class="mt-2 text-xs text-slate-300 italic pl-1">Chưa có phản hồi</div>`;
 
                 const toggleBtnIcon = isHidden ? 'fa-eye' : 'fa-eye-slash';
                 const toggleBtnColor = isHidden ? 'text-blue-500 hover:bg-blue-50' : 'text-slate-500 hover:bg-slate-100';
-                const toggleTitle = isHidden ? 'Hiện đánh giá' : 'Ẩn đánh giá';
-
+                
                 const encodedComment = encodeURIComponent(r.comment || '');
 
                 return `
                 <tr class="hover:bg-slate-50 transition-colors border-b border-slate-50 group">
-                    <td class="px-6 py-4 font-mono text-xs text-slate-400 align-top pt-6">#${r.id}</td>
+                    <td class="hidden sm:table-cell px-4 py-3 lg:px-6 lg:py-4 font-mono text-xs text-slate-400 align-top pt-6">#${r.id}</td>
                     
-                    <td class="px-6 py-4 align-top">
+                    <td class="px-4 py-3 lg:px-6 lg:py-4 align-top">
                         <div class="flex items-center gap-3">
                             <img src="../${r.product_image || 'assets/images/no-image.png'}" 
-                                 class="w-10 h-10 object-cover rounded border border-slate-200 mix-blend-multiply"
+                                 class="w-10 h-10 object-cover rounded border border-slate-200 mix-blend-multiply flex-shrink-0"
                                  onerror="this.onerror=null; this.src='../assets/images/no-image.png';">
-                            <a href="../product.html?id=${r.product_id}" target="_blank" class="text-sm font-medium text-slate-700 hover:text-blue-600 line-clamp-2" title="${r.product_name}">
-                                ${r.product_name || 'Sản phẩm đã xóa'}
-                            </a>
+                            <div class="flex flex-col">
+                                <a href="../product.html?id=${r.product_id}" target="_blank" class="text-sm font-medium text-slate-700 hover:text-blue-600 line-clamp-2" title="${r.product_name}">
+                                    ${r.product_name || 'Sản phẩm đã xóa'}
+                                </a>
+                                <div class="md:hidden text-xs text-slate-500 mt-1">Khách: ${r.user_name || 'Ẩn danh'}</div>
+                            </div>
                         </div>
                     </td>
 
-                    <td class="px-6 py-4 align-top">
+                    <td class="hidden md:table-cell px-4 py-3 lg:px-6 lg:py-4 align-top">
                         <div class="text-sm font-medium text-slate-800">${r.user_name || 'Khách'}</div>
                         <div class="text-xs text-slate-500">Đơn hàng #${r.order_id}</div>
                     </td>
 
-                    <td class="px-6 py-4 align-top">
+                    <td class="px-4 py-3 lg:px-6 lg:py-4 align-top whitespace-normal">
                         <div class="flex gap-0.5 mb-1">${stars}</div>
-                        <p class="text-sm text-slate-600 mb-2" title="${r.comment || ''}">${r.comment || ''}</p>
-                        
+                        <p class="text-sm text-slate-600 mb-2 break-words" title="${r.comment || ''}">${r.comment || ''}</p>
                         ${replyContent}
                     </td>
 
-                    <td class="px-6 py-4 text-center align-top pt-6">
+                    <td class="px-4 py-3 lg:px-6 lg:py-4 text-center align-top pt-6">
                         ${statusBadge}
                     </td>
 
-                    <td class="px-6 py-4 align-top pt-6">
+                    <td class="px-4 py-3 lg:px-6 lg:py-4 align-top pt-6">
                         <div class="flex items-center justify-center gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
-                            <button type="button" onclick="window.openReplyModal(${r.id}, '${encodedComment}')" class="w-8 h-8 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 flex items-center justify-center transition shadow-sm" title="Trả lời / Sửa trả lời">
+                            <button type="button" onclick="window.openReplyModal(${r.id}, '${encodedComment}')" class="w-8 h-8 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 flex items-center justify-center transition shadow-sm" title="Trả lời">
                                 <i class="fa-solid fa-reply"></i>
                             </button>
 
-                            <button type="button" onclick="window.handleToggle(${r.id}, ${isHidden ? 0 : 1})" class="w-8 h-8 rounded-lg border border-slate-200 ${toggleBtnColor} flex items-center justify-center transition shadow-sm" title="${toggleTitle}">
+                            <button type="button" onclick="window.handleToggle(${r.id}, ${isHidden ? 0 : 1})" class="w-8 h-8 rounded-lg border border-slate-200 ${toggleBtnColor} flex items-center justify-center transition shadow-sm">
                                 <i class="fa-solid ${toggleBtnIcon}"></i>
                             </button>
 
-                            <button type="button" onclick="window.handleDelete(${r.id})" class="w-8 h-8 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 flex items-center justify-center transition shadow-sm" title="Xóa đánh giá">
+                            <button type="button" onclick="window.handleDelete(${r.id})" class="w-8 h-8 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 flex items-center justify-center transition shadow-sm">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>

@@ -3,7 +3,7 @@ namespace App\Models;
 
 class User extends BaseModel
 {
-    // 1. Tìm user theo Email (Dùng cho Login/Forgot Password)
+    // 1. Tìm user theo Email
     public static function findByEmail(string $email): ?array
     {
         $stmt = self::db()->prepare('SELECT * FROM users WHERE email = ? LIMIT 1');
@@ -12,7 +12,7 @@ class User extends BaseModel
         return $user ?: null;
     }
 
-    // 2. Tìm user theo ID (Dùng cho Middleware/Order)
+    // 2. Tìm user theo ID
     public static function findById(int $id): ?array
     {
         $stmt = self::db()->prepare('SELECT * FROM users WHERE id = ? LIMIT 1');
@@ -21,26 +21,23 @@ class User extends BaseModel
         return $user ?: null;
     }
 
-    // Chỉ lấy danh sách KHÁCH HÀNG (role = 'customer') + phân trang
+    // Lấy danh sách KHÁCH HÀNG (role = 'customer')
     public static function getCustomersOnly(int $limit = 10, int $offset = 0): array
     {
         $stmt = self::db()->prepare(
-            "SELECT id, name, email, role, is_locked, created_at
+            "SELECT id, name, email, gender, birthday, role, is_locked, created_at
              FROM users
              WHERE role = 'customer'
              ORDER BY id DESC
              LIMIT ? OFFSET ?"
         );
-
-        // PDO yêu cầu bind param LIMIT/OFFSET là INT
         $stmt->bindValue(1, $limit, \PDO::PARAM_INT);
         $stmt->bindValue(2, $offset, \PDO::PARAM_INT);
         $stmt->execute();
-
         return $stmt->fetchAll();
     }
 
-    // Đếm tổng số khách hàng (để biết có bao nhiêu trang)
+    // Đếm tổng số khách hàng
     public static function countCustomers(): int
     {
         $stmt   = self::db()->query("SELECT COUNT(*) as total FROM users WHERE role = 'customer'");
@@ -48,38 +45,33 @@ class User extends BaseModel
         return (int)($result['total'] ?? 0);
     }
 
-    // Cập nhật trạng thái khóa (0: Active, 1: Locked)
+    // Toggle Lock
     public static function toggleLock(int $id, int $status): bool
     {
         $stmt = self::db()->prepare("UPDATE users SET is_locked = ? WHERE id = ?");
         return $stmt->execute([$status, $id]);
     }
 
-    // Xóa tài khoản
+    // Xóa user
     public static function delete(int $id): bool
     {
-        // Lưu ý: Các bảng liên quan (orders, cart_items...) cần thiết lập
-        // Foreign Key ON DELETE CASCADE trong Database thì mới xóa sạch được.
         $stmt = self::db()->prepare("DELETE FROM users WHERE id = ?");
         return $stmt->execute([$id]);
     }
 
-    // 3. Tạo User mới (Đăng ký thường)
+    // 3. Tạo User mới
     public static function create(string $name, string $email, string $password): int
     {
         $hash = password_hash($password, PASSWORD_BCRYPT);
-
-        // Mặc định role là 'customer' và is_locked là 0
         $stmt = self::db()->prepare(
             'INSERT INTO users (name, email, password_hash, role, is_locked)
              VALUES (?, ?, ?, "customer", 0)'
         );
         $stmt->execute([$name, $email, $hash]);
-
         return (int)self::db()->lastInsertId();
     }
 
-    // 4. Tạo User từ mã Hash (Dùng cho Verify Register / Google Login nếu cần)
+    // 4. Tạo User từ Hash (Google/Verify)
     public static function createFromHash(string $name, string $email, string $hash): int
     {
         $stmt = self::db()->prepare(
@@ -87,11 +79,10 @@ class User extends BaseModel
              VALUES (?, ?, ?, "customer", 0)'
         );
         $stmt->execute([$name, $email, $hash]);
-
         return (int)self::db()->lastInsertId();
     }
 
-    // 5. Cập nhật mật khẩu theo Email (Reset Password)
+    // 5. Cập nhật mật khẩu theo Email
     public static function updatePasswordByEmail(string $email, string $password): bool
     {
         $hash = password_hash($password, PASSWORD_BCRYPT);
@@ -99,10 +90,25 @@ class User extends BaseModel
         return $stmt->execute([$hash, $email]);
     }
 
-    // 6. Cập nhật mật khẩu theo ID (Đổi mật khẩu trong trang cá nhân)
+    // 6. Cập nhật mật khẩu theo ID
     public static function updatePassword(int $id, string $newHash): bool
     {
         $stmt = self::db()->prepare('UPDATE users SET password_hash = ? WHERE id = ?');
         return $stmt->execute([$newHash, $id]);
+    }
+
+    // 7. [MỚI] Cập nhật thông tin hồ sơ (Tên, Giới tính, Ngày sinh)
+    public static function updateProfile(int $id, array $data): bool
+    {
+        // $data bao gồm: name, gender, birthday
+        $stmt = self::db()->prepare(
+            "UPDATE users SET name = ?, gender = ?, birthday = ? WHERE id = ?"
+        );
+        return $stmt->execute([
+            $data['name'],
+            $data['gender'],
+            $data['birthday'],
+            $id
+        ]);
     }
 }

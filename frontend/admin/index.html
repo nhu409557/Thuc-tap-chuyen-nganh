@@ -3,306 +3,418 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý Khách hàng - TechHub Admin</title>
+    <title>Dashboard Pro - TechHub Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style> body { font-family: 'Inter', sans-serif; } </style>
+    <style> 
+        body { font-family: 'Inter', sans-serif; } 
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+    </style>
 </head>
-<body class="bg-slate-50">
+<body class="bg-gray-50 text-slate-800">
 
-    <div class="p-6">
+    <div class="p-4 lg:p-8 max-w-[1600px] mx-auto">
         
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
             <div>
-                <h1 class="text-2xl font-bold text-slate-800">Quản lý Khách hàng</h1>
-                <p class="text-sm text-slate-500 mt-1">Danh sách tất cả người dùng đã đăng ký hệ thống</p>
-            </div>
-        </div>
-
-        <!-- CARD THỐNG KÊ -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-bold text-slate-400 uppercase">Tổng khách hàng</p>
-                    <h3 class="text-2xl font-bold text-slate-800 mt-1" id="total-users-card">0</h3>
-                </div>
-                <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
-                    <i class="fa-solid fa-users"></i>
-                </div>
-            </div>
-        </div>
-
-        <!-- BẢNG DANH SÁCH -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
-                <h3 class="font-bold text-slate-700">Danh sách tài khoản</h3>
-                <div class="flex gap-2">
-                    <span class="bg-slate-100 text-slate-600 text-xs font-medium px-2.5 py-1 rounded-full border border-slate-200">
-                        Hiển thị: <span id="total-users-display">0</span>
-                    </span>
-                </div>
-            </div>
-
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left">
-                    <thead class="bg-slate-50 text-slate-500 font-semibold uppercase text-xs tracking-wider border-b border-slate-200">
-                        <tr>
-                            <th class="px-6 py-4 w-16">ID</th>
-                            <th class="px-6 py-4">Thông tin khách hàng</th>
-                            <th class="px-6 py-4">Email</th>
-                            <th class="px-6 py-4">Ngày tham gia</th>
-                            <th class="px-6 py-4 text-center">Trạng thái</th>
-                            <th class="px-6 py-4 text-center">Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody id="users-list-body" class="divide-y divide-slate-100 text-slate-600">
-                        <tr>
-                            <td colspan="6" class="px-6 py-10 text-center text-slate-400">
-                                <i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Đang tải dữ liệu...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <h1 class="text-2xl font-bold text-slate-800">Tổng quan kinh doanh</h1>
+                <p class="text-sm text-slate-500 mt-1">Chào mừng quay trở lại, đây là số liệu hôm nay.</p>
             </div>
             
-            <!-- PHÂN TRANG -->
-            <div class="px-6 py-4 border-t border-slate-200 bg-slate-50/50 flex items-center justify-between">
-                <span class="text-sm text-slate-500">
-                    Trang <span id="page-current" class="font-bold text-slate-800">1</span> 
-                    / <span id="page-total">1</span>
-                </span>
-                <div class="flex gap-2">
-                    <button id="btn-prev" class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium border border-slate-300 rounded-lg hover:bg-white hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-white shadow-sm">
-                        <i class="fa-solid fa-chevron-left text-xs"></i> Trước
-                    </button>
-                    <button id="btn-next" class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium border border-slate-300 rounded-lg hover:bg-white hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-white shadow-sm">
-                        Sau <i class="fa-solid fa-chevron-right text-xs"></i>
-                    </button>
+            <div class="flex gap-2">
+                <select id="revenue-filter" class="bg-white border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 shadow-sm outline-none">
+                    <option value="day">📅 Hôm nay</option>
+                    <option value="month" selected>📅 Tháng này</option>
+                    <option value="year">📅 Năm nay</option>
+                    <option value="all">📊 Toàn bộ</option>
+                </select>
+                <button id="btn-export-excel" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow-sm transition flex items-center gap-2">
+                    <i class="fa-solid fa-download"></i> <span id="btn-export-text">Xuất báo cáo</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm card-hover transition duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-400 uppercase">Doanh thu</p>
+                        <h3 class="text-2xl font-bold text-slate-800 mt-1" id="stat-revenue">0 đ</h3>
+                    </div>
+                    <div class="p-3 bg-blue-50 rounded-lg text-blue-600"><i class="fa-solid fa-money-bill-wave text-xl"></i></div>
+                </div>
+                <div class="mt-4 flex items-center text-xs text-green-600 bg-green-50 px-2 py-1 rounded w-fit">
+                    <i class="fa-solid fa-arrow-trend-up mr-1"></i> <span id="revenue-label">Tháng này</span>
                 </div>
             </div>
+
+            <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm card-hover transition duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-400 uppercase">Tổng đơn hàng</p>
+                        <h3 class="text-2xl font-bold text-slate-800 mt-1" id="stat-orders">0</h3>
+                    </div>
+                    <div class="p-3 bg-purple-50 rounded-lg text-purple-600"><i class="fa-solid fa-cart-shopping text-xl"></i></div>
+                </div>
+                 <div class="mt-4 flex items-center text-xs text-slate-400">
+                    <span>Tổng số đơn trên hệ thống</span>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm card-hover transition duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-400 uppercase">Khách hàng</p>
+                        <h3 class="text-2xl font-bold text-slate-800 mt-1" id="stat-users">0</h3>
+                    </div>
+                    <div class="p-3 bg-orange-50 rounded-lg text-orange-600"><i class="fa-solid fa-users text-xl"></i></div>
+                </div>
+                <div class="mt-4 flex items-center text-xs text-slate-400">
+                    <span>Tài khoản đăng ký</span>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm card-hover transition duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-400 uppercase">Đã giao thành công</p>
+                        <h3 class="text-2xl font-bold text-green-600 mt-1" id="stat-success-rate">0%</h3>
+                    </div>
+                    <div class="p-3 bg-green-50 rounded-lg text-green-600"><i class="fa-solid fa-check-double text-xl"></i></div>
+                </div>
+                <div class="mt-4 flex items-center text-xs text-slate-400">
+                    <span>Tỷ lệ đơn hàng thành công</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <h3 class="font-bold text-slate-800 mb-4">Biểu đồ doanh thu (7 ngày gần nhất)</h3>
+                <div class="relative h-64 lg:h-80 w-full">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+                <h3 class="font-bold text-slate-800 mb-4">Trạng thái đơn hàng</h3>
+                <div class="relative h-64 w-full flex-1 flex items-center justify-center">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-gray-50/50">
+                    <h3 class="font-bold text-slate-800">🏆 Top Sản phẩm bán chạy</h3>
+                    <a href="products.html" class="text-xs font-medium text-blue-600 hover:underline">Xem tất cả</a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-slate-500 uppercase bg-slate-50">
+                            <tr>
+                                <th class="px-4 py-3">Sản phẩm</th>
+                                <th class="px-4 py-3 text-center">Đã bán</th>
+                                <th class="px-4 py-3 text-right">Doanh thu</th>
+                            </tr>
+                        </thead>
+                        <tbody id="top-products-list" class="divide-y divide-slate-100">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-gray-50/50">
+                    <h3 class="font-bold text-slate-800">🕒 Đơn hàng mới nhất</h3>
+                    <a href="orders.html" class="text-xs font-medium text-blue-600 hover:underline">Quản lý đơn</a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-slate-500 uppercase bg-slate-50">
+                            <tr>
+                                <th class="px-4 py-3">Mã đơn</th>
+                                <th class="px-4 py-3">Khách hàng</th>
+                                <th class="px-4 py-3">Trạng thái</th>
+                                <th class="px-4 py-3 text-right">Tổng tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-orders-list" class="divide-y divide-slate-100">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-red-50/50 border border-red-100 rounded-xl p-6 shadow-sm mb-8">
+            <h3 class="font-bold text-red-600 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-triangle-exclamation"></i> Cảnh báo tồn kho thấp (<= 5)
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="low-stock-list">
+                </div>
         </div>
 
     </div>
 
-    <div id="toast-root"></div>
-
     <script type="module">
-        import { renderAdminLayout } from '../assets/js/admin.js';
+        import { renderAdminLayout, formatPrice } from '../assets/js/admin.js';
         import { api } from '../assets/js/api.js';
-        import { showToast } from '../assets/js/utils/common.js';
+        import { showToast } from '../assets/js/ui/toast.js';
 
-        // Render layout admin
-        renderAdminLayout('users'); 
+        let cachedStats = null;
+        let revenueChartInstance = null;
+        let statusChartInstance = null;
 
-        // ===== STATE PHÂN TRANG =====
-        let currentPage = 1;
-        let nextPageData = null;      // Cache dữ liệu trang tiếp theo
-        const LIMIT = 20;             // Số user / trang
+        // Render layout chung
+        try { await renderAdminLayout('dashboard'); } catch (e) {}
 
-        // ===== HÀM LOAD USERS CÓ PHÂN TRANG =====
-        async function loadUsers(page = 1, useCache = true) {
-            const tbody        = document.getElementById('users-list-body');
-            const totalCard    = document.getElementById('total-users-card');
-            const totalDisplay = document.getElementById('total-users-display');
-            const pageCurrent  = document.getElementById('page-current');
-            const pageTotal    = document.getElementById('page-total');
-            const btnPrev      = document.getElementById('btn-prev');
-            const btnNext      = document.getElementById('btn-next');
+        async function loadDashboard() {
+            try {
+                const data = await api.request('/admin/stats', { auth: true });
+                cachedStats = data;
 
-            let res = null;
+                // 1. Fill KPI Cards
+                document.getElementById('stat-orders').textContent = data.total_orders;
+                document.getElementById('stat-users').textContent = data.total_customers;
+                
+                // Tính tỷ lệ thành công
+                const delivered = data.order_stats.Delivered || 0;
+                const total = data.total_orders || 1; 
+                const rate = ((delivered / total) * 100).toFixed(1);
+                document.getElementById('stat-success-rate').textContent = rate + '%';
 
-            // A. Dùng cache nếu có
-            if (useCache && nextPageData && nextPageData.pagination && nextPageData.pagination.current_page === page) {
-                console.log('⚡ Instant load từ cache');
-                res = nextPageData;
-                nextPageData = null;
-            } else {
-                // B. Gọi API
-                tbody.classList.add('opacity-50', 'pointer-events-none');
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="px-6 py-10 text-center text-slate-400">
-                            <i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Đang tải dữ liệu...
-                        </td>
-                    </tr>
-                `;
-                try {
-                    // Backend: GET /admin/users?page=&limit=
-                    const query = `?page=${page}&limit=${LIMIT}`;
-                    res = await api.request('/admin/users' + query, { auth: true });
-                } catch (err) {
-                    console.error('Lỗi loadUsers:', err);
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="6" class="px-6 py-8 text-center text-red-500 bg-red-50">
-                                Lỗi tải dữ liệu: ${err.message}
-                            </td>
-                        </tr>
-                    `;
-                    tbody.classList.remove('opacity-50', 'pointer-events-none');
-                    return;
-                }
-                tbody.classList.remove('opacity-50', 'pointer-events-none');
+                // 2. Render Charts
+                renderRevenueChart(data.chart_data);
+                renderStatusChart(data.order_stats);
+
+                // 3. Render Tables
+                renderTopProducts(data.top_products);
+                renderRecentOrders(data.recent_orders);
+                renderLowStock(data.low_stock_products);
+
+                // 4. Update Revenue mặc định
+                updateRevenueDisplay();
+
+            } catch (err) {
+                console.error(err);
+                showToast('Không thể tải dữ liệu Dashboard.', 'error');
             }
+        }
 
-            const users  = res.data || [];
-            const paging = res.pagination || {
-                current_page: page,
-                total_pages: 1,
-                total_records: users.length
+        // --- CHART 1: LINE CHART (Doanh thu) ---
+        function renderRevenueChart(chartData) {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            if(revenueChartInstance) revenueChartInstance.destroy();
+
+            // Gradient fill cho đẹp
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.5)'); // Blue
+            gradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
+            revenueChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: 'Doanh thu (VNĐ)',
+                        data: chartData.data,
+                        borderColor: '#2563eb', // Blue-600
+                        backgroundColor: gradient,
+                        borderWidth: 2,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#2563eb',
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.4 // Làm mượt đường cong
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return formatPrice(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { borderDash: [2, 4], color: '#e2e8f0' },
+                            ticks: { callback: (value) => value.toLocaleString('vi-VN', {notation: 'compact'}) }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // --- CHART 2: DOUGHNUT CHART (Trạng thái) ---
+        function renderStatusChart(stats) {
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            if(statusChartInstance) statusChartInstance.destroy();
+
+            const labels = {
+                'Pending': 'Chờ xác nhận',
+                'Confirmed': 'Đã xác nhận',
+                'Shipping': 'Đang giao',
+                'Delivered': 'Hoàn thành',
+                'Cancelled': 'Đã hủy',
+                'Returned': 'Trả hàng'
             };
 
-            currentPage = paging.current_page;
+            const dataValues = [
+                stats.Pending || 0,
+                stats.Confirmed || 0,
+                stats.Shipping || 0,
+                stats.Delivered || 0,
+                stats.Cancelled || 0,
+                stats.Returned || 0
+            ];
 
-            // Cập nhật thống kê & phân trang
-            if (totalCard)    totalCard.textContent    = paging.total_records;
-            if (totalDisplay) totalDisplay.textContent = users.length; // số đang hiển thị trên trang
-            if (pageCurrent)  pageCurrent.textContent  = paging.current_page;
-            if (pageTotal)    pageTotal.textContent    = paging.total_pages;
-
-            if (btnPrev) btnPrev.disabled = currentPage <= 1;
-            if (btnNext) btnNext.disabled = currentPage >= paging.total_pages;
-
-            // Render bảng
-            renderTable(users);
-
-            // Prefetch trang tiếp theo nếu còn
-            if (currentPage < paging.total_pages) {
-                prefetchNextPage(currentPage + 1);
-            }
+            statusChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.values(labels),
+                    datasets: [{
+                        data: dataValues,
+                        backgroundColor: [
+                            '#fbbf24', // Amber (Pending)
+                            '#60a5fa', // Blue (Confirmed)
+                            '#3b82f6', // Dark Blue (Shipping)
+                            '#22c55e', // Green (Delivered)
+                            '#ef4444', // Red (Cancelled)
+                            '#94a3b8'  // Gray (Returned)
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } }
+                    },
+                    cutout: '70%' // Làm vòng tròn mỏng hơn
+                }
+            });
         }
 
-        // ===== PREFETCH TRANG TIẾP THEO =====
-        async function prefetchNextPage(nextPage) {
-            try {
-                const query = `?page=${nextPage}&limit=${LIMIT}`;
-                nextPageData = await api.request('/admin/users' + query, { auth: true });
-                console.log('Prefetched page', nextPage);
-            } catch (err) {
-                console.warn('Lỗi prefetch:', err);
-            }
-        }
-
-        // ===== RENDER TABLE =====
-        function renderTable(users) {
-            const tbody = document.getElementById('users-list-body');
-
-            if (!tbody) return;
-
-            if (!users || users.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="px-6 py-8 text-center italic text-slate-500">
-                            Chưa có khách hàng nào trong hệ thống
-                        </td>
-                    </tr>
-                `;
+        // --- RENDER TABLES ---
+        function renderTopProducts(products) {
+            const list = document.getElementById('top-products-list');
+            if(!products?.length) {
+                list.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-slate-400">Chưa có dữ liệu</td></tr>`;
                 return;
             }
-
-            const btnClass = "w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200 border";
-
-            tbody.innerHTML = users.map(u => {
-                const isLocked = u.is_locked == 1;
-
-                // Ngày tham gia
-                let dateStr = '---';
-                if (u.created_at) {
-                    try {
-                        dateStr = new Date(u.created_at).toLocaleDateString('vi-VN');
-                    } catch (e) {}
-                }
-
-                const statusBadge = isLocked 
-                    ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 border border-red-200"><i class="fa-solid fa-lock text-[10px]"></i> Đã khóa</span>`
-                    : `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200"><i class="fa-solid fa-check text-[10px]"></i> Hoạt động</span>`;
-
-                const lockBtn = isLocked
-                    ? `<button onclick="window.handleToggleBlock(${u.id}, 0)" class="${btnClass} border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300" title="Mở khóa tài khoản"><i class="fa-solid fa-unlock"></i></button>`
-                    : `<button onclick="window.handleToggleBlock(${u.id}, 1)" class="${btnClass} border-orange-200 text-orange-500 hover:bg-orange-50 hover:border-orange-300" title="Khóa tài khoản"><i class="fa-solid fa-lock"></i></button>`;
-
-                return `
-                    <tr class="hover:bg-blue-50/50 transition-colors group">
-                        <td class="px-6 py-4 font-mono text-slate-400 text-xs">#${u.id}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold uppercase">
-                                    ${u.name ? u.name.charAt(0) : 'U'}
-                                </div>
-                                <span class="font-medium text-slate-700 group-hover:text-blue-700 transition-colors">${u.name || 'Không tên'}</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-slate-600">${u.email || '---'}</td>
-                        <td class="px-6 py-4 text-xs text-slate-500">${dateStr}</td>
-                        <td class="px-6 py-4 text-center">${statusBadge}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center justify-center gap-2">
-                                ${lockBtn}
-                                <button onclick="window.handleDeleteUser(${u.id})" 
-                                        class="${btnClass} border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300" 
-                                        title="Xóa vĩnh viễn">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+            list.innerHTML = products.map((p, index) => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="px-4 py-3">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs font-bold text-slate-400">#${index+1}</span>
+                            <img src="../${p.image || 'assets/images/no-image.png'}" class="w-8 h-8 rounded object-cover border border-slate-200" onerror="this.src='../assets/images/no-image.png'">
+                            <span class="font-medium text-slate-700 truncate max-w-[150px]" title="${p.title}">${p.title}</span>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-center font-semibold text-slate-600">${p.total_sold}</td>
+                    <td class="px-4 py-3 text-right text-blue-600 font-medium">${formatPrice(p.total_revenue)}</td>
+                </tr>
+            `).join('');
         }
 
-        // ===== SỰ KIỆN PHÂN TRANG =====
-        const btnPrev = document.getElementById('btn-prev');
-        const btnNext = document.getElementById('btn-next');
+        function renderRecentOrders(orders) {
+            const list = document.getElementById('recent-orders-list');
+            if(!orders?.length) {
+                list.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-slate-400">Chưa có đơn hàng</td></tr>`;
+                return;
+            }
+            const statusColors = {
+                'Pending': 'bg-yellow-100 text-yellow-700',
+                'Confirmed': 'bg-blue-100 text-blue-700',
+                'Shipping': 'bg-indigo-100 text-indigo-700',
+                'Delivered': 'bg-green-100 text-green-700',
+                'Cancelled': 'bg-red-100 text-red-700',
+                'Returned': 'bg-gray-100 text-gray-700'
+            };
 
-        if (btnPrev) {
-            btnPrev.addEventListener('click', () => {
-                if (currentPage > 1) {
-                    loadUsers(currentPage - 1, false);
-                }
-            });
+            list.innerHTML = orders.map(o => `
+                <tr class="hover:bg-slate-50 transition cursor-pointer" onclick="window.location.href='orders.html?id=${o.id}'">
+                    <td class="px-4 py-3 font-mono text-xs text-slate-500">#${o.id}</td>
+                    <td class="px-4 py-3 font-medium text-slate-700">${o.name}</td>
+                    <td class="px-4 py-3">
+                        <span class="px-2 py-1 rounded text-[10px] font-bold uppercase ${statusColors[o.status] || 'bg-gray-100'}">${o.status}</span>
+                    </td>
+                    <td class="px-4 py-3 text-right font-medium text-slate-800">${formatPrice(o.total_amount)}</td>
+                </tr>
+            `).join('');
         }
 
-        if (btnNext) {
-            btnNext.addEventListener('click', () => {
-                loadUsers(currentPage + 1, true); // ưu tiên dùng cache nếu có
-            });
+        function renderLowStock(products) {
+            const list = document.getElementById('low-stock-list');
+            if(!products?.length) {
+                list.innerHTML = `<div class="col-span-full text-center text-slate-400 italic">Kho hàng ổn định</div>`;
+                return;
+            }
+            list.innerHTML = products.map(p => `
+                <div class="flex items-center gap-3 p-3 bg-white rounded-lg border border-red-200 shadow-sm">
+                    <img src="../${p.image}" class="w-10 h-10 rounded object-cover" onerror="this.src='../assets/images/no-image.png'">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-slate-800 truncate">${p.title}</p>
+                        <p class="text-xs text-red-500 font-bold">Còn lại: ${p.stock_quantity}</p>
+                    </div>
+                    <a href="products.html" class="text-xs text-blue-600 hover:underline">Nhập</a>
+                </div>
+            `).join('');
         }
 
-        // ===== GLOBAL HANDLERS =====
-        window.handleToggleBlock = async (id, status) => {
-            const action = status === 1 ? 'KHÓA' : 'MỞ KHÓA';
-            if (!confirm(`Bạn có chắc chắn muốn ${action} tài khoản #${id} không?`)) return;
+        // --- FILTER LOGIC ---
+        function updateRevenueDisplay() {
+            if (!cachedStats) return;
+            const filter = document.getElementById('revenue-filter').value;
+            const displayEl = document.getElementById('stat-revenue');
+            const labelEl = document.getElementById('revenue-label');
+            
+            const map = {
+                'day': { val: cachedStats.revenue.day, label: 'Hôm nay' },
+                'month': { val: cachedStats.revenue.month, label: 'Tháng này' },
+                'year': { val: cachedStats.revenue.year, label: 'Năm nay' },
+                'all': { val: cachedStats.revenue.all, label: 'Toàn bộ' }
+            };
+
+            displayEl.textContent = formatPrice(map[filter].val || 0);
+            labelEl.textContent = map[filter].label;
+        }
+
+        document.getElementById('revenue-filter').addEventListener('change', updateRevenueDisplay);
+
+        // Export Logic
+        document.getElementById('btn-export-excel').addEventListener('click', async function() {
+            const btn = this;
+            const filterType = document.getElementById('revenue-filter').value;
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Xuất file...`;
+            btn.disabled = true;
 
             try {
-                await api.toggleUserBlock(id, status);
-                showToast(`Đã ${action.toLowerCase()} thành công!`, 'success');
-
-                // Dữ liệu thay đổi → xóa cache & reload
-                nextPageData = null;
-                loadUsers(currentPage, false);
+                await api.exportRevenue(filterType);
+                showToast('Đã tải xuống file báo cáo!', 'success');
             } catch (err) {
-                showToast(err.message || 'Có lỗi xảy ra', 'error');
+                showToast('Lỗi xuất file: ' + err.message, 'error');
+            } finally {
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
             }
-        };
+        });
 
-        window.handleDeleteUser = async (id) => {
-            if (!confirm(`CẢNH BÁO NGUY HIỂM:\nXóa tài khoản #${id} sẽ xóa toàn bộ đơn hàng và dữ liệu liên quan.\nHành động này không thể hoàn tác.\n\nBạn có chắc chắn không?`)) return;
-
-            try {
-                await api.deleteUser(id);
-                showToast('Đã xóa khách hàng vĩnh viễn', 'success');
-
-                // Xóa cache & load lại trang hiện tại
-                nextPageData = null;
-                loadUsers(currentPage, false);
-            } catch (err) {
-                showToast(err.message || 'Không thể xóa', 'error');
-            }
-        };
-
-        // ===== KHỞI CHẠY =====
-        loadUsers(1, false);
+        loadDashboard();
     </script>
 </body>
 </html>

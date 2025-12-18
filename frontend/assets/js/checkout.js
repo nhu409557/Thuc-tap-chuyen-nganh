@@ -11,14 +11,14 @@ let isUsingNewAddress = false;
 const API_PROVINCE_URL = 'https://provinces.open-api.vn/api';
 
 // --- BIẾN MỚI CHO COUPON ---
-let currentCoupon = null; // { code: 'SALE50', discount: 50000 }
-let subtotalAmount = 0;   // Tổng tiền hàng chưa giảm
+let currentCoupon = null; 
+let subtotalAmount = 0;   
 
 // --- Helper: Hiển thị thông tin biến thể ---
 function getVariantText(item) {
     let parts = [];
     const color = item.variant_color || item.selected_color;
-    if (color) parts.push(`Màu: ${color}`);
+    if (color) parts.push(color); // Chỉ hiện tên màu cho gọn
 
     if (item.variant_attributes) {
         try {
@@ -27,11 +27,11 @@ function getVariantText(item) {
                 : item.variant_attributes;
             
             Object.entries(attrs).forEach(([k, v]) => {
-                if (k !== 'color' && v) parts.push(v);
+                if (k !== 'color' && k !== 'color_code' && v) parts.push(v);
             });
         } catch(e) {}
     }
-    return parts.join(' | ');
+    return parts.join(' / ');
 }
 
 // --- Load trang thanh toán ---
@@ -62,7 +62,6 @@ async function loadAndRenderCheckout() {
       return;
     }
 
-    // Tính lại subtotal
     subtotalAmount = 0;
 
     const itemsHtml = checkoutItems.map((item) => {
@@ -76,23 +75,23 @@ async function loadAndRenderCheckout() {
         const variantInfo = getVariantText(item);
 
         return `
-        <div class="flex gap-3 border-b border-gray-100 pb-3 last:border-0">
-          <div class="w-16 h-16 rounded border border-gray-200 bg-gray-50 flex-shrink-0 overflow-hidden">
+        <div class="flex gap-3 border-b border-gray-100 pb-3 last:border-0 items-start">
+          <div class="w-14 h-14 md:w-16 md:h-16 rounded border border-gray-200 bg-white flex-shrink-0 overflow-hidden p-1">
               <img src="${displayImage}" class="w-full h-full object-contain mix-blend-multiply" onerror="this.src='https://via.placeholder.com/60'"/>
           </div>
-          <div class="flex-1 text-sm">
-            <p class="font-bold text-gray-800 line-clamp-2">${displayTitle}</p>
-            ${variantInfo ? `<p class="text-xs text-gray-500 mt-1 bg-gray-100 px-2 py-0.5 rounded w-fit">${variantInfo}</p>` : ''}
-            <div class="flex justify-between items-center mt-2">
-              <span class="text-gray-500 text-xs">SL: x${item.quantity}</span>
-              <span class="font-bold text-blue-600">${formatPrice(lineTotal)}</span>
+          <div class="flex-1 min-w-0">
+            <p class="font-bold text-gray-800 text-xs md:text-sm line-clamp-2 leading-snug">${displayTitle}</p>
+            ${variantInfo ? `<p class="text-[10px] md:text-xs text-gray-500 mt-1 bg-gray-100 px-1.5 py-0.5 rounded w-fit truncate max-w-full">${variantInfo}</p>` : ''}
+            <div class="flex justify-between items-center mt-1.5">
+              <span class="text-gray-500 text-xs">x${item.quantity}</span>
+              <span class="font-bold text-blue-600 text-xs md:text-sm">${formatPrice(lineTotal)}</span>
             </div>
           </div>
         </div>`;
     }).join('');
 
     summaryEl.innerHTML = `
-      <div class="space-y-3 mb-4 max-h-60 overflow-y-auto custom-scrollbar pr-2">
+      <div class="space-y-3 mb-4 max-h-60 overflow-y-auto custom-scrollbar pr-1">
         ${itemsHtml}
       </div>
       
@@ -108,35 +107,37 @@ async function loadAndRenderCheckout() {
         </div>
 
         <div id="row-discount" class="flex justify-between text-sm text-green-600 hidden">
-           <span>Giảm giá <span id="lbl-coupon-code" class="font-bold text-xs bg-green-100 px-1 rounded ml-1"></span></span>
+           <span>Giảm giá <span id="lbl-coupon-code" class="font-bold text-[10px] bg-green-100 px-1 rounded ml-1 border border-green-200"></span></span>
            <span id="lbl-discount-amount">-0đ</span>
         </div>
 
         <div class="flex justify-between text-base font-bold text-gray-900 border-t border-dashed border-gray-300 pt-3 mt-2">
-          <span>Tổng thanh toán</span>
+          <span>Tổng cộng</span>
           <span id="lbl-final-total" class="text-red-600 text-xl">${formatPrice(subtotalAmount)}</span>
         </div>
       </div>
     `;
+    
+    // Cập nhật giá lần đầu cho mobile sticky bar
+    updateTotalUI();
+
   } catch (err) {
     console.error(err);
     showToast('Lỗi tải đơn hàng', 'error');
   }
 }
 
-// --- LOGIC XỬ LÝ COUPON MỚI ---
+// --- LOGIC COUPON ---
 async function handleApplyCoupon() {
     const input = document.getElementById('coupon-code-input');
     const btn = document.getElementById('btn-apply-coupon');
     const msg = document.getElementById('coupon-message');
     const code = input.value.trim().toUpperCase();
 
-    // Reset UI
     msg.classList.add('hidden');
     msg.className = 'text-xs mt-2 hidden';
     
     if (!code) {
-        // Nếu xóa trắng -> Hủy coupon
         currentCoupon = null;
         updateTotalUI();
         return;
@@ -146,22 +147,18 @@ async function handleApplyCoupon() {
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
 
-        // Gọi API check
         const res = await api.checkCoupon(code);
         
-        // Thành công
         currentCoupon = {
             code: code,
             discount: res.discount_amount
         };
 
-        msg.textContent = `Đã áp dụng mã: giảm ${formatPrice(res.discount_amount)}`;
+        msg.textContent = `Đã dùng mã: -${formatPrice(res.discount_amount)}`;
         msg.className = 'text-xs mt-2 block text-green-600 font-medium';
-        
         updateTotalUI();
 
     } catch (err) {
-        // Thất bại
         currentCoupon = null;
         msg.textContent = err.message || 'Mã không hợp lệ';
         msg.className = 'text-xs mt-2 block text-red-500 font-medium';
@@ -177,28 +174,34 @@ function updateTotalUI() {
     const lblCode = document.getElementById('lbl-coupon-code');
     const lblDiscount = document.getElementById('lbl-discount-amount');
     const lblTotal = document.getElementById('lbl-final-total');
+    const mobileTotal = document.getElementById('mobile-total-display'); // Mobile Sticky
 
     let discount = 0;
 
     if (currentCoupon) {
         discount = currentCoupon.discount;
-        rowDiscount.classList.remove('hidden');
-        lblCode.textContent = currentCoupon.code;
-        lblDiscount.textContent = `-${formatPrice(discount)}`;
+        if(rowDiscount) rowDiscount.classList.remove('hidden');
+        if(lblCode) lblCode.textContent = currentCoupon.code;
+        if(lblDiscount) lblDiscount.textContent = `-${formatPrice(discount)}`;
     } else {
-        rowDiscount.classList.add('hidden');
+        if(rowDiscount) rowDiscount.classList.add('hidden');
     }
 
     let finalTotal = subtotalAmount - discount;
     if (finalTotal < 0) finalTotal = 0;
     
-    lblTotal.textContent = formatPrice(finalTotal);
+    const formattedTotal = formatPrice(finalTotal);
+    if(lblTotal) lblTotal.textContent = formattedTotal;
+    if(mobileTotal) mobileTotal.textContent = formattedTotal; // Update mobile
 }
 
 // --- Submit Đơn Hàng ---
 async function handleSubmitOrder(e) {
-  e.preventDefault();
-  const btn = document.querySelector('#btn-submit-order');
+  if(e) e.preventDefault(); // Prevent default form submit if triggered by form
+  
+  // Select both buttons to manage loading state
+  const btnDesktop = document.querySelector('#btn-submit-order-desktop');
+  const btnMobile = document.querySelector('#btn-submit-order-mobile');
   
   if (checkoutItems.length === 0) return;
 
@@ -218,11 +221,10 @@ async function handleSubmitOrder(e) {
   let payload = { 
     items: itemsPayload,
     payment_method: paymentMethod,
-    // 👇 Gửi thêm coupon_code
     coupon_code: currentCoupon ? currentCoupon.code : null 
   };
 
-  // Logic địa chỉ (giữ nguyên)
+  // Logic địa chỉ
   if (isUsingNewAddress) {
     const name = document.querySelector('#new-name').value.trim();
     const phone = document.querySelector('#new-phone').value.trim();
@@ -233,20 +235,20 @@ async function handleSubmitOrder(e) {
 
     if (!name || !phone || !province || !district || !ward || !street) {
       showToast('Vui lòng điền đầy đủ thông tin giao hàng', 'error');
+      // Scroll to form on mobile
+      document.getElementById('new-address-form').scrollIntoView({behavior: 'smooth'});
       return;
     }
     const addressData = { full_name: name, phone, province, district, ward, street_address: street };
 
     try {
-      btn.disabled = true;
-      btn.textContent = 'Đang lưu địa chỉ...';
+      setLoading(true, 'Đang lưu ĐC...');
       await api.addAddress(addressData);
       payload.name = name;
       payload.phone = phone;
       payload.address = `${street}, ${ward}, ${district}, ${province}`;
     } catch(err) {
-      btn.disabled = false;
-      btn.textContent = 'Đặt hàng';
+      setLoading(false);
       showToast('Lỗi lưu địa chỉ: ' + err.message, 'error');
       return;
     }
@@ -265,10 +267,21 @@ async function handleSubmitOrder(e) {
     payload.address = `${addr.street_address}, ${addr.ward}, ${addr.district}, ${addr.province}`;
   }
 
+  // Helper Loading state
+  function setLoading(isLoading, text = 'Đang xử lý...') {
+      if(btnDesktop) {
+          btnDesktop.disabled = isLoading;
+          btnDesktop.innerHTML = isLoading ? `<i class="fa-solid fa-circle-notch fa-spin"></i> ${text}` : 'Đặt hàng';
+      }
+      if(btnMobile) {
+          btnMobile.disabled = isLoading;
+          btnMobile.innerHTML = isLoading ? `<i class="fa-solid fa-circle-notch fa-spin"></i>` : 'Đặt hàng';
+      }
+  }
+
   // Gọi API tạo đơn
   try {
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Đang xử lý...';
+    setLoading(true);
 
     const res = await api.createOrder(payload);
     
@@ -276,24 +289,22 @@ async function handleSubmitOrder(e) {
     syncCartBadge();
 
     if (res.payment_url) {
-       showToast('Đang chuyển sang cổng thanh toán MoMo...', 'info');
-       setTimeout(() => { window.location.href = res.payment_url; }, 1500);
+       showToast('Chuyển sang thanh toán...', 'info');
+       setTimeout(() => { window.location.href = res.payment_url; }, 1000);
        return;
     }
 
     showToast('Đặt hàng thành công!', 'success');
-    setTimeout(() => window.location.href = `order-detail.html?id=${res.order_id}`, 1500);
+    setTimeout(() => window.location.href = `order-detail.html?id=${res.order_id}`, 1000);
 
   } catch (err) {
     console.error(err);
     showToast(err.message || 'Đặt hàng thất bại', 'error');
-    btn.disabled = false;
-    btn.textContent = 'Đặt hàng';
+    setLoading(false);
   }
 }
 
-// ... (Giữ nguyên loadAddresses, initLocationSelects, initPaymentMethodEvents, populateSelect) ...
-// (Bạn hãy copy lại các hàm đó từ file cũ vào đây để code chạy được)
+// ... (Các hàm loadAddresses, toggleNewAddressForm, initLocationSelects, populateSelect, initPaymentMethodEvents giữ nguyên như cũ)
 async function loadAddresses() {
     const container = document.querySelector('#saved-addresses');
     if (!container) return;
@@ -307,21 +318,29 @@ async function loadAddresses() {
       }
       container.innerHTML = savedAddresses.map((addr, index) => {
         const isChecked = addr.is_default ? 'checked' : (index === 0 ? 'checked' : '');
-        return `<label class="flex items-start gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 transition"><input type="radio" name="shipping_address" value="${addr.id}" class="mt-1 w-4 h-4 text-blue-600" ${isChecked}><div class="text-sm"><p class="font-bold text-gray-900">${addr.full_name} | ${addr.phone}</p><p class="text-gray-600">${addr.street_address}, ${addr.ward}, ${addr.district}, ${addr.province}</p></div></label>`;
+        return `
+        <label class="flex items-start gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 transition">
+            <input type="radio" name="shipping_address" value="${addr.id}" class="mt-1 w-4 h-4 text-blue-600 focus:ring-blue-500 flex-shrink-0" ${isChecked}>
+            <div class="text-sm">
+                <p class="font-bold text-gray-900">${addr.full_name} <span class="font-normal text-gray-500 text-xs">| ${addr.phone}</span></p>
+                <p class="text-gray-600 mt-0.5 leading-snug text-xs md:text-sm">${addr.street_address}, ${addr.ward}, ${addr.district}, ${addr.province}</p>
+                ${addr.is_default ? '<span class="inline-block mt-1 text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200">Mặc định</span>' : ''}
+            </div>
+        </label>`;
       }).join('');
       container.querySelectorAll('input[name="shipping_address"]').forEach(r => r.addEventListener('change', () => toggleNewAddressForm(false)));
     } catch (err) { console.error(err); }
-  }
+}
   
-  function toggleNewAddressForm(show) {
+function toggleNewAddressForm(show) {
     const form = document.querySelector('#new-address-form');
     const radios = document.querySelectorAll('input[name="shipping_address"]');
     isUsingNewAddress = show;
     if (show) { form.classList.remove('hidden'); radios.forEach(r => r.checked = false); } 
     else { form.classList.add('hidden'); }
-  }
+}
   
-  async function initLocationSelects() {
+async function initLocationSelects() {
     const p = document.querySelector('#new-province'), d = document.querySelector('#new-district'), w = document.querySelector('#new-ward');
     if(!p) return;
     try { const res = await fetch(`${API_PROVINCE_URL}/p/`); const data = await res.json(); populateSelect(p, data, 'Tỉnh/TP'); } catch(e){}
@@ -336,18 +355,18 @@ async function loadAddresses() {
         if(code){ const res=await fetch(`${API_PROVINCE_URL}/d/${code}?depth=2`); const data=await res.json(); populateSelect(w, data.wards, 'Xã'); }
         else { w.innerHTML='<option value="">-- Xã --</option>'; w.disabled=true; }
     });
-  }
-  function populateSelect(el, data, placeholder) {
+}
+function populateSelect(el, data, placeholder) {
     el.innerHTML = `<option value="">-- ${placeholder} --</option>`; el.disabled = false;
     data.forEach(i => { const opt = document.createElement('option'); opt.value = i.name; opt.textContent = i.name; opt.dataset.code = i.code; el.appendChild(opt); });
-  }
-  function initPaymentMethodEvents() {
-      const radios = document.querySelectorAll('input[name="payment_method"]');
-      const bankInfo = document.getElementById('banking-info');
-      radios.forEach(r => r.addEventListener('change', (e) => {
-          if(e.target.value === 'banking') bankInfo?.classList.remove('hidden'); else bankInfo?.classList.add('hidden');
-      }));
-  }
+}
+function initPaymentMethodEvents() {
+    const radios = document.querySelectorAll('input[name="payment_method"]');
+    const bankInfo = document.getElementById('banking-info');
+    radios.forEach(r => r.addEventListener('change', (e) => {
+        if(e.target.value === 'banking') bankInfo?.classList.remove('hidden'); else bankInfo?.classList.add('hidden');
+    }));
+}
 
 function initCheckout() {
   const form = document.querySelector('#checkout-form');
@@ -357,9 +376,13 @@ function initCheckout() {
   initLocationSelects();
   initPaymentMethodEvents();
   document.querySelector('#btn-toggle-new-address')?.addEventListener('click', () => toggleNewAddressForm(true));
+  
+  // Submit Form (Desktop)
   form.addEventListener('submit', handleSubmitOrder);
   
-  // 👇 Event cho nút áp dụng Coupon
+  // Submit Mobile Button
+  document.getElementById('btn-submit-order-mobile')?.addEventListener('click', () => handleSubmitOrder(null));
+  
   document.getElementById('btn-apply-coupon')?.addEventListener('click', handleApplyCoupon);
 }
 
