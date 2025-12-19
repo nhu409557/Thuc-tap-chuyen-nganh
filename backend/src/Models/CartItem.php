@@ -39,7 +39,11 @@ class CartItem extends BaseModel
         return $stmt->fetchAll();
     }
 
-    public static function addOrUpdate(int $userId, int $productId, int $qty, ?int $variantId = null): void
+    /**
+     * Thêm hoặc cập nhật sản phẩm trong giỏ
+     * Sửa đổi: Trả về ID của cart item (int)
+     */
+    public static function addOrUpdate(int $userId, int $productId, int $qty, ?int $variantId = null): int
     {
         // Check trùng: sản phẩm giống nhau + variant giống nhau
         $sqlCheck = "
@@ -54,16 +58,18 @@ class CartItem extends BaseModel
         if ($existing) {
             $stmt = self::db()->prepare("UPDATE cart_items SET quantity = quantity + ? WHERE id = ?");
             $stmt->execute([$qty, $existing['id']]);
+            return (int)$existing['id']; // Trả về ID cũ
         } else {
             $stmt = self::db()->prepare("
                 INSERT INTO cart_items (user_id, product_id, quantity, product_variant_id) 
                 VALUES (?, ?, ?, ?)
             ");
             $stmt->execute([$userId, $productId, $qty, $variantId]);
+            return (int)self::db()->lastInsertId(); // Trả về ID mới tạo
         }
     }
     
-    // MỚI: Hàm lấy số lượng hiện tại của sản phẩm trong giỏ
+    // Hàm lấy số lượng hiện tại của sản phẩm trong giỏ
     public static function getQuantity(int $userId, int $productId, ?int $variantId = null): int
     {
         $sql = "SELECT quantity FROM cart_items 

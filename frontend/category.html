@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Danh mục sản phẩm - TechHub</title>
+  <title>Sản phẩm - TechHub</title>
   
   <link rel="stylesheet" href="assets/css/reset.css" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -11,23 +11,29 @@
   <link rel="stylesheet" href="assets/css/app.css" />
 
   <style>
-    /* ... (Giữ nguyên CSS cũ) ... */
+    /* --- CSS TÙY CHỈNH --- */
     .custom-scrollbar::-webkit-scrollbar { width: 4px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
     .range-slider { position: relative; width: 100%; height: 4px; background: #e5e7eb; border-radius: 5px; margin: 25px 0 5px 0; }
-    .range-selected { height: 100%; left: 0%; right: 0%; position: absolute; border-radius: 5px; background-color: #ffffff; }
+    .range-selected { height: 100%; left: 0%; right: 0%; position: absolute; border-radius: 5px; background-color: #2563eb; }
     .range-input { position: relative; }
     .range-input input { position: absolute; width: 100%; height: 5px; top: -9px; background: none; pointer-events: none; -webkit-appearance: none; appearance: none; z-index: 10; }
-    .range-input input::-webkit-slider-thumb { height: 20px; width: 20px; border-radius: 50%; background: #ffffff; pointer-events: auto; -webkit-appearance: none; box-shadow: 0 2px 6px rgba(0,0,0,0.2); cursor: pointer; border: 2px solid #2563eb; margin-top: -8px; transition: transform 0.1s; }
+    .range-input input::-webkit-slider-thumb { height: 20px; width: 20px; border-radius: 50%; background: #ffffff; pointer-events: auto; -webkit-appearance: none; box-shadow: 0 2px 6px rgba(0,0,0,0.15); cursor: pointer; border: 2px solid #2563eb; margin-top: -8px; transition: transform 0.1s; }
     .range-input input::-webkit-slider-thumb:active { transform: scale(1.1); background: #eff6ff; }
 
     #sidebar-content { transition: transform 0.3s ease-in-out; }
     .sidebar-open #sidebar-content { transform: translateX(0); }
     .sidebar-open #sidebar-overlay { display: block; }
     .sticky-filter-btn { position: sticky; top: 70px; z-index: 30; }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
 </style>
 </head>
 <body class="bg-gray-50 flex flex-col min-h-screen font-sans text-gray-800">
@@ -36,32 +42,46 @@
 
   <div class="bg-white border-b border-gray-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-      <nav class="flex items-center gap-2 text-sm text-gray-500">
-        <a class="hover:text-blue-600 transition flex items-center gap-1" href="index.html">
-          <i class="fa-solid fa-house text-xs"></i> Trang chủ
+      <nav class="flex items-center gap-2 text-sm text-gray-500 font-medium">
+        <a class="hover:text-blue-600 transition duration-200 flex items-center gap-1" href="index.html">
+            <i class="fa-solid fa-house text-xs pb-0.5"></i> Trang chủ
         </a>
-        <i class="fa-solid fa-chevron-right text-[10px]"></i>
-        <span class="text-gray-900 font-medium">Danh mục</span>
+        <span class="text-gray-300 text-xs">/</span>
+        <span class="text-gray-900" id="breadcrumb-current">Sản phẩm</span>
       </nav>
     </div>
   </div>
 
-  <section class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white relative overflow-hidden shadow-sm">
-    <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 relative z-10">
-      <h1 id="category-title" class="text-2xl md:text-4xl font-bold mb-2 tracking-tight">
-        <i class="fa-solid fa-spinner fa-spin mr-2"></i>Đang tải...
-      </h1>
-      <p class="text-blue-100 text-sm md:text-base max-w-2xl">
-        Khám phá các sản phẩm công nghệ chính hãng với mức giá ưu đãi và chất lượng hàng đầu.
-      </p>
+  <section class="relative bg-slate-900 isolate overflow-hidden shadow-sm">
+    <div class="absolute top-0 right-0 -mr-20 -mt-20 w-[400px] h-[400px] bg-blue-600/20 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-[400px] h-[400px] bg-purple-600/20 rounded-full blur-3xl"></div>
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
+      
+      <div id="title-skeleton" class="animate-pulse space-y-3">
+          <div class="h-8 md:h-10 bg-white/10 rounded-lg w-48 md:w-64"></div>
+          <div class="h-4 bg-white/5 rounded w-64 md:w-96"></div>
+      </div>
+
+      <div id="title-content" class="hidden animate-fade-in-up">
+          <h1 class="text-2xl md:text-4xl font-bold text-white mb-3 tracking-tight flex flex-col md:flex-row md:items-center gap-3">
+            <span id="page-title-prefix" class="text-slate-400 font-normal text-xl md:text-2xl">Danh mục:</span>
+            <span id="category-title" class="text-white bg-white/10 px-5 py-1.5 rounded-xl border border-white/10 backdrop-blur-md shadow-lg inline-block w-fit">
+               Tất cả sản phẩm
+            </span>
+          </h1>
+          <p class="text-slate-400 text-sm md:text-base max-w-2xl font-light leading-relaxed">
+             Khám phá các sản phẩm công nghệ chính hãng với mức giá ưu đãi và chất lượng hàng đầu.
+          </p>
+      </div>
+
     </div>
   </section>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 flex-grow w-full relative">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full relative">
     
     <div class="md:hidden mb-6 sticky-filter-btn">
-        <button id="mobile-filter-toggle" class="w-full flex items-center justify-center gap-2 bg-white/95 backdrop-blur-md border border-gray-200 text-blue-700 py-3 rounded-xl font-bold text-sm shadow-lg hover:shadow-xl active:scale-95 transition-all">
+        <button id="mobile-filter-toggle" class="w-full flex items-center justify-center gap-2 bg-white/90 backdrop-blur-md border border-gray-200 text-blue-700 py-3 rounded-xl font-bold text-sm shadow-lg hover:shadow-xl active:scale-95 transition-all">
             <i class="fa-solid fa-sliders"></i>
             Bộ lọc & Sắp xếp
         </button>
@@ -70,163 +90,144 @@
     <div class="grid md:grid-cols-4 gap-6 lg:gap-8">
       
       <aside id="filter-sidebar" class="hidden md:block md:col-span-1 z-40">
-        
         <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 hidden z-40 backdrop-blur-sm" onclick="closeMobileFilter()"></div>
-
         <div id="sidebar-content" class="bg-white md:bg-transparent md:static 
              fixed inset-y-0 left-0 w-[85%] max-w-[320px] z-50 transform -translate-x-full md:translate-x-0 
              flex flex-col h-full md:h-auto overflow-hidden shadow-2xl md:shadow-none rounded-r-2xl md:rounded-none">
           
           <div class="md:hidden flex justify-between items-center px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-            <span class="font-bold text-lg flex items-center gap-2">
-                <i class="fa-solid fa-filter"></i> Bộ lọc
-            </span>
-            <button onclick="closeMobileFilter()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
+            <span class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-filter"></i> Bộ lọc</span>
+            <button onclick="closeMobileFilter()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
           </div>
 
           <div class="flex-1 overflow-y-auto p-5 md:p-0 space-y-5 custom-scrollbar bg-gray-50 md:bg-transparent md:sticky md:top-24">
-              
-              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                <label for="sort-by" class="block text-sm font-bold mb-3 text-gray-800 uppercase tracking-wider">
-                  <i class="fa-solid fa-arrow-down-short-wide text-blue-500 mr-1"></i> Sắp xếp
-                </label>
+              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                <label for="sort-by" class="block text-sm font-bold mb-3 text-gray-800 uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-arrow-down-short-wide text-blue-500"></i> Sắp xếp</label>
                 <div class="relative">
                     <select id="sort-by" class="w-full p-2.5 pl-3 pr-10 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none appearance-none bg-gray-50 cursor-pointer hover:border-blue-400 transition font-medium text-gray-700">
                         <option value="newest">✨ Mới nhất</option>
                         <option value="price_asc">💰 Giá tăng dần</option>
                         <option value="price_desc">💎 Giá giảm dần</option>
                     </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500">
-                        <i class="fa-solid fa-chevron-down text-xs"></i>
-                    </div>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500"><i class="fa-solid fa-chevron-down text-xs"></i></div>
                 </div>
               </div>
               
-              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                <label class="block text-sm font-bold mb-4 text-gray-800 uppercase tracking-wider">
-                  <i class="fa-solid fa-tag text-blue-500 mr-1"></i> Khoảng giá
-                </label>
+              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                <label class="block text-sm font-bold mb-4 text-gray-800 uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-tag text-blue-500"></i> Khoảng giá</label>
                 <div class="flex items-center gap-2 mb-4">
                   <input type="number" id="min-price" class="w-full p-2 border border-gray-200 bg-gray-50 rounded-lg text-sm text-center focus:border-blue-500 outline-none font-semibold placeholder-gray-400" placeholder="0" />
-                  <span class="text-gray-400">-</span>
+                  <span class="text-gray-400 font-bold">-</span>
                   <input type="number" id="max-price" class="w-full p-2 border border-gray-200 bg-gray-50 rounded-lg text-sm text-center focus:border-blue-500 outline-none font-semibold placeholder-gray-400" placeholder="Max" />
                 </div>
-                
                 <div class="px-1 mb-6">
-                    <div class="range-slider">
-                        <div class="range-selected" id="range-selected"></div>
-                    </div>
+                    <div class="range-slider"><div class="range-selected" id="range-selected"></div></div>
                     <div class="range-input">
                         <input type="range" class="min-range w-full" id="slider-min" min="0" max="100000000" value="0" step="500000">
                         <input type="range" class="max-range w-full" id="slider-max" min="0" max="100000000" value="100000000" step="500000">
                     </div>
                 </div>
-
-                <button id="filter-price-btn" class="w-full text-sm bg-blue-50 text-blue-700 font-bold py-2.5 rounded-lg hover:bg-blue-100 transition border border-blue-100 shadow-sm active:scale-95">
-                    Áp dụng
-                </button>
+                <button id="filter-price-btn" class="w-full text-sm bg-blue-50 text-blue-700 font-bold py-2.5 rounded-lg hover:bg-blue-100 transition border border-blue-100 shadow-sm active:scale-95">Áp dụng</button>
               </div>
 
-              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                <label class="block text-sm font-bold mb-3 text-gray-800 uppercase tracking-wider">
-                  <i class="fa-solid fa-copyright text-blue-500 mr-1"></i> Thương hiệu
-                </label>
+              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                <label class="block text-sm font-bold mb-3 text-gray-800 uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-copyright text-blue-500"></i> Thương hiệu</label>
                 <div id="brand-filters" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-1">
-                    <p class="text-xs text-gray-400 italic text-center py-4">Đang tải...</p>
+                    <p class="text-xs text-gray-400 italic text-center py-4">Đang tải thương hiệu...</p>
                 </div>
               </div>
               
-              <div class="hidden md:block text-center">
-                  <button onclick="window.resetPageFilter()" class="text-sm text-gray-500 hover:text-red-500 underline transition">
-                      <i class="fa-solid fa-rotate-right mr-1"></i> Xóa bộ lọc
-                  </button>
+              <div class="hidden md:block text-center pt-2">
+                  <button onclick="window.resetPageFilter()" class="text-sm text-gray-500 hover:text-red-600 underline transition flex items-center justify-center gap-1 mx-auto"><i class="fa-solid fa-rotate-right"></i> Xóa tất cả bộ lọc</button>
               </div>
           </div>
           
           <div class="md:hidden p-4 border-t border-gray-200 bg-white sticky bottom-0 z-10 flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-              <button onclick="window.resetPageFilter()" class="px-4 py-3 border border-gray-300 rounded-xl text-gray-600 font-bold hover:bg-gray-50">
-                  Xóa
-              </button>
-              <button id="btn-apply-mobile" class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition">
-                  Xem kết quả
-              </button>
+              <button onclick="window.resetPageFilter()" class="px-4 py-3 border border-gray-300 rounded-xl text-gray-600 font-bold hover:bg-gray-50">Xóa</button>
+              <button id="btn-apply-mobile" class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition">Xem kết quả</button>
           </div>
-
         </div>
       </aside>
       
       <div class="md:col-span-3">
-        <div id="category-products" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5 lg:gap-6">
-             </div>
+        <div id="category-products" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"></div>
         
-        <div class="mt-8 text-center">
-            <button id="btn-load-more" class="hidden px-6 py-3 bg-white border border-blue-600 text-blue-600 font-bold rounded-full hover:bg-blue-50 transition-all shadow-sm active:scale-95 group">
-                Xem thêm 20 sản phẩm <i class="fa-solid fa-chevron-down ml-2 transition-transform group-hover:translate-y-1"></i>
+        <div class="mt-10 text-center">
+            <button id="btn-load-more" class="hidden px-8 py-3 bg-white border border-blue-600 text-blue-600 font-bold rounded-full hover:bg-blue-600 hover:text-white transition-all shadow-md active:scale-95 group">
+                Xem thêm sản phẩm <i class="fa-solid fa-chevron-down ml-2 transition-transform group-hover:translate-y-1"></i>
             </button>
         </div>
 
-        <div id="empty-state" class="hidden flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm text-center mt-4">
-            <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-4">
-                <i class="fa-solid fa-magnifying-glass text-3xl text-blue-400"></i>
-            </div>
-            <h3 class="text-xl font-bold text-gray-800 mb-2">Không tìm thấy sản phẩm</h3>
-            <p class="text-gray-500 mb-6 max-w-xs mx-auto">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm của bạn.</p>
-            <button onclick="window.resetPageFilter()" class="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition active:scale-95">
-                <i class="fa-solid fa-rotate-right mr-2"></i> Xóa bộ lọc & Tải lại
-            </button>
+        <div id="empty-state" class="hidden flex flex-col items-center justify-center py-24 bg-white rounded-2xl border border-gray-100 shadow-sm text-center">
+            <div class="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-6 animate-pulse"><i class="fa-solid fa-magnifying-glass text-4xl text-blue-400"></i></div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Không tìm thấy sản phẩm nào</h3>
+            <p class="text-gray-500 mb-8 max-w-sm mx-auto">Hãy thử thay đổi bộ lọc hoặc nhập từ khóa tìm kiếm khác.</p>
+            <button onclick="window.resetPageFilter()" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 hover:shadow-xl transition active:scale-95 flex items-center gap-2"><i class="fa-solid fa-rotate-right"></i> Xóa bộ lọc & Tải lại</button>
         </div>
       </div>
-
     </div>
   </main>
 
   <div id="site-footer"></div>
 
   <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const titleSkeleton = document.getElementById('title-skeleton');
+        const titleContent = document.getElementById('title-content');
+        const categoryTitle = document.getElementById('category-title');
+        const pageTitlePrefix = document.getElementById('page-title-prefix');
+        const breadcrumbCurrent = document.getElementById('breadcrumb-current');
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchQuery = urlParams.get('search');
+        const categorySlug = urlParams.get('slug');
+
+        const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+        const slugMap = { 'phones': 'Điện thoại', 'laptops': 'Laptop', 'accessories': 'Phụ kiện', 'tablets': 'Máy tính bảng', 'all': 'Tất cả sản phẩm' };
+
+        if (searchQuery) {
+            pageTitlePrefix.textContent = "Kết quả tìm kiếm:";
+            categoryTitle.textContent = `"${searchQuery}"`; 
+            breadcrumbCurrent.textContent = `Tìm kiếm: ${searchQuery}`;
+        } else if (categorySlug) {
+            pageTitlePrefix.textContent = "Danh mục:";
+            const displayTitle = slugMap[categorySlug] || capitalize(categorySlug);
+            categoryTitle.textContent = displayTitle;
+            breadcrumbCurrent.textContent = displayTitle;
+        }
+
+        setTimeout(() => {
+            if (titleSkeleton) titleSkeleton.classList.add('hidden');
+            if (titleContent) titleContent.classList.remove('hidden');
+        }, 300);
+    });
+
+    // Mobile Sidebar
     const toggleBtn = document.getElementById('mobile-filter-toggle');
     const sidebar = document.getElementById('filter-sidebar');
     const applyBtnMobile = document.getElementById('btn-apply-mobile');
-    const sidebarOverlay = document.getElementById('sidebar-overlay');
     
     function openMobileFilter() {
-        sidebar.classList.remove('active');
-        sidebar.classList.remove('hidden');
-        setTimeout(() => {
-            document.body.classList.add('sidebar-open');
-        }, 10);
+        sidebar.classList.remove('active', 'hidden');
+        setTimeout(() => document.body.classList.add('sidebar-open'), 10);
         document.body.style.overflow = 'hidden'; 
     }
-
     function closeMobileFilter() {
         document.body.classList.remove('sidebar-open');
-        setTimeout(() => {
-            sidebar.classList.add('hidden');
-            document.body.style.overflow = '';
-        }, 300);
+        setTimeout(() => { sidebar.classList.add('hidden'); document.body.style.overflow = ''; }, 300);
     }
-
     if (toggleBtn) toggleBtn.addEventListener('click', openMobileFilter);
-
-    if (applyBtnMobile) {
-        applyBtnMobile.addEventListener('click', () => {
-            const filterPriceBtn = document.getElementById('filter-price-btn');
-            if (filterPriceBtn) filterPriceBtn.click();
-            closeMobileFilter();
-        });
-    }
-
+    if (applyBtnMobile) applyBtnMobile.addEventListener('click', () => {
+        const filterPriceBtn = document.getElementById('filter-price-btn');
+        if (filterPriceBtn) filterPriceBtn.click();
+        closeMobileFilter();
+    });
     window.addEventListener('resize', () => {
         if (window.innerWidth >= 768) {
             document.body.classList.remove('sidebar-open');
             document.body.style.overflow = '';
             sidebar.classList.remove('hidden'); 
-        } else {
-            if (!document.body.classList.contains('sidebar-open')) {
-                sidebar.classList.add('hidden');
-            }
-        }
+        } else if (!document.body.classList.contains('sidebar-open')) sidebar.classList.add('hidden');
     });
   </script>
 

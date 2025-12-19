@@ -269,6 +269,7 @@ class ProductController extends Controller
             $db = Database::getConnection();
             $db->beginTransaction();
 
+            // Lấy danh sách ID biến thể hiện tại để so sánh xóa
             $stmtCurrent = $db->prepare("SELECT id FROM product_variants WHERE product_id = ?");
             $stmtCurrent->execute([$productId]);
             $currentIds = $stmtCurrent->fetchAll(PDO::FETCH_COLUMN);
@@ -278,6 +279,7 @@ class ProductController extends Controller
             foreach ($b as $item) {
                 if (!isset($item['price'])) continue;
 
+                // Xử lý các trường dữ liệu cơ bản
                 $rawColorCode = $item['color_code'] ?? ($item['attributes']['color_code'] ?? null);
                 $colorCode = ($rawColorCode === '' || $rawColorCode === 'null') ? null : $rawColorCode;
 
@@ -290,6 +292,7 @@ class ProductController extends Controller
                 
                 $compareAt = isset($item['compare_at']) && $item['compare_at'] !== '' ? (float)$item['compare_at'] : null;
 
+                // Chuẩn bị dữ liệu insert/update variants
                 $data = [
                     $attrs, 
                     $colorVal,
@@ -299,26 +302,63 @@ class ProductController extends Controller
                     $compareAt,
                     (int)($item['stock_quantity'] ?? 0), 
                     $item['sku'] ?? null, 
-                    $item['image'] ?? null
+                    $item['image'] ?? null // Ảnh đại diện chính
                 ];
 
+                $variantId = null;
+
                 if (isset($item['id']) && in_array($item['id'], $currentIds)) {
+                    // UPDATE
                     $sql = "UPDATE product_variants SET attributes=?, color=?, color_code=?, capacity=?, price=?, compare_at=?, stock_quantity=?, sku=?, image=? WHERE id=?";
                     $db->prepare($sql)->execute([...$data, $item['id']]);
-                    $sentIds[] = $item['id'];
+                    $variantId = $item['id'];
+                    $sentIds[] = $variantId;
                 } else {
+                    // INSERT
                     $sql = "INSERT INTO product_variants (product_id, attributes, color, color_code, capacity, price, compare_at, stock_quantity, sku, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     $db->prepare($sql)->execute([$productId, ...$data]);
-                    $sentIds[] = $db->lastInsertId();
+                    $variantId = $db->lastInsertId();
+                    $sentIds[] = $variantId;
+                }
+
+                // --- XỬ LÝ ẢNH BIẾN THỂ (QUAN TRỌNG) ---
+                // "Giành quyền" các ảnh này từ Shared Gallery (NULL) về Variant này
+                if (!empty($item['gallery']) && is_array($item['gallery'])) {
+                    // 1. Reset các ảnh cũ của variant này về NULL (hoặc xóa tùy logic, ở đây ta set về NULL để an toàn hoặc xóa nếu muốn strict)
+                    // Cách tốt nhất: Set tất cả ảnh đang thuộc variant này về NULL trước, sau đó set lại theo danh sách mới gửi lên.
+                    // Tuy nhiên để tối ưu: Ta chỉ update những ảnh có trong danh sách gửi lên.
+                    
+                    $galleryUrls = $item['gallery'];
+                    // Lọc những url hợp lệ
+                    $validUrls = array_filter($galleryUrls, fn($u) => !empty($u));
+
+                    if (!empty($validUrls)) {
+                        // Tạo placeholder cho câu query IN (?, ?, ?)
+                        $placeholders = implode(',', array_fill(0, count($validUrls), '?'));
+                        
+                        // Cập nhật product_variant_id cho các ảnh này
+                        // Logic: Tìm các ảnh có URL nằm trong danh sách VÀ thuộc product_id này
+                        $sqlImg = "UPDATE product_images 
+                                   SET product_variant_id = ? 
+                                   WHERE product_id = ? 
+                                   AND image_url IN ($placeholders)";
+                        
+                        $paramsImg = array_merge([$variantId, $productId], $validUrls);
+                        $db->prepare($sqlImg)->execute($paramsImg);
+                    }
                 }
             }
 
+            // Xóa các biến thể không còn tồn tại
             $toDelete = array_diff($currentIds, $sentIds);
             if (!empty($toDelete)) {
                 $ids = implode(',', array_map('intval', $toDelete));
+                // Trước khi xóa variant, có thể cần set ảnh của nó về NULL (shared) hoặc xóa luôn ảnh.
+                // Ở đây ta để database tự xử lý (ON DELETE CASCADE) hoặc set NULL tùy cấu hình FK.
                 $db->exec("DELETE FROM product_variants WHERE id IN ($ids)");
             }
 
+            // Cập nhật tổng tồn kho
             $total = $db->query("SELECT SUM(stock_quantity) FROM product_variants WHERE product_id = {$productId}")->fetchColumn();
             $db->prepare("UPDATE products SET stock_quantity = ? WHERE id = ?")->execute([(int)$total, $productId]);
 

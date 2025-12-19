@@ -47,9 +47,15 @@ class CartController extends Controller
             return $this->error("Kho chỉ còn {$stock}. Bạn đã có {$currentInCart} trong giỏ, chỉ có thể thêm tối đa {$availableToAdd}.", 400);
         }
 
-        CartItem::addOrUpdate($userId, $productId, $qty, $variantId);
+        // --- CẬP NHẬT: Lấy ID của item trong giỏ ---
+        $cartItemId = CartItem::addOrUpdate($userId, $productId, $qty, $variantId);
         
-        $this->json(['success' => true, 'message' => 'Đã thêm vào giỏ']);
+        // --- CẬP NHẬT: Trả về cart_item_id cho Frontend ---
+        $this->json([
+            'success' => true, 
+            'message' => 'Đã thêm vào giỏ',
+            'cart_item_id' => $cartItemId
+        ]);
     }
 
     // CẬP NHẬT SỐ LƯỢNG (KHI BẤM NÚT +/- Ở GIỎ HÀNG)

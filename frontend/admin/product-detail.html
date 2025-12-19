@@ -199,7 +199,7 @@
 
                 await loadCategoriesAndInit(p.category, p.brand);
                 
-                // Lọc ảnh shared
+                // Lọc ảnh shared (chỉ hiện những ảnh KHÔNG thuộc về variant nào và KHÔNG phải ảnh đại diện)
                 serverImages = (p.shared_gallery || []).filter(url => url !== p.image);
                 renderGalleryUI();
 
@@ -310,17 +310,15 @@
             });
         };
 
-        // --- [NEW] VARIANT HTML BUILDER WITH UPLOAD ---
         function buildGroupHTML(colorName, variants, colorCode = '') {
             let groupImages = [];
             let activeImage = variants[0]?.image || '';
             
-            // Collect existing images for this group
+            // Collect existing images for this group (Server Images only)
             variants.forEach(v => {
                 if (v.gallery?.length) v.gallery.forEach(img => !groupImages.includes(img) && groupImages.push(img));
                 else if (v.image && !groupImages.includes(v.image)) groupImages.push(v.image);
             });
-            if(groupImages.length === 0) groupImages = [...serverImages]; // Fallback to shared if empty
 
             const rowsHtml = variants.length > 0 ? variants.map(v => renderRowHtml(v)).join('') : renderRowHtml({ attributes: {}, price: 0, compare_at: 0, stock_quantity: 0 });
 
@@ -331,7 +329,7 @@
                 return `
                 <div class="relative aspect-square border-2 rounded-lg overflow-hidden cursor-pointer hover:opacity-95 transition group/img ${isSelected ? 'variant-img-selected' : 'border-transparent'}" onclick="selectGroupImage(this, '${url}')">
                     <img src="${displaySrc}" class="w-full h-full object-cover">
-                    ${isSelected ? '<div class="absolute top-1 left-1 w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs shadow-md z-10"><i class="fa-solid fa-check"></i></div>' : ''}
+                    <div class="absolute top-1 left-1 w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs shadow-md z-10 ${isSelected ? '' : 'hidden'} check-icon"><i class="fa-solid fa-check"></i></div>
                     <button onclick="event.stopPropagation(); removeGroupImage(this, '${url}')" class="absolute top-0 right-0 w-6 h-6 bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition z-20 rounded-bl-lg shadow-sm opacity-0 group-hover/img:opacity-100" title="Xóa ảnh này"><i class="fa-solid fa-xmark text-xs"></i></button>
                 </div>`;
             }).join('');
@@ -356,13 +354,13 @@
                         <div class="flex justify-between items-center mb-2">
                             <h5 class="text-xs font-bold text-gray-500 uppercase">Ảnh đại diện</h5>
                             <label class="cursor-pointer text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded hover:bg-blue-200 font-bold transition flex items-center gap-1">
-                                <i class="fa-solid fa-cloud-arrow-up"></i> Tải lên
-                                <input type="file" class="hidden" accept="image/*" onchange="handleGroupImageUpload(this)">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> Tải nhiều ảnh
+                                <input type="file" class="hidden" multiple accept="image/*" onchange="handleGroupImageUpload(this)">
                             </label>
                         </div>
                         <div class="grid grid-cols-4 gap-2 mb-3 group-gallery max-h-60 overflow-y-auto custom-scrollbar p-1">
                             ${galleryHtml}
-                            ${galleryHtml.length === 0 ? '<div class="col-span-4 text-[10px] text-center text-slate-400 bg-slate-50 p-2 rounded italic border border-dashed border-slate-300">Chưa có ảnh.</div>' : ''}
+                            ${galleryHtml.length === 0 ? '<div class="col-span-4 text-[10px] text-center text-slate-400 bg-slate-50 p-2 rounded italic border border-dashed border-slate-300">Chưa có ảnh riêng.</div>' : ''}
                         </div>
                         <input type="hidden" class="group-main-image" value="${activeImage}">
                     </div>
@@ -388,43 +386,37 @@
             </div>`;
         }
 
-        // --- [NEW] HANDLE GROUP UPLOAD ---
         window.handleGroupImageUpload = (input) => {
-            const file = input.files[0];
-            if (!file) return;
+            if (!input.files || input.files.length === 0) return;
             
             const groupBlock = input.closest('.group-block');
             const gallery = groupBlock.querySelector('.group-gallery');
-            const hiddenInput = groupBlock.querySelector('.group-main-image');
             
-            const url = URL.createObjectURL(file);
-            
-            // Attach file to the DOM element for later upload
-            groupBlock.fileToUpload = file; 
-
-            // Create UI element
-            const div = document.createElement('div');
-            div.className = 'relative aspect-square border-2 rounded-lg overflow-hidden cursor-pointer hover:opacity-95 transition group/img variant-img-selected';
-            div.innerHTML = `
-                <img src="${url}" class="w-full h-full object-cover">
-                <div class="absolute top-1 left-1 w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs shadow-md z-10"><i class="fa-solid fa-check"></i></div>
-                <button onclick="event.stopPropagation(); removeGroupImage(this, '${url}')" class="absolute top-0 right-0 w-6 h-6 bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition z-20 rounded-bl-lg shadow-sm opacity-0 group-hover/img:opacity-100" title="Xóa ảnh này"><i class="fa-solid fa-xmark text-xs"></i></button>
-            `;
-            div.onclick = () => selectGroupImage(div, url);
-
-            // Remove other selections
-            gallery.querySelectorAll('.variant-img-selected').forEach(el => { 
-                el.classList.remove('variant-img-selected'); 
-                const badge = el.querySelector('.bg-blue-600'); 
-                if(badge) badge.remove(); 
-            });
-
-            // Add new image and remove "Empty" message if exists
             const emptyMsg = gallery.querySelector('.italic');
             if(emptyMsg) emptyMsg.remove();
-            
-            gallery.appendChild(div);
-            hiddenInput.value = url; // Set temporary blob URL
+
+            if (!groupBlock.pendingUploads) groupBlock.pendingUploads = [];
+
+            Array.from(input.files).forEach((file, index) => {
+                const url = URL.createObjectURL(file);
+                
+                groupBlock.pendingUploads.push({ file: file, tempUrl: url });
+
+                const div = document.createElement('div');
+                div.className = 'relative aspect-square border-2 rounded-lg overflow-hidden cursor-pointer hover:opacity-95 transition group/img variant-img-selected'; 
+                
+                div.innerHTML = `
+                    <img src="${url}" class="w-full h-full object-cover">
+                    <div class="absolute top-1 left-1 w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs shadow-md z-10 check-icon"><i class="fa-solid fa-check"></i></div>
+                    <button onclick="event.stopPropagation(); removeGroupImage(this, '${url}')" class="absolute top-0 right-0 w-6 h-6 bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition z-20 rounded-bl-lg shadow-sm opacity-0 group-hover/img:opacity-100" title="Xóa ảnh này"><i class="fa-solid fa-xmark text-xs"></i></button>
+                `;
+                div.onclick = () => selectGroupImage(div, url);
+
+                gallery.appendChild(div);
+                // Mặc định chọn ảnh cuối cùng làm ảnh đại diện active
+                selectGroupImage(div, url); 
+            });
+
             input.value = '';
         };
 
@@ -444,9 +436,12 @@
 
         window.selectGroupImage = (div, url) => {
             const container = div.parentElement;
-            container.querySelectorAll('.variant-img-selected').forEach(el => { el.classList.remove('variant-img-selected'); const badge = el.querySelector('.bg-blue-600'); if(badge) badge.remove(); });
+            container.querySelectorAll('.variant-img-selected').forEach(el => { 
+                el.classList.remove('variant-img-selected'); 
+                el.querySelector('.check-icon').classList.add('hidden');
+            });
             div.classList.add('variant-img-selected');
-            div.insertAdjacentHTML('beforeend', '<div class="absolute top-1 left-1 w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs shadow-md z-10"><i class="fa-solid fa-check"></i></div>');
+            div.querySelector('.check-icon').classList.remove('hidden');
             container.nextElementSibling.value = url;
         };
 
@@ -456,20 +451,16 @@
             const container = imgDiv.parentElement;
             const groupBlock = btn.closest('.group-block');
             
-            // If deleting the file we just queued for upload
-            if (url.startsWith('blob:') && groupBlock.fileToUpload) {
-                const currentBlob = URL.createObjectURL(groupBlock.fileToUpload);
-                // Check if this is the blob (approximation, usually URLs are unique)
-                // Actually safer to just clear it if it matches the current selection
+            if (url.startsWith('blob:') && groupBlock.pendingUploads) {
+                groupBlock.pendingUploads = groupBlock.pendingUploads.filter(p => p.tempUrl !== url);
             }
 
             if (imgDiv.classList.contains('variant-img-selected')) { 
                 const hiddenInput = groupBlock.querySelector('.group-main-image'); 
                 if (hiddenInput) hiddenInput.value = ''; 
-                groupBlock.fileToUpload = null; // Clear pending upload if removed
             }
             imgDiv.remove();
-            if (container.children.length === 0) container.innerHTML = `<div class="col-span-4 text-[10px] text-center text-slate-400 bg-slate-50 p-2 rounded italic border border-dashed border-slate-300">Đã xóa hết ảnh.</div>`;
+            if (container.children.length === 0) container.innerHTML = `<div class="col-span-4 text-[10px] text-center text-slate-400 bg-slate-50 p-2 rounded italic border border-dashed border-slate-300">Chưa có ảnh riêng.</div>`;
         };
 
         window.addVariantGroup = () => {
@@ -505,18 +496,41 @@
                     mainImageFile = null; 
                 }
 
-                // 4. [NEW] Upload Private Variant Images (Loop through groups)
+                // 4. [UPDATED] Upload Private Variant Images & Collect URL list
                 const groupBlocks = document.querySelectorAll('.group-block');
+                
+                // Chúng ta sẽ cần duyệt qua từng groupBlock để xử lý upload VÀ thu thập danh sách ảnh
                 for (const block of groupBlocks) {
-                    if (block.fileToUpload) {
-                        const fd = new FormData();
-                        fd.append('image', block.fileToUpload);
-                        // Upload as generic product image first (since we might not have variant ID yet)
-                        const res = await api.uploadProductImage(productId, fd);
-                        
-                        // Update the hidden input with the real server URL
-                        block.querySelector('.group-main-image').value = res.url;
-                        block.fileToUpload = null; // Clear pending
+                    const hiddenInput = block.querySelector('.group-main-image');
+                    const activeTempUrl = hiddenInput.value;
+                    let activeRealUrl = activeTempUrl; 
+
+                    // 4.1. Upload các file đang chờ (pending)
+                    if (block.pendingUploads && block.pendingUploads.length > 0) {
+                        for (const pending of block.pendingUploads) {
+                            const fd = new FormData();
+                            fd.append('image', pending.file);
+                            // Upload lên server (lúc này variant_id vẫn null, server đang lưu ở shared)
+                            const res = await api.uploadProductImage(productId, fd);
+                            
+                            // Cập nhật lại src cho thẻ img để hiển thị đúng ngay lập tức (nếu ko reload)
+                            const imgEl = block.querySelector(`img[src="${pending.tempUrl}"]`);
+                            if(imgEl) {
+                                imgEl.src = res.url;
+                                // Cập nhật lại thuộc tính onclick để nếu chọn lại thì lấy đúng url server
+                                const divWrapper = imgEl.closest('div');
+                                divWrapper.onclick = () => selectGroupImage(divWrapper, res.url);
+                            }
+
+                            if (pending.tempUrl === activeTempUrl) {
+                                activeRealUrl = res.url;
+                            }
+                        }
+                        block.pendingUploads = [];
+                    }
+                    
+                    if (activeRealUrl.startsWith('http') || activeRealUrl.startsWith('assets')) {
+                        hiddenInput.value = activeRealUrl;
                     }
                 }
 
@@ -536,7 +550,7 @@
                 };
                 await api.updateProduct(productId, productData);
 
-                // 6. Build Variant Payload
+                // 6. Build Variant Payload (Now includes 'gallery')
                 const variantPayload = [];
                 const seenColors = new Set();
                 let hasDuplicate = false;
@@ -545,9 +559,19 @@
                     const colorRaw = group.querySelector('.color-input').value.trim();
                     const colorKey = colorRaw.toLowerCase();
                     const groupColorCode = group.querySelector('.group-color-text').value.trim();
-                    const activeImage = group.querySelector('.group-main-image').value; // Now contains server URL if uploaded
+                    const activeImage = group.querySelector('.group-main-image').value;
 
                     if (seenColors.has(colorKey)) { hasDuplicate = true; } else { seenColors.add(colorKey); }
+
+                    // [NEW] Thu thập toàn bộ URL ảnh trong nhóm này để gửi lên server
+                    const galleryUrls = [];
+                    group.querySelectorAll('.group-gallery img').forEach(img => {
+                         let src = img.getAttribute('src');
+                         // Fix đường dẫn nếu đang ở preview mode
+                         if (src.startsWith('../')) src = src.substring(3);
+                         if (src.startsWith('assets/')) galleryUrls.push(src);
+                         else if (src.startsWith('http')) galleryUrls.push(src);
+                    });
 
                     group.querySelectorAll('tbody tr').forEach(tr => {
                         const price = tr.querySelector('.price-input').value;
@@ -562,7 +586,8 @@
                             compare_at: tr.querySelector('.compare-input').value,
                             stock_quantity: tr.querySelector('.stock-input').value,
                             sku: tr.querySelector('.sku-input').value, 
-                            image: activeImage 
+                            image: activeImage.startsWith('blob:') ? '' : activeImage,
+                            gallery: galleryUrls // Gửi danh sách ảnh lên
                         });
                     });
                 });
